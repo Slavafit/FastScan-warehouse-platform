@@ -1,0 +1,28 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+// ДОБАВЛЕН БЛОК PLUGINS С ВЕРСИЯМИ
+plugins {
+    // Версия Android Gradle Plugin. Для Java 21 нужна версия 8.3.0 или выше
+    id 'com.android.application' version '9.0.0' apply false
+    id 'com.android.library' version '9.0.0' apply false
+
+    // Версия Kotlin. Должна быть совместима с версией Android Studio
+    id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "FastScan"
+include(":app")

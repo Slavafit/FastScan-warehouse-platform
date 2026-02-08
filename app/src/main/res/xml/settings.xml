@@ -1,0 +1,24 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <EditTextPreference
+        app:key="site_url"
+        app:title="Адрес сайта"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:key="login"
+        app:title="Логин"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:key="password"
+        app:title="Пароль"
+        app:useSimpleSummaryProvider="true" />
+
+    <EditTextPreference
+        app:key="delay"
+        app:title="Задержка перед Enter (мс)"
+        app:defaultValue="1500"
+        app:useSimpleSummaryProvider="true" />
+
+</PreferenceScreen>

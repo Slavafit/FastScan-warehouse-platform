@@ -15,22 +15,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        jsBridge = JsBridge(binding.webView)
         setupWebView()
         setupButtons()
     }
 
-    // Этот метод срабатывает, когда мы возвращаемся из Камеры
     override fun onResume() {
         super.onResume()
+        // Когда вернулись из камеры — применяем результат
         if (JsBridge.lastValue.isNotEmpty()) {
             jsBridge.applyResult()
-            // Очищаем, чтобы не вставлять дважды
-            JsBridge.lastType = ""
-            JsBridge.lastValue = ""
+            JsBridge.lastValue = "" // Очищаем после вставки
         }
     }
 
@@ -38,49 +36,40 @@ class MainActivity : AppCompatActivity() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val siteUrl = prefs.getString("site_url", "https://onza.ibm.kg/")
         val login = prefs.getString("login", "")
-        val password = prefs.getString("password", "")
+        val pass = prefs.getString("password", "")
 
-        jsBridge = JsBridge(this, binding.webView)
+        binding.webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+        }
 
-        binding.webView.settings.javaScriptEnabled = true
-        binding.webView.settings.domStorageEnabled = true
         binding.webView.addJavascriptInterface(jsBridge, "ANDROID")
 
         binding.webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
-                super.onPageFinished(view, url)
-                // Авто-логин
-                if (!login.isNullOrEmpty() && !password.isNullOrEmpty()) {
-                    val js = """
-                        try {
-                           document.getElementsByName('login')[0].value = '$login';
-                           document.getElementsByName('password')[0].value = '$password';
-                           document.querySelector('button[type="submit"]').click(); 
-                        } catch(e){}
-                    """
-                    view.evaluateJavascript(js, null)
+                // Авто-логин при загрузке страницы входа
+                if (!login.isNullOrEmpty() && !pass.isNullOrEmpty()) {
+                    val authJs = """
+                        let userF = document.querySelector('input[name*="login"], input[name*="username"]');
+                        let passF = document.querySelector('input[type="password"]');
+                        let btn = document.querySelector('button[type="submit"], input[type="button"][value*="Войти"]');
+                        if (userF && passF) {
+                            userF.value = '$login';
+                            passF.value = '$pass';
+                            if (btn) btn.click();
+                        }
+                    """.trimIndent()
+                    view.evaluateJavascript(authJs, null)
                 }
             }
         }
-
-        if (!siteUrl.isNullOrEmpty()) {
-            binding.webView.loadUrl(siteUrl!!)
-        }
+        binding.webView.loadUrl(siteUrl!!)
     }
 
     private fun setupButtons() {
-        binding.fabBarcode.setOnClickListener {
-            openCamera("barcode")
-        }
-
-        binding.fabKg.setOnClickListener {
-            openCamera("kg")
-        }
-
-        binding.fabWeight.setOnClickListener {
-            openCamera("weight")
-        }
-
+        binding.fabBarcode.setOnClickListener { openCamera("barcode") }
+        binding.fabKg.setOnClickListener { openCamera("kg") }
+        binding.fabWeight.setOnClickListener { openCamera("weight") }
         binding.fabSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }

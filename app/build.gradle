@@ -49,4 +49,19 @@ dependencies {
 
     // 3. Настройки (Preferences)
     implementation "androidx.preference:preference-ktx:1.2.1"
+    // --- Сеть и API (Retrofit) ---
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:4.12.0"
+
+    // --- Firebase (Firestore & BOM) ---
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    // --- Генерация штрих-кодов (для печати) ---
+    implementation 'com.google.zxing:core:3.5.3'
+
+    // --- Утилиты и Жизненный цикл ---
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
 }

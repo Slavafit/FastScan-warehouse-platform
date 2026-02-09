@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F5F5F5">
 
-    <WebView
-        android:id="@+id/webView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabBarcode"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_menu_camera"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabKg"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_input_add"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/fabWeight"
-        app:layout_constraintStart_toEndOf="@id/fabBarcode" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Трек-код" android:textStyle="bold" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <EditText android:id="@+id/etTracking" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="Скан или ввод..." />
+            <ImageButton android:id="@+id/btnScanTrack" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
+            <ImageButton android:id="@+id/btnPrint" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_save" android:visibility="gone" />
+        </LinearLayout>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabWeight"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:src="@android:drawable/ic_menu_edit"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ГЕНЕРИРОВАТЬ ONZA" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_marginTop="36dp"
-        android:src="@android:drawable/ic_menu_preferences"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView android:id="@+id/tvClientName" android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Клиент не найден" android:textColor="#D32F2F" android:textSize="18sp" android:textStyle="bold" />
+
+        <CheckBox android:id="@+id/cbWithBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Наличие коробки (with_box)" />
+
+        <Space android:layout_width="match_parent" android:layout_height="16dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Код клиента (KG)" android:textStyle="bold" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <EditText android:id="@+id/etClientCode" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="KG123456" />
+            <ImageButton android:id="@+id/btnScanKg" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
+        </LinearLayout>
+
+        <Space android:layout_width="match_parent" android:layout_height="16dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Вес (кг)" android:textStyle="bold" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+            <EditText android:id="@+id/etWeight" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="0.000" android:inputType="numberDecimal" />
+            <ImageButton android:id="@+id/btnScanWeight" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
+            <Button android:id="@+id/btnVolumeCalc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ОБЪЕМ" />
+        </LinearLayout>
+
+        <Space android:layout_width="match_parent" android:layout_height="32dp" />
+
+        <Button android:id="@+id/btnSubmit" android:layout_width="match_parent" android:layout_height="70dp"
+            android:text="ОТПРАВИТЬ ЗАКАЗ" app:icon="@drawable/ic_send" android:textSize="18sp"
+            app:cornerRadius="12dp" android:layout_marginTop="24dp" android:backgroundTint="#2E7D32" />
+
+    </LinearLayout>
+</ScrollView>

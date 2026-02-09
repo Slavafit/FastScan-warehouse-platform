@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "934970721808",
+    "project_id": "fastscan-pro-1816f",
+    "storage_bucket": "fastscan-pro-1816f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934970721808:android:c5a00f46860acdcbfb6c95",
+        "android_client_info": {
+          "package_name": "com.ocr.fastscan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChBiN-0OF_SP9O55UNAczwditFQ3_GWVo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

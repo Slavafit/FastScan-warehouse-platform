@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Опционально: кастомизация цветов, если нужно -->
+        <item name="colorPrimary">#2E7D32</item>  <!-- Ваш зелёный из XML -->
+        <item name="colorPrimaryVariant">#1B5E20</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#2E7D32</item>
+        <item name="colorSecondaryVariant">#1B5E20</item>
+        <item name="colorOnSecondary">#000000</item>
+    </style>
+</resources>

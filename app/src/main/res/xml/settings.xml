@@ -1,24 +1,25 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <EditTextPreference
-        app:key="site_url"
-        app:title="Адрес сайта"
-        app:useSimpleSummaryProvider="true" />
+    <PreferenceCategory app:title="Настройки сервера">
 
-    <EditTextPreference
-        app:key="login"
-        app:title="Логин"
-        app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="api_url"
+            app:title="URL сервера"
+            app:useSimpleSummaryProvider="true"
+            app:defaultValue="https://onza-api.ibm.kg/" />
 
-    <EditTextPreference
-        app:key="password"
-        app:title="Пароль"
-        app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="login"
+            app:title="Логин (Email)"
+            app:useSimpleSummaryProvider="true" />
 
-    <EditTextPreference
-        app:key="delay"
-        app:title="Задержка перед Enter (мс)"
-        app:defaultValue="1500"
-        app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="password"
+            app:title="Пароль"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
 
 </PreferenceScreen>

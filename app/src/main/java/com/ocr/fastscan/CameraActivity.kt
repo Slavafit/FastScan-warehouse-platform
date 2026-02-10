@@ -1,14 +1,13 @@
-// CameraActivity.kt
 package com.ocr.fastscan
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview // ВАЖНО: core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,8 +18,8 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
     private val cameraExecutor = Executors.newSingleThreadExecutor()
-
-    private var mode = "barcode"
+    private var mode = "barcode" // barcode, kg, weight
+    private var isProcessing = false // Чтобы не сканировать 100 раз в секунду
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,9 +31,7 @@ class CameraActivity : AppCompatActivity() {
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            ActivityCompat.requestPermissions(
-                this, REQUIRED_PERMISSIONS, 10
-            )
+            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, 10)
         }
     }
 
@@ -43,75 +40,81 @@ class CameraActivity : AppCompatActivity() {
 
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-
-            // ИСПРАВЛЕННАЯ СТРОКА: Убрали длинный путь, используем импорт
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
             }
 
-            val analyzer = ImageAnalysis.Builder()
+            // Выбираем анализатор в зависимости от режима
+            val imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
+                .also { analysis ->
+                    analysis.setAnalyzer(cameraExecutor) { imageProxy ->
+                        if (!isProcessing) {
+                            if (mode == "barcode") {
+                                processBarcode(imageProxy)
+                            } else {
+                                processText(imageProxy) // KG или Вес
+                            }
+                        } else {
+                            imageProxy.close()
+                        }
+                    }
+                }
 
-            when (mode) {
-                "barcode" -> analyzer.setAnalyzer(
-                    cameraExecutor,
-                    BarcodeAnalyzer { result ->
-                        sendToWebView("barcode", result)
-                    }
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(
+                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalyzer
                 )
-                "kg" -> analyzer.setAnalyzer(
-                    cameraExecutor,
-                    OcrAnalyzer("kg") { result ->
-                        sendToWebView("kg", result)
-                    }
-                )
-                "weight" -> analyzer.setAnalyzer(
-                    cameraExecutor,
-                    OcrAnalyzer("weight") { result ->
-                        sendToWebView("weight", result)
-                    }
-                )
+            } catch (exc: Exception) {
+                Log.e("Camera", "Use case binding failed", exc)
             }
-
-            cameraProvider.unbindAll()
-
-            cameraProvider.bindToLifecycle(
-                this,
-                CameraSelector.DEFAULT_BACK_CAMERA,
-                preview,
-                analyzer
-            )
-
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun sendToWebView(type: String, value: String) {
-        JsBridge.lastType = type
-        JsBridge.lastValue = value
-
-        runOnUiThread {
-            Toast.makeText(this, "$type: $value", Toast.LENGTH_SHORT).show()
-            finish()   // вернуться в WebView
+    // Обработка штрих-кода
+    private fun processBarcode(imageProxy: ImageProxy) {
+        val analyzer = BarcodeAnalyzer { result ->
+            returnResult(result)
         }
+        analyzer.analyze(imageProxy)
     }
 
-    private fun allPermissionsGranted() =
-        REQUIRED_PERMISSIONS.all {
-            ContextCompat.checkSelfPermission(
-                baseContext, it
-            ) == PackageManager.PERMISSION_GRANTED
+    // Обработка текста (OCR)
+    private fun processText(imageProxy: ImageProxy) {
+        val analyzer = OcrAnalyzer(mode) { result ->
+            returnResult(result)
         }
+        analyzer.analyze(imageProxy)
+    }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
-    ) {
+    private fun returnResult(value: String) {
+        isProcessing = true
+        val intent = Intent()
+        intent.putExtra("scan_result", value)
+        intent.putExtra("scan_mode", mode)
+        setResult(RESULT_OK, intent)
+        finish() // Закрываем камеру и возвращаемся назад
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Нужен доступ к камере", Toast.LENGTH_SHORT).show()
             finish()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 
     companion object {

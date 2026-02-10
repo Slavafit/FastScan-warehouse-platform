@@ -1,14 +1,23 @@
 package com.ocr.fastscan.data.model
 
 import com.google.gson.annotations.SerializedName
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-// Ответ при логине
+// Для авторизации
 data class AuthResponse(
-    @SerializedName("bearer") val bearer: String?,
-    @SerializedName("refresh_bearer") val refreshBearer: String?
-)
+    @SerializedName("bearer")
+    val bearer: String?,
 
-// Данные из GET запроса по треку (приходит массив [])
+    @SerializedName("refresh_bearer")
+    val refreshBearer: String? = null,
+
+    @SerializedName("status")
+    val status: String? = null
+)
+// Данные из GET запроса по треку (приходит массив []) Для получения данных о клиенте
 data class OrderDetails(
     @SerializedName("client_code") val clientCode: String?,
     @SerializedName("client") val clientName: String?,
@@ -16,7 +25,7 @@ data class OrderDetails(
     @SerializedName("gross_weight") val grossWeight: Double?
 )
 
-// Тело для финального POST запроса
+// Для отправки финального POST запроса
 data class SaveOrderRequest(
     @SerializedName("client_code") val clientCode: String,
     @SerializedName("client") val clientName: String,
@@ -25,7 +34,23 @@ data class SaveOrderRequest(
     @SerializedName("with_box") val withBox: String
 )
 
+
 // Ответ при сохранении
 data class SaveResponse(
     val success: Boolean
+)
+// Для простых ответов сервера (успех/ошибка)
+data class SimpleResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String?
+)
+data class FirestoreShipment(
+    val trackingNumber: String = "",
+    val clientCode: String = "",
+    val clientName: String = "",
+    val weight: Double = 0.0,
+    val withBox: String = "0",
+    val createdAt: Timestamp = Timestamp.now(),
+    // Поле для удобной фильтрации в реестре (например, "2026-02-09")
+    val dateString: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 )

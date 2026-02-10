@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -11,6 +10,30 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="FastScan Pro"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#333333"/>
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_preferences"
+                app:tint="#444444" />
+        </RelativeLayout>
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Трек-код" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
@@ -24,9 +47,9 @@
         <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
         <TextView android:id="@+id/tvClientName" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Клиент не найден" android:textColor="#D32F2F" android:textSize="18sp" android:textStyle="bold" />
+            android:text="Ожидание сканирования..." android:textColor="#666666" android:textSize="18sp" android:textStyle="bold" android:gravity="center" />
 
-        <CheckBox android:id="@+id/cbWithBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Наличие коробки (with_box)" />
+        <CheckBox android:id="@+id/cbWithBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Наличие коробки (with_box)" android:layout_gravity="center_horizontal"/>
 
         <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
@@ -40,16 +63,21 @@
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Вес (кг)" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/etWeight" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="0.000" android:inputType="numberDecimal" />
+            <EditText android:id="@+id/etWeight" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="0.00" android:inputType="numberDecimal" />
             <ImageButton android:id="@+id/btnScanWeight" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
-            <Button android:id="@+id/btnVolumeCalc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ОБЪЕМ" />
+            <Button android:id="@+id/btnVolumeCalc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="V" android:textStyle="bold" />
         </LinearLayout>
 
         <Space android:layout_width="match_parent" android:layout_height="32dp" />
 
-        <Button android:id="@+id/btnSubmit" android:layout_width="match_parent" android:layout_height="70dp"
-            android:text="ОТПРАВИТЬ ЗАКАЗ" app:icon="@drawable/ic_send" android:textSize="18sp"
-            app:cornerRadius="12dp" android:layout_marginTop="24dp" android:backgroundTint="#2E7D32" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSubmit"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:text="ОТПРАВИТЬ ЗАКАЗ"
+            android:textSize="18sp"
+            app:cornerRadius="12dp"
+            android:backgroundTint="#2E7D32" />
 
     </LinearLayout>
 </ScrollView>

@@ -78,6 +78,18 @@
             android:textSize="18sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#2E7D32" />
-
+        <Button
+            android:id="@+id/btnTestLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ТЕСТ LOGIN"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />  <!-- По умолчанию скрыта, покажем в коде -->
+        <Button android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="LOGOUT"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />  <!-- FIX: Скрыта по умолчанию -->
     </LinearLayout>
 </ScrollView>

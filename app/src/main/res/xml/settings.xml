@@ -12,7 +12,7 @@
 
         <EditTextPreference
             app:key="login"
-            app:title="Логин (Email)"
+            app:title="Логин"
             app:useSimpleSummaryProvider="true" />
 
         <EditTextPreference

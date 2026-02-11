@@ -81,7 +81,7 @@ class PrintHelper(private val context: Context) {
         // 1. Заголовок
         paint.textSize = 24f
         paint.isFakeBoldText = true
-        canvas.drawText("ONZA LOGISTICS", 20f, 40f, paint)
+        canvas.drawText("ONZA", 20f, 40f, paint)
 
         // 2. Штрих-код (генерируем Bitmap и рисуем)
         val barcodeBmp = BarcodeUtils.generateBarcode(track, 240, 80)
@@ -90,7 +90,7 @@ class PrintHelper(private val context: Context) {
         // 3. Текст под штрих-кодом
         paint.textSize = 16f
         paint.isFakeBoldText = false
-        canvas.drawText(track, 60f, 160f, paint)
+        canvas.drawText(track, 70f, 160f, paint)
 
         // 4. Данные клиента
         paint.textSize = 20f

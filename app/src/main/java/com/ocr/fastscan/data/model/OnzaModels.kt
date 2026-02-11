@@ -25,15 +25,6 @@ data class OrderDetails(
     @SerializedName("gross_weight") val grossWeight: Double?
 )
 
-// Для отправки финального POST запроса
-data class SaveOrderRequest(
-    @SerializedName("client_code") val clientCode: String,
-    @SerializedName("client") val clientName: String,
-    @SerializedName("tracking_number") val trackingNumber: String,
-    @SerializedName("gross_weight") val grossWeight: String,
-    @SerializedName("with_box") val withBox: String
-)
-
 
 // Ответ при сохранении
 data class SaveResponse(

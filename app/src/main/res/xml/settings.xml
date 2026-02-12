@@ -20,6 +20,11 @@
             app:title="Пароль"
             app:useSimpleSummaryProvider="true" />
 
+        <EditTextPreference
+            app:key="vol_weight"
+            app:title="Объемный вес"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
 </PreferenceScreen>
+

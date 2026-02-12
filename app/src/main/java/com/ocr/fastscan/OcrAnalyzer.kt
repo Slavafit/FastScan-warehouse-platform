@@ -32,7 +32,7 @@ class OcrAnalyzer(
                         val pattern = Pattern.compile("KG(\\d{4,6})", Pattern.CASE_INSENSITIVE)
                         val matcher = pattern.matcher(rawText)
                         if (matcher.find()) {
-                            onResult(matcher.group(1)!!) // Передаем только цифры
+                            onResult(matcher.group(0)!!.uppercase())
                         }
                     }
                     "weight" -> {

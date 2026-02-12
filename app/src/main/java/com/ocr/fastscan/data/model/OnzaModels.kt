@@ -24,7 +24,9 @@ data class OrderDetails(
     @SerializedName("with_box") val withBox: String?, // Приходит "1", "0" или null
     @SerializedName("gross_weight") val grossWeight: Double?
 )
-
+data class ReceiverResponse(
+    @SerializedName("full_name") val fullName: String?
+)
 
 // Ответ при сохранении
 data class SaveResponse(

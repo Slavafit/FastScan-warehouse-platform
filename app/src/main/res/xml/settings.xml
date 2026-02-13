@@ -7,24 +7,24 @@
         <EditTextPreference
             app:key="api_url"
             app:title="URL сервера"
-            app:useSimpleSummaryProvider="true"
-            app:defaultValue="https://onza-api.ibm.kg/" />
+            app:useSimpleSummaryProvider="true"/>
+        <!--app:defaultValue="https://onza-api.ibm.kg" />-->
 
-        <EditTextPreference
-            app:key="login"
-            app:title="Логин"
-            app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        app:key="login"
+        app:title="Логин"
+        app:useSimpleSummaryProvider="true" />
 
-        <EditTextPreference
-            app:key="password"
-            app:title="Пароль"
-            app:useSimpleSummaryProvider="true" />
+    <EditTextPreference
+        app:key="password"
+        app:title="Пароль"
+        app:useSimpleSummaryProvider="true" />
 
-        <EditTextPreference
-            app:key="vol_weight"
-            app:title="Объемный вес"
-            app:useSimpleSummaryProvider="true" />
-    </PreferenceCategory>
+    <EditTextPreference
+        app:key="vol_weight"
+        app:title="Объемный вес"
+        app:useSimpleSummaryProvider="true" />
+</PreferenceCategory>
 
 </PreferenceScreen>
 

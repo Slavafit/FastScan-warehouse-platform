@@ -9,10 +9,11 @@ class TokenManager(private val appContext: Context) {
     private val prefs: SharedPreferences =
         appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
 
-    fun saveTokens(bearer: String, refresh: String) {
+    // Сохраняем токены в SharedPreferences
+    fun saveTokens(accessToken: String, refreshToken: String) {
         prefs.edit().apply {
-            putString("bearer_token", bearer)
-            putString("refresh_token", refresh)
+            putString("bearer_token", accessToken)
+            putString("refresh_token", refreshToken)
             apply()
         }
     }
@@ -23,13 +24,18 @@ class TokenManager(private val appContext: Context) {
 
     fun clear() = prefs.edit().clear().apply()
 
+    // Исправленный метод обновления токена
     suspend fun refreshToken(): Boolean {
         val refresh = getRefreshToken() ?: return false
-        val apiService = NetworkModule.createService(appContext)  // Создаём временный service
+        val apiService = NetworkModule.createService(appContext)
         try {
-            val res = apiService.refresh(mapOf("refresh_token" to refresh))  // Предполагаю метод в OnzaApiService
-            if (res.isSuccessful && res.body()?.bearer != null) {
-                saveTokens(res.body()!!.bearer!!, res.body()!!.refreshBearer ?: "")
+            // Отправляем текущий refresh_token на сервер
+            val res = apiService.refresh(mapOf("refresh_token" to refresh))
+
+            // ПРОВЕРКА: используем accessToken и refreshToken из нового ответа
+            if (res.isSuccessful && res.body()?.accessToken != null) {
+                val body = res.body()!!
+                saveTokens(body.accessToken!!, body.refreshToken ?: "")
                 return true
             }
         } catch (e: Exception) {

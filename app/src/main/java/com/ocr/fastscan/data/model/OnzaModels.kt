@@ -8,14 +8,17 @@ import java.util.Locale
 
 // Для авторизации
 data class AuthResponse(
-    @SerializedName("bearer")
-    val bearer: String?,
+    @SerializedName("success")
+    val success: Boolean,
 
-    @SerializedName("refresh_bearer")
-    val refreshBearer: String? = null,
+    @SerializedName("accessToken")
+    val accessToken: String?,  // Именно так возвращает сервер
 
-    @SerializedName("status")
-    val status: String? = null
+    @SerializedName("refreshToken")
+    val refreshToken: String?, // Именно так возвращает сервер
+
+    @SerializedName("role")
+    val role: String?
 )
 // Данные из GET запроса по треку (приходит массив []) Для получения данных о клиенте
 data class OrderDetails(

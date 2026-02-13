@@ -61,7 +61,15 @@ class MainActivity : AppCompatActivity() {
             binding.etTracking.setText(generated)
             binding.btnPrint.visibility = View.VISIBLE
         }
-
+        //Печать
+        binding.btnPrint.setOnClickListener {
+            val track = binding.etTracking.text.toString()
+            val client = binding.etClientCode.text.toString()
+            val weight = binding.etWeight.text.toString()
+            if (track.isNotEmpty()) {
+                printHelper.printLabel(track, client, weight)
+            }
+        }
         binding.btnSubmit.setOnClickListener { submitFinalOrder() }
 
         binding.btnTestLogin.setOnClickListener {
@@ -90,46 +98,47 @@ class MainActivity : AppCompatActivity() {
             "weight" -> binding.etWeight.setText(value)
         }
     }
-
+    //Запрашивает full_name при сканировании KG.
+    private fun fetchReceiverByCode(kgCode: String) {
+        lifecycleScope.launch {
+            try {
+                val response = apiService.getReceiverByCode(kgCode)
+                if (response.isSuccessful && response.body() != null) {
+                    val fullName = response.body()?.fullName
+                    binding.tvClientName.text = fullName ?: "Клиент найден"
+                    binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark))
+                    soundManager.playSuccess()
+                } else {
+                    binding.tvClientName.text = "Код KG не найден"
+                    binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
+                }
+            } catch (e: Exception) {
+                Log.e("API_KG", "Error: ${e.message}")
+            }
+        }
+    }
+    //Запрашивает full_name при сканировании KG.
     private fun fetchOrderInfo(tcode: String) {
         lifecycleScope.launch {
             try {
-                // 1. Делаем запрос
                 val response = apiService.getOrderDetails(tcode)
-                val details = response.body()!!
 
-                // 2. Проверяем успех
                 if (response.isSuccessful && response.body() != null) {
-
-                    // А. Имя клиента (из поля "client")
-                    val name = details.clientName ?: "Имя не указано"
-                    binding.tvClientName.text = name
+                    val details = response.body()!!
+                    // ТРЕК НАЙДЕН - заполняем всё автоматически
+                    binding.tvClientName.text = details.clientName ?: "Имя не указано"
                     binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark))
-
-                    // Б. Код клиента (KG)
-                    // Если пришел null, оставляем поле пустым или ставим ""
                     binding.etClientCode.setText(details.clientCode ?: "")
-
-                    // В. Коробка (with_box)
-                    // Сервер может вернуть 1 (Int) или "1" (String), обрабатываем оба варианта
-                    val boxValue = details.withBox.toString()
-                    binding.cbWithBox.isChecked = (boxValue == "1" || boxValue == "true")
-
-                    // Г. Вес НЕ ТРОГАЕМ (очищаем или оставляем как есть)
-                    // binding.etWeight.text.clear() // Раскомментируй, если надо очищать старый вес
+                    binding.cbWithBox.isChecked = (details.withBox.toString() == "1" || details.withBox.toString() == "true")
 
                     soundManager.playSuccess()
-                    Toast.makeText(this@MainActivity, "Данные загружены", Toast.LENGTH_SHORT).show()
-
+                    Toast.makeText(this@MainActivity, "Трек найден: Сценарий А", Toast.LENGTH_SHORT).show()
                 } else {
-                    // Если трек не найден (404 или пусто)
-                    binding.tvClientName.text = "Трек не найден (введите KG)"
-                    binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_blue_dark))
-                    // Очищаем KG, чтобы не осталось от предыдущего скана
-                    binding.etClientCode.text.clear()
-                    binding.cbWithBox.isChecked = false
+                    // ТРЕК НЕ НАЙДЕН (Пустой ответ) - Переходим к Сценарию Б
+                    handleTrackNotFound()
                 }
             } catch (e: Exception) {
+                handleTrackNotFound() // При ошибке сети тоже разрешаем ручной ввод KG
                 Log.e("FetchInfo", "Error: ${e.message}")
                 binding.tvClientName.text = "Ошибка сети"
                 binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
@@ -137,20 +146,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun handleScanResult(mode: String, value: String) {
-        soundManager.playScanBeep()
-        when (mode) {
-            "barcode" -> {
-                binding.etTracking.setText(value)
-                fetchOrderInfo(value) // Запрос по треку (уже есть)
-            }
-            "kg" -> {
-                binding.etClientCode.setText(value)
-                fetchClientByKgCode(value) // НОВЫЙ ЗАПРОС: по KG-коду
-            }
-            "weight" -> binding.etWeight.setText(value)
-        }
+    private fun handleTrackNotFound() {
+        binding.tvClientName.text = "Трек не в базе. Отсканируйте KG код"
+        binding.tvClientName.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
+        binding.etClientCode.text.clear()
+        binding.cbWithBox.isChecked = false
     }
 
     private fun fetchClientByKgCode(kgCode: String) {
@@ -229,33 +229,43 @@ class MainActivity : AppCompatActivity() {
 
     private fun performAutoLogin() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val login = prefs.getString("login", "") ?: ""
-        val pass = prefs.getString("password", "") ?: ""
-        if (login.isEmpty() || pass.isEmpty()) {
-            Toast.makeText(this, "Логин/пароль пустые в настройках", Toast.LENGTH_LONG).show()
-            return
-        }
-        if (login.isNotEmpty() && pass.isNotEmpty()) {
+        val loginVal = prefs.getString("login", "") ?: ""
+        val passVal = prefs.getString("password", "") ?: ""
+
+        if (loginVal.isNotEmpty() && passVal.isNotEmpty()) {
             lifecycleScope.launch {
                 try {
-                    val res = apiService.login(mapOf("login" to login, "password" to pass))
-                    Log.d("AutoLogin", "Response code: ${res.code()}")
-                    if (res.isSuccessful && res.body()?.bearer != null) {
-                        tokenManager.saveTokens(res.body()!!.bearer!!, res.body()!!.refreshBearer ?: "")
-                        Toast.makeText(this@MainActivity, "Авто-логин OK!", Toast.LENGTH_SHORT).show()
+                    // Отправляем ключи "login" и "password", как в Postman
+                    val response = apiService.login(mapOf(
+                        "login" to loginVal,
+                        "password" to passVal
+                    ))
+
+                    if (response.isSuccessful) {
+                        val authData = response.body()
+                        // Проверяем accessToken (новое имя поля)
+                        if (authData?.accessToken != null) {
+                            tokenManager.saveTokens(
+                                authData.accessToken,
+                                authData.refreshToken ?: ""
+                            )
+                            Log.d("Auth", "Успешный вход! Токен сохранен.")
+                            Toast.makeText(this@MainActivity, "Успешный вход!", Toast.LENGTH_SHORT).show()
+
+                        } else {
+                            Log.e("Auth", "Ошибка: accessToken пуст в ответе")
+                        }
                     } else {
-                        val errorBody = res.errorBody()?.string() ?: "No body"
-                        Log.e("AutoLoginError", "Code ${res.code()}, Body: $errorBody")
-                        Toast.makeText(this@MainActivity, "Авто-логин ошибка: ${res.code()} - $errorBody", Toast.LENGTH_LONG).show()
+                        Log.e("Auth", "Ошибка сервера: ${response.code()}")
                     }
-                    //res.body()?.bearer?.let { tokenManager.saveTokens(it, "") }
                 } catch (e: Exception) {
-                Log.e("AutoLoginError", "Exception: ${e.message}", e)
-                Toast.makeText(this@MainActivity, "Сеть: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Log.e("Auth", "Ошибка сети при логине: ${e.message}")
                 }
             }
         }
     }
+
+
     private fun showVolumeDialog() {
         val dialogBinding = DialogVolumeBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(this).setView(dialogBinding.root).create()

@@ -22,10 +22,10 @@ data class AuthResponse(
 )
 // Данные из GET запроса по треку (приходит массив []) Для получения данных о клиенте
 data class OrderDetails(
-    @SerializedName("client_code") val clientCode: String?,
     @SerializedName("client") val clientName: String?,
+    @SerializedName("client_code") val clientCode: String?,
     @SerializedName("with_box") val withBox: String?, // Приходит "1", "0" или null
-    @SerializedName("gross_weight") val grossWeight: Double?
+    @SerializedName("gross_weight") val grossWeight: String?
 )
 data class ReceiverResponse(
     @SerializedName("full_name") val fullName: String?

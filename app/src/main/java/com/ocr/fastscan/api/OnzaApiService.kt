@@ -14,8 +14,7 @@ interface OnzaApiService {
 
     // Сценарий А: Поиск по треку (возвращает объект OrderDetails)
     @GET("/api/order/order-tracking-code")
-    suspend fun getOrderDetails(@Query("tcode") tcode: String): Response<OrderDetails>
-    //suspend fun getOrderDetails(@Query("tcode") tcode: String): Response<List<OrderDetails>>
+    suspend fun getOrderDetails(@Query("tcode") tcode: String): Response<List<OrderDetails>>
 
     @POST("/api/order/set-user")
     suspend fun saveOrder(@Body data: SaveOrderRequest): Response<SaveResponse>

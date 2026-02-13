@@ -8,19 +8,34 @@ class FirebaseManager {
     private val db = FirebaseFirestore.getInstance()
     private val collectionPath = "shipments"
 
+    fun checkTrackExists(tracking: String, onResult: (Boolean) -> Unit) {
+        db.collection("shipments") // Убедитесь, что имя коллекции совпадает
+            .whereEqualTo("tracking", tracking)
+            .get()
+            .addOnSuccessListener { documents ->
+                onResult(!documents.isEmpty) // Возвращает true, если список документов не пуст
+            }
+            .addOnFailureListener {
+                onResult(false) // В случае ошибки считаем, что не нашли
+            }
+    }
+
+
+
     fun saveShipment(
         shipment: FirestoreShipment,
         onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit
-    ) {
-        db.collection(collectionPath)
-            .add(shipment)
+        onFailure: (Exception) -> Unit)
+    {
+        db.collection("shipments")
+            .document(shipment.trackingNumber) // Устанавливаем ID документа равным номеру трека
+            .set(shipment) // .set перезапишет данные, если ID уже существует
             .addOnSuccessListener {
-                Log.d("FirebaseManager", "Data saved to Firestore: ${shipment.trackingNumber}")
+                Log.d("FirebaseManager", "Data saved/updated in Firestore: ${shipment.trackingNumber}")
                 onSuccess()
             }
             .addOnFailureListener { e ->
-                Log.e("FirebaseManager", "Error saving to Firestore", e)
+                Log.e("FirebaseManager", "Error saving data", e)
                 onFailure(e)
             }
     }

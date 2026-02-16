@@ -19,14 +19,23 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
     private val cameraExecutor = Executors.newSingleThreadExecutor()
     private var mode = "barcode" // barcode, kg, weight
-    private var isProcessing = false // Чтобы не сканировать 100 раз в секунду
+    private var isProcessing = false // Блокировка от двойных срабатываний
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        mode = intent.getStringExtra("mode") ?: "barcode"
+        // 1. Получаем режим из Intent
+        mode = intent.getStringExtra("scan_mode") ?: "barcode"
+        Log.d("DEBUG_SCAN", "CameraActivity запущен в режиме: $mode")
+
+        // 2. Настраиваем подсказку
+        binding.tvHint.text = when(mode) {
+            "kg" -> "Наведите на код клиента (KG...)"
+            "weight" -> "Наведите на цифры веса (0.00)"
+            else -> "Наведите на штрих-код"
+        }
 
         if (allPermissionsGranted()) {
             startCamera()
@@ -40,62 +49,53 @@ class CameraActivity : AppCompatActivity() {
 
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
+
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
             }
 
-            // Выбираем анализатор в зависимости от режима
-            val imageAnalyzer = ImageAnalysis.Builder()
+            // Настройщик анализатора
+            val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-                .also { analysis ->
-                    analysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                        if (!isProcessing) {
-                            if (mode == "barcode") {
-                                processBarcode(imageProxy)
-                            } else {
-                                processText(imageProxy) // KG или Вес
-                            }
-                        } else {
-                            imageProxy.close()
-                        }
-                    }
+
+            // ГЛАВНОЕ ИСПРАВЛЕНИЕ:
+            // Выбираем, какой анализатор подключить, в зависимости от режима
+            val myAnalyzer: ImageAnalysis.Analyzer = if (mode == "barcode") {
+                // Если режим штрихкода
+                BarcodeAnalyzer { result ->
+                    returnResult(result)
                 }
+            } else {
+                // Если режим "kg" или "weight" — используем OCR
+                // Мы передаем 'mode' внутрь, чтобы OcrAnalyzer знал, какой Regex применить
+                OcrAnalyzer(mode) { result ->
+                    returnResult(result)
+                }
+            }
+
+            imageAnalysis.setAnalyzer(cameraExecutor, myAnalyzer)
 
             try {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
-                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalyzer
+                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalysis
                 )
             } catch (exc: Exception) {
-                Log.e("Camera", "Use case binding failed", exc)
+                Log.e("Camera", "Ошибка запуска камеры", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    // Обработка штрих-кода
-    private fun processBarcode(imageProxy: ImageProxy) {
-        val analyzer = BarcodeAnalyzer { result ->
-            returnResult(result)
-        }
-        analyzer.analyze(imageProxy)
-    }
-
-    // Обработка текста (OCR)
-    private fun processText(imageProxy: ImageProxy) {
-        val analyzer = OcrAnalyzer(mode) { result ->
-            returnResult(result)
-        }
-        analyzer.analyze(imageProxy)
-    }
-
     private fun returnResult(value: String) {
+        if (isProcessing) return
         isProcessing = true
-        val intent = Intent()
-        intent.putExtra("scan_result", value)
-        intent.putExtra("scan_mode", mode)
-        setResult(RESULT_OK, intent)
-        finish() // Закрываем камеру и возвращаемся назад
+
+        val resultIntent = Intent()
+        resultIntent.putExtra("scan_result", value)
+        resultIntent.putExtra("scan_mode", mode) // Возвращаем режим обратно, чтобы MainActivity знала, куда вставить текст
+        setResult(RESULT_OK, resultIntent)
+        finish()
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -107,7 +107,7 @@ class CameraActivity : AppCompatActivity() {
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            Toast.makeText(this, "Нужен доступ к камере", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Нет доступа к камере", Toast.LENGTH_SHORT).show()
             finish()
         }
     }

@@ -79,9 +79,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnSubmit.setOnClickListener { submitFinalOrder() }
 
         // Тестовые кнопки
-        binding.btnTestLogin.setOnClickListener {
-            performAutoLogin()
-        }
+//        binding.btnTestLogin.setOnClickListener {
+//            performAutoLogin()
+//        }
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
             Toast.makeText(this, "Токены очищены", Toast.LENGTH_SHORT).show()
@@ -300,9 +300,10 @@ class MainActivity : AppCompatActivity() {
         binding.btnPrint.visibility = View.GONE
     }
 
-    private fun launchCamera(mode: String) {
+    private fun launchCamera(scanMode: String) {
         val intent = Intent(this, CameraActivity::class.java)
-        intent.putExtra("scan_mode", mode)
+        intent.putExtra("scan_mode", scanMode)
+        Log.d("DEBUG_SCAN", "MainActivity отправляет scan_mode: $scanMode")
         scanLauncher.launch(intent)
     }
 

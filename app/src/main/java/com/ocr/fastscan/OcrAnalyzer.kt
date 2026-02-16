@@ -1,5 +1,6 @@
 package com.ocr.fastscan
 
+import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.google.mlkit.vision.common.InputImage
@@ -24,26 +25,34 @@ class OcrAnalyzer(
 
         recognizer.process(image)
             .addOnSuccessListener { visionText ->
-                val rawText = visionText.text.replace("\n", " ")
-
+                val rawText = visionText.text
+                Log.d("с", "Распознанный текст: $rawText")  // Посмотри в Logcat, что видит камера
+                // Логика поиска зависит от режима, который передала CameraActivity
                 when (mode) {
                     "kg" -> {
-                        // Ищем KG и вырезаем только цифры через группу (\\d+)
-                        val pattern = Pattern.compile("KG(\\d{4,6})", Pattern.CASE_INSENSITIVE)
+                        // Ищем KG и цифры (KG123456)
+                        // (?i) означает игнорирование регистра (kg, KG, Kg)
+                        val pattern = Pattern.compile("KG\\s?(\\d{4,6})", Pattern.CASE_INSENSITIVE)
                         val matcher = pattern.matcher(rawText)
                         if (matcher.find()) {
-                            onResult(matcher.group(0)!!.uppercase())
+                            // Возвращаем полный код (KG + цифры), убрав пробелы и сделав CAPS
+                            val result = matcher.group(0)?.replace(" ", "")?.uppercase() ?: ""
+                            onResult(result)
                         }
                     }
                     "weight" -> {
-                        // Ищем цифры с точкой (например 12.50)
+                        // Ищем вес: цифры, точка, цифры (например, 0.65 или 12.5)
                         val pattern = Pattern.compile("\\d+\\.\\d+")
                         val matcher = pattern.matcher(rawText)
                         if (matcher.find()) {
-                            onResult(matcher.group())
+                            val result = matcher.group()
+                            onResult(result)
                         }
                     }
                 }
+            }
+            .addOnFailureListener { e ->
+                Log.e("OCR Analyzer", "Ошибка распознавания", e)
             }
             .addOnCompleteListener {
                 imageProxy.close()

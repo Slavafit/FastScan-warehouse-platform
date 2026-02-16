@@ -37,7 +37,12 @@
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Трек-код" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/etTracking" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="Скан или ввод..." />
+            <EditText android:id="@+id/etTracking"
+                android:singleLine="true"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Скан или ввод..." />
             <ImageButton android:id="@+id/btnScanTrack" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
             <ImageButton android:id="@+id/btnPrint" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_save" android:visibility="gone" />
         </LinearLayout>
@@ -55,7 +60,14 @@
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Код клиента (KG)" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/etClientCode" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="KG123456" />
+            <EditText android:id="@+id/etClientCode"
+                android:inputType="textCapCharacters"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="KG123456" />
             <ImageButton android:id="@+id/btnScanKg" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
         </LinearLayout>
 
@@ -83,13 +95,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="ТЕСТ LOGIN"
-            android:layout_marginTop="16dp"/>
-        <!--android:visibility="gone" />  По умолчанию скрыта, покажем в коде -->
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
         <Button android:id="@+id/btnLogout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="LOGOUT"
-            android:layout_marginTop="16dp"/>
-        <!--android:visibility="gone" />  FIX: Скрыта по умолчанию -->
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

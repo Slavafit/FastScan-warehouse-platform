@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -18,6 +19,8 @@ import com.ocr.fastscan.databinding.ActivityMainBinding
 import com.ocr.fastscan.databinding.DialogVolumeBinding
 import com.ocr.fastscan.utils.*
 import kotlinx.coroutines.launch
+import android.view.inputmethod.EditorInfo
+import android.view.KeyEvent
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,9 +43,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setupButtons()
         performAutoLogin()
+
     }
 
     private fun setupButtons() {
@@ -78,14 +82,27 @@ class MainActivity : AppCompatActivity() {
         // Отправка
         binding.btnSubmit.setOnClickListener { submitFinalOrder() }
 
-        // Тестовые кнопки
-//        binding.btnTestLogin.setOnClickListener {
-//            performAutoLogin()
-//        }
+        //Logout
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
             Toast.makeText(this, "Токены очищены", Toast.LENGTH_SHORT).show()
             clearFields()
+        }
+
+        // NEW: Listener для Enter в etClientCode
+        binding.etClientCode.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+                val clientCode = binding.etClientCode.text.toString().trim().uppercase()
+                if (clientCode.startsWith("KG") && clientCode.length >= 4) {  // Простая валидация
+                    fetchClientByKgCode(clientCode)  // Вызов твоей функции
+                    true  // Обработано, клавиатура закроется
+                } else {
+                    Toast.makeText(this, "Неверный формат KG-кода (например, KG123456)", Toast.LENGTH_SHORT).show()
+                    false
+                }
+            } else {
+                false
+            }
         }
     }
 
@@ -94,7 +111,7 @@ class MainActivity : AppCompatActivity() {
     // ==========================================
 
     private fun handleScanResult(mode: String, value: String) {
-        Log.d("SCAN_DEBUG", "Mode: $mode, Value: $value") // Добавь это для проверки
+        //Log.d("SCAN_DEBUG", "Mode: $mode, Value: $value") // Добавь это для проверки
         if (value.isEmpty()) return
         soundManager.playScanBeep()
 
@@ -106,7 +123,6 @@ class MainActivity : AppCompatActivity() {
             "kg" -> {
                 binding.etClientCode.setText(value)
                 fetchClientByKgCode(value) // Запрос 2: ищем имя по коду
-                //fetchReceiverByCode(value) // Идем искать имя (Сценарий Б)
             }
             "weight" -> binding.etWeight.setText(value)
         }
@@ -156,6 +172,7 @@ class MainActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     // Здесь нам важно только поле "full_name"
                     val nameFromApi = response.body()?.fullName
+                    Log.d("fetchClientByKgCode", "kgCode: $nameFromApi")
 
                     if (!nameFromApi.isNullOrEmpty()) {
                         binding.tvClientName.text = nameFromApi
@@ -167,42 +184,6 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 Log.e("FetchKG", "Error: ${e.message}")
-            }
-        }
-    }
-
-    private fun handleTrackNotFound() {
-        binding.tvClientName.text = "Новый трек. Сканируйте KG"
-        binding.tvClientName.setTextColor(ContextCompat.getColor(this, android.R.color.holo_orange_dark))
-        binding.etClientCode.text.clear()
-        binding.etWeight.text.clear() // Очищаем старый вес
-        binding.cbWithBox.isChecked = false
-    }
-
-    // ==========================================
-    // СЦЕНАРИЙ Б: ПОИСК ПО КОДУ КЛИЕНТА
-    // ==========================================
-
-    private fun fetchReceiverByCode(kgCode: String) {
-        lifecycleScope.launch {
-            try {
-                val response = apiService.getReceiverByCode(kgCode)
-                if (response.isSuccessful && response.body() != null) {
-                    val fullName = response.body()?.fullName
-                    if (!fullName.isNullOrEmpty()) {
-                        binding.tvClientName.text = fullName
-                        binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark))
-                        soundManager.playSuccess()
-                    } else {
-                        binding.tvClientName.text = "Имя для $kgCode пустое"
-                        binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
-                    }
-                } else {
-                    binding.tvClientName.text = "Код KG не найден"
-                    binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
-                }
-            } catch (e: Exception) {
-                Log.e("API_KG", "Error: ${e.message}")
             }
         }
     }
@@ -320,7 +301,8 @@ class MainActivity : AppCompatActivity() {
                         val authData = response.body()
                         if (authData?.accessToken != null) {
                             tokenManager.saveTokens(authData.accessToken, authData.refreshToken ?: "")
-                            Log.d("Auth", "Успешный вход! Токен сохранен.")
+                            Toast.makeText(this@MainActivity, "Успешный вход!", Toast.LENGTH_SHORT).show()
+                            //Log.d("Auth", "Успешный вход! Токен сохранен.")
                         }
                     }
                 } catch (e: Exception) {
@@ -340,7 +322,6 @@ class MainActivity : AppCompatActivity() {
                 val l = dialogBinding.etLength.text.toString().toDoubleOrNull() ?: 0.0
                 val w = dialogBinding.etWidth.text.toString().toDoubleOrNull() ?: 0.0
                 val h = dialogBinding.etHeight.text.toString().toDoubleOrNull() ?: 0.0
-                // Исправлено: теперь реально берем значение из настроек и используем в формуле
                 val divider = prefs.getString("vol_weight", "6000")?.toDoubleOrNull() ?: 6000.0
 
                 val res = (l * w * h) / divider

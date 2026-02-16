@@ -14,7 +14,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:keepScreenOn="true"
         tools:replace="android:label">
+
 
         <activity
             android:name=".MainActivity"

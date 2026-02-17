@@ -29,7 +29,7 @@ class CameraActivity : AppCompatActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // 1. Получаем режим из Intent
         mode = intent.getStringExtra("scan_mode") ?: "barcode"
-        Log.d("DEBUG_SCAN", "CameraActivity запущен в режиме: $mode")
+        //Log.d("DEBUG_SCAN", "CameraActivity запущен в режиме: $mode")
 
         // 2. Настраиваем подсказку
         binding.tvHint.text = when(mode) {

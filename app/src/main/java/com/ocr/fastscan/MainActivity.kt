@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -13,15 +15,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
+import com.google.gson.Gson
 import com.ocr.fastscan.api.NetworkModule
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.ActivityMainBinding
 import com.ocr.fastscan.databinding.DialogVolumeBinding
 import com.ocr.fastscan.utils.*
 import kotlinx.coroutines.launch
-import android.view.inputmethod.EditorInfo
-import android.view.KeyEvent
-import com.google.gson.Gson
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private val soundManager by lazy { SoundManager(this) }
     private val printHelper by lazy { PrintHelper(this) }
     private val tokenManager by lazy { TokenManager(this) }
+
     private var currentReceiverGuid: String? = null
 
     private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -45,10 +49,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        setupButtons()
-        performAutoLogin()
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        setupButtons()
+        setupClientCodeInput()   // Авто-KG + только цифры
+        performAutoLogin()
     }
 
     private fun setupButtons() {
@@ -56,105 +62,125 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        // Кнопки сканирования
         binding.btnScanTrack.setOnClickListener { launchCamera("barcode") }
         binding.btnScanKg.setOnClickListener { launchCamera("kg") }
         binding.btnScanWeight.setOnClickListener { launchCamera("weight") }
 
-        // Калькулятор объема
         binding.btnVolumeCalc.setOnClickListener { showVolumeDialog() }
 
-        // Генерация трека
         binding.btnGenerateOnza.setOnClickListener {
             val generated = "ONZA${System.currentTimeMillis().toString().takeLast(8)}"
             binding.etTracking.setText(generated)
             binding.btnPrint.visibility = View.VISIBLE
         }
 
-        // Печать
         binding.btnPrint.setOnClickListener {
-            val track = binding.etTracking.text.toString()
-            val client = binding.etClientCode.text.toString()
-            val weight = binding.etWeight.text.toString()
-            if (track.isNotEmpty()) {
-                printHelper.printLabel(track, client, weight)
-            }
+            printHelper.printLabel(
+                binding.etTracking.text.toString(),
+                binding.etClientCode.text.toString(),
+                binding.etWeight.text.toString()
+            )
         }
 
-        // Отправка
         binding.btnSubmit.setOnClickListener { submitFinalOrder() }
 
-        //Logout
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
             Toast.makeText(this, "Токены очищены", Toast.LENGTH_SHORT).show()
             clearFields()
         }
+    }
 
-        // NEW: Listener для Enter в etClientCode
-        binding.etClientCode.setOnEditorActionListener { v, actionId, event ->
-            if (actionId == EditorInfo.IME_ACTION_DONE || (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
-                val clientCode = binding.etClientCode.text.toString().trim().uppercase()
-                if (clientCode.startsWith("KG") && clientCode.length >= 4) {  // Простая валидация
-                    fetchClientByKgCode(clientCode)  // Вызов твоей функции
-                    true  // Обработано, клавиатура закроется
+    // ==================== Авто "KG" + только цифры ====================
+    private fun setupClientCodeInput() {
+        binding.etClientCode.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+        binding.etClientCode.imeOptions = EditorInfo.IME_ACTION_DONE
+
+        binding.etClientCode.addTextChangedListener(object : android.text.TextWatcher {
+            private var isUpdating = false
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: android.text.Editable?) {
+                if (isUpdating) return
+                isUpdating = true
+
+                val digits = s.toString().replace(Regex("[^0-9]"), "")
+                val fullCode = if (digits.isNotEmpty()) "KG$digits" else ""
+
+                if (fullCode != s.toString()) {
+                    binding.etClientCode.setText(fullCode)
+                    binding.etClientCode.setSelection(fullCode.length)
+                }
+                isUpdating = false
+            }
+        })
+
+        binding.etClientCode.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
+
+                val code = binding.etClientCode.text.toString().trim()
+                if (code.startsWith("KG") && code.length >= 6) {
+                    fetchClientByKgCode(code)
+                    true
                 } else {
-                    Toast.makeText(this, "Неверный формат KG-кода (например, KG123456)", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Введите минимум 4 цифры после KG", Toast.LENGTH_SHORT).show()
                     false
                 }
-            } else {
-                false
-            }
+            } else false
         }
     }
 
-    // ==========================================
-    // ЛОГИКА СКАНИРОВАНИЯ И МАРШРУТИЗАЦИИ
-    // ==========================================
-
+    // ==================== Сканирование ====================
     private fun handleScanResult(mode: String, value: String) {
-        //Log.d("SCAN_DEBUG", "Mode: $mode, Value: $value") // Добавь это для проверки
         if (value.isEmpty()) return
         soundManager.playScanBeep()
 
         when (mode) {
             "barcode" -> {
                 binding.etTracking.setText(value)
-                fetchOrderInfo(value) // Запрос 1: ищем трек
+                fetchOrderInfo(value)
             }
             "kg" -> {
-                binding.etClientCode.setText(value)
-                fetchClientByKgCode(value) // Запрос 2: ищем имя по коду
+                val cleanCode = value.trim().uppercase()
+                binding.etClientCode.setText(cleanCode)
+                fetchClientByKgCode(cleanCode)
             }
             "weight" -> binding.etWeight.setText(value)
         }
     }
 
-    // ==========================================
-    // ЗАПРОС 1: ПО ТРЕКУ (/order-tracking-code)
-    // ==========================================
+    // ==================== ЗАПРОС 1: Трек ====================
     private fun fetchOrderInfo(tcode: String) {
         lifecycleScope.launch {
             try {
                 val response = apiService.getOrderDetails(tcode)
                 if (response.isSuccessful && !response.body().isNullOrEmpty()) {
                     val details = response.body()!![0]
-                    Log.d("SCAN_DEBUG", "Mode: $details") // Добавь это для проверки
 
-                    // 1. Заполняем имя из поля "client"
                     binding.tvClientName.text = details.clientName ?: "Имя не указано"
                     binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark))
 
-                    // 2. Заполняем остальные поля
                     binding.etClientCode.setText(details.clientCode ?: "")
-                    binding.etWeight.setText(details.grossWeight ?: "")
+                    binding.etWeight.setText(details.grossWeight?.toString() ?: "")
 
-                    val boxValue = details.withBox.toString()
-                    binding.cbWithBox.isChecked = (boxValue == "1" || boxValue == "true")
+                    // Чекбокс — только индикатор
+                    binding.cbWithBox.isChecked = when (details.withBox) {
+                        "1", -> true
+                        else -> false
+                    }
+                    //binding.cbWithBox.isChecked = details.withBox == "1" || details.withBox == true
+                    binding.cbWithBox.isEnabled = false
+                    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
+                    // Сохраняем user_guid из ответа трека
+                    currentReceiverGuid = details.userGuid
+                    Log.d("GUID_DEBUG", "Получен user_guid: $currentReceiverGuid")
+                    // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
                     soundManager.playSuccess()
                 } else {
-                    // Если трек не найден
                     binding.tvClientName.text = "Трек не найден. Сканируйте KG"
                     binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_orange_dark))
                     binding.etClientCode.text.clear()
@@ -165,168 +191,105 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // ==========================================
-// ЗАПРОС 2: ПО КОДУ КЛИЕНТА (/common/reciever)
-// ==========================================
+    // ==================== ЗАПРОС 2: Код клиента ====================
     private fun fetchClientByKgCode(kgCode: String) {
         lifecycleScope.launch {
             try {
                 val response = apiService.getReceiverByCode(kgCode)
 
-                Log.d("FetchKG", "Код запроса: $kgCode | HTTP ${response.code()}")
-
                 if (response.isSuccessful && response.body() != null) {
-                    val receivers = response.body()!!  // List<ReceiverResponse>
-
+                    val receivers = response.body()!!
                     if (receivers.isNotEmpty()) {
                         val first = receivers[0]
                         val fullName = first.fullName?.trim() ?: "Имя не указано"
-                        currentReceiverGuid = first.recieverGuid  // ← сохраняем GUID
-                        Log.d("DEBUG_SCAN", "FetchClientByKgCode: full_name = $fullName")
+                        currentReceiverGuid = first.recieverGuid
 
-                        // Успех: показываем имя клиента
                         binding.tvClientName.text = fullName
-                        binding.tvClientName.setTextColor(
-                            ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark)
-                        )
-                        Toast.makeText(this@MainActivity, "Клиент: $fullName", Toast.LENGTH_SHORT).show()
+                        binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_green_dark))
                         soundManager.playSuccess()
                     } else {
-                        // Массив пустой
-                        Log.d("FetchKG", "Массив пустой")
                         binding.tvClientName.text = "Клиент не найден"
-                        binding.tvClientName.setTextColor(
-                            ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark)
-                        )
-                        Toast.makeText(this@MainActivity, "Клиент не найден", Toast.LENGTH_SHORT).show()
+                        binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
                     }
                 } else {
-                    // Неуспешный HTTP-ответ (400, 404, 500 и т.д.)
-                    val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
-                    Log.e("FetchKG", "Ошибка сервера: ${response.code()} → $errorBody")
-
-                    binding.tvClientName.text = "Ошибка сервера ${response.code()}"
-                    binding.tvClientName.setTextColor(
-                        ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark)
-                    )
-                    Toast.makeText(this@MainActivity, "Ошибка: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    binding.tvClientName.text = "Ошибка сервера"
+                    binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
                 }
             } catch (e: Exception) {
-                // Сетевая ошибка, таймаут, Gson не смог распарсить и т.д.
                 Log.e("FetchKG", "Исключение: ${e.message}", e)
-
                 binding.tvClientName.text = "Сеть ошибка"
-                binding.tvClientName.setTextColor(
-                    ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark)
-                )
-                Toast.makeText(this@MainActivity, "Сеть: ${e.message}", Toast.LENGTH_SHORT).show()
+                binding.tvClientName.setTextColor(ContextCompat.getColor(this@MainActivity, android.R.color.holo_red_dark))
             }
         }
     }
 
-    // ==========================================
-    // ФИНАЛЬНАЯ ОТПРАВКА (Firebase + API)
-    // ==========================================
+    // ==================== ФИНАЛЬНАЯ ОТПРАВКА ====================
     private fun submitFinalOrder() {
         val track = binding.etTracking.text.toString().trim()
         val kg = binding.etClientCode.text.toString().trim().uppercase()
         val weightStr = binding.etWeight.text.toString().trim()
-        val nameToSave = binding.tvClientName.text.toString().trim()
+        //Log.d("SubmitDebug", "track='$track', kg='$kg', weight='$weightStr', guid=$currentReceiverGuid")
+        if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
 
-        // Валидация веса и конвертация в Double?
-        val grossWeight = try {
-            weightStr.toDoubleOrNull() ?: throw IllegalArgumentException("Неверный вес")
-        } catch (e: Exception) {
-            Toast.makeText(this, "Введите корректный вес (например 0.32)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (grossWeight <= 0) {
-            Toast.makeText(this, "Вес должен быть больше 0", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (track.isEmpty() || kg.isEmpty() || weightStr.isEmpty()) {
-            Toast.makeText(this, "Заполните все данные!", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val grossWeight = weightStr.toDoubleOrNull() ?: 0.0
 
         binding.btnSubmit.isEnabled = false
-        binding.btnSubmit.text = "Проверка..."
+        binding.btnSubmit.text = "Отправка..."
 
-        // ШАГ 1: Проверяем, есть ли такой трек в Firebase
-        firebaseManager.checkTrackExists(track) { exists ->
-            if (exists) {
-                // Если трек уже есть, не дублируем в Firebase, а сразу шлем в API
-                Log.d("Firebase", "Трек $track уже существует, пропускаем запись в облако")
-                sendToApi(kg, nameToSave, track, grossWeight)
+        val req = SaveOrderRequest(
+            clientCode = kg,
+            clientName = binding.tvClientName.text.toString(),   // оставляем для Firestore
+            trackingNumber = track,
+            grossWeight = grossWeight,
+            recieverGuid = currentReceiverGuid!!,
+            userGuid = currentReceiverGuid!!,
+            withBox = if (binding.cbWithBox.isChecked) 1 else 0
+        )
 
-            } else {
-                // ШАГ 2: Если трека нет, сохраняем в Firebase
-                val weightDouble = weightStr.toDoubleOrNull() ?: 0.0
-                val fsData = FirestoreShipment(
-                    trackingNumber = track,
-                    clientCode = kg,
-                    clientName = nameToSave,
-                    weight = weightDouble
-                )
+        Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")
 
-                firebaseManager.saveShipment(fsData,
-                    onSuccess = {
-                        //Log.d("Firebase", "Новый трек сохранен")
-                        sendToApi(kg, nameToSave, track, grossWeight)
-                        Log.d("DEBUG_kg", " $kg")
-
-                    },
-                    onFailure = { e ->
-                        Log.e("Firebase", "Ошибка: ${e.message}")
-                        sendToApi(kg, nameToSave, track, grossWeight)
-                    }
-                )
-            }
-        }
-    }
-
-    private fun sendToApi(kg: String, name: String, track: String, grossWeight: Double, recieverGuid: String) {
         lifecycleScope.launch {
             try {
-                if (recieverGuid == null) {
-                    Toast.makeText(this@MainActivity, "Сначала отсканируйте/введите код клиента", Toast.LENGTH_LONG).show()
-                    return@launch
-                }
-                // Используем твои имена параметров для SaveOrderRequest
-                val req = SaveOrderRequest(
-                    clientCode = kg,
-                    clientName = name,
-                    recieverGuid = recieverGuid,
-                    trackingNumber = track,
-                    grossWeight = grossWeight,
-                    withBox = if (binding.cbWithBox.isChecked) "1" else "0"
-                )
-
                 val res = apiService.saveOrder(req)
-                Log.d("SaveOrderJSON", "Отправляемый JSON: ${Gson().toJson(req)}")
+
                 if (res.isSuccessful) {
                     soundManager.playSuccess()
                     Toast.makeText(this@MainActivity, "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
+                    // Сохраняем в Firebase (если нужно)
+                    val shipment = FirestoreShipment(
+                        trackingNumber = track,
+                        clientCode = kg,
+                        clientName = binding.tvClientName.text.toString(),
+                        weight = grossWeight,
+                        withBox = req.withBox.toString(),
+                        createdAt = com.google.firebase.Timestamp.now(),
+                        dateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+                    )
+                    firebaseManager.saveShipment(shipment, {
+                        Log.d("Firebase", "Сохранено в Firestore")
+                    }, { e ->
+                        Log.e("Firebase", "Ошибка сохранения: ${e.message}")
+                    })
                     clearFields()
+                    currentReceiverGuid = null
                 } else {
-                    soundManager.playError()
+                    val errorBody = res.errorBody()?.string() ?: "Нет тела"
+                    Log.e("SaveOrderError", "Код ${res.code()}: $errorBody")
                     Toast.makeText(this@MainActivity, "Ошибка API: ${res.code()}", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
-                soundManager.playError()
-                Toast.makeText(this@MainActivity, "Ошибка сети при отправке", Toast.LENGTH_SHORT).show()
+                Log.e("SaveOrder", "Исключение: ${e.message}", e)
+                Toast.makeText(this@MainActivity, "Ошибка сети", Toast.LENGTH_SHORT).show()
             } finally {
-                // Возвращаем кнопку в исходное состояние
                 binding.btnSubmit.isEnabled = true
                 binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
             }
         }
     }
-
-    // ==========================================
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // ==========================================
 
     private fun clearFields() {
         binding.etTracking.text.clear()
@@ -336,14 +299,15 @@ class MainActivity : AppCompatActivity() {
         binding.tvClientName.setTextColor(ContextCompat.getColor(this, android.R.color.black))
         binding.cbWithBox.isChecked = false
         binding.btnPrint.visibility = View.GONE
+        currentReceiverGuid = null
     }
 
-    private fun launchCamera(scanMode: String) {
+    private fun launchCamera(mode: String) {
         val intent = Intent(this, CameraActivity::class.java)
-        intent.putExtra("scan_mode", scanMode)
-        Log.d("DEBUG_SCAN", "MainActivity отправляет scan_mode: $scanMode")
+        intent.putExtra("scan_mode", mode)
         scanLauncher.launch(intent)
     }
+
 
     private fun performAutoLogin() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)

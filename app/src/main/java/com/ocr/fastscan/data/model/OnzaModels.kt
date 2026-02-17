@@ -28,7 +28,8 @@ data class OrderDetails(
     @SerializedName("gross_weight") val grossWeight: String?
 )
 data class ReceiverResponse(
-    @SerializedName("full_name") val fullName: String?
+    @SerializedName("full_name") val fullName: String?,
+    @SerializedName("reciever_guid")  val recieverGuid: String?
 )
 
 // Ответ при сохранении
@@ -49,4 +50,16 @@ data class FirestoreShipment(
     val createdAt: Timestamp = Timestamp.now(),
     // Поле для удобной фильтрации в реестре (например, "2026-02-09")
     val dateString: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+)
+
+// Для отправки финального POST запроса
+data class SaveOrderRequest(
+    @SerializedName("client_code") val clientCode: String,
+    @SerializedName("client") val clientName: String,
+    @SerializedName("tracking_number") val trackingNumber: String,
+    @SerializedName("gross_weight") val grossWeight: Double?,
+    @SerializedName("with_box") val withBox: Int?,
+    @SerializedName("reciever_guid") val recieverGuid: Double?,
+    @SerializedName("v_weight") val vWeight: Double? = null
+
 )

@@ -20,7 +20,7 @@ interface OnzaApiService {
     suspend fun saveOrder(@Body data: SaveOrderRequest): Response<SaveResponse>
     // запрос для получения имени по KG-коду
     @GET("/api/common/reciever")
-    suspend fun getReceiverByCode(@Query("client_code") clientCode: String): Response<ReceiverResponse>
+    suspend fun getReceiverByCode(@Query("client_code") clientCode: String): Response<List<ReceiverResponse>>
 
 
 

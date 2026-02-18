@@ -19,27 +19,39 @@
         android:padding="8dp"
         android:text="РЕЖИМ: Сканирование..." />
 
-    <!-- Кнопки регулировки экспозиции -->
+    <!-- Кнопки экспозиции (только для weight) -->
     <LinearLayout
+        android:id="@+id/exposureControls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="horizontal"
+        android:gravity="center"
         android:padding="16dp"
-        android:gravity="center">
+        android:visibility="gone">
 
         <Button
             android:id="@+id/btnDarker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Темнее (-)"
-            android:layout_marginEnd="16dp" />
+            android:text="Темнее (-)" />
 
         <Button
             android:id="@+id/btnBrighter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ярче (+)" />
+            android:text="Ярче (+)"
+            android:layout_marginStart="16dp" />
     </LinearLayout>
+
+    <!-- Кнопка фонарика (для barcode и kg) -->
+    <Button
+        android:id="@+id/btnFlashToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="80dp"
+        android:text="Фонарик ВКЛ"
+        android:visibility="gone" />
 
 </FrameLayout>

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -22,12 +23,15 @@ class CameraActivity : AppCompatActivity() {
     private var mode = "barcode"
     private var isProcessing = false
     private var cameraControl: CameraControl? = null
-    private var currentExposureIndex = 0
+    private var currentExposureIndex = -6
+    private var isFlashOn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         mode = intent.getStringExtra("scan_mode") ?: "barcode"
 
@@ -40,13 +44,26 @@ class CameraActivity : AppCompatActivity() {
             else -> "Наведите на штрих-код трека"
         }
 
-        // Кнопки регулировки экспозиции
-        binding.btnDarker.setOnClickListener {
-            adjustExposure(-2)
+        // Показываем нужные кнопки в зависимости от режима
+        when (mode) {
+            "weight" -> {
+                binding.exposureControls.visibility = View.VISIBLE
+                binding.btnFlashToggle.visibility = View.GONE
+            }
+            else -> {
+                binding.exposureControls.visibility = View.GONE
+                binding.btnFlashToggle.visibility = View.VISIBLE
+                binding.btnFlashToggle.text = "Фонарик ВКЛ"
+            }
         }
+        // Обработчики кнопок
+        binding.btnDarker.setOnClickListener { adjustExposure(-2) }
+        binding.btnBrighter.setOnClickListener { adjustExposure(2) }
 
-        binding.btnBrighter.setOnClickListener {
-            adjustExposure(+2)
+        binding.btnFlashToggle.setOnClickListener {
+            isFlashOn = !isFlashOn
+            setFlash(isFlashOn)
+            binding.btnFlashToggle.text = if (isFlashOn) "Фонарик ВЫКЛ" else "Фонарик ВКЛ"
         }
 
         if (allPermissionsGranted()) {
@@ -89,39 +106,30 @@ class CameraActivity : AppCompatActivity() {
 
                 cameraControl = camera.cameraControl
 
-                // Получаем диапазон экспозиции (для отладки)
-                val exposureState = camera.cameraInfo.exposureState
-                val range = exposureState.exposureCompensationRange
-                Log.d("EXPOSURE", "Диапазон компенсации: ${range.lower} .. ${range.upper}")
-
-                // Устанавливаем начальную компенсацию (отрицательное = темнее, меньше бликов)
-                setInitialExposure(-6)  // ← Здесь можно поменять на -6, -5, -3 и т.д.
-
+            // Начальная экспозиция только для режима weight
+                if (mode == "weight") {
+                    val exposureState = camera.cameraInfo.exposureState
+                    if (exposureState.isExposureCompensationSupported) {
+                        cameraControl?.setExposureCompensationIndex(currentExposureIndex)
+                        Log.d("CAMERA_EXPOSURE", "Экспозиция установлена: $currentExposureIndex")
+                    }
+                }
             } catch (exc: Exception) {
-                Log.e("Camera", "Binding failed", exc)
-                Toast.makeText(this, "Ошибка камеры", Toast.LENGTH_SHORT).show()
+                Log.e("Camera", "Ошибка запуска камеры", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun setInitialExposure(value: Int) {
-        cameraControl?.let { control ->
-            val clamped = value.coerceIn(-12, 12)  // Безопасные пределы
-            control.setExposureCompensationIndex(clamped)
-            currentExposureIndex = clamped
-            Log.d("EXPOSURE", "Установлена компенсация: $clamped")
-            Toast.makeText(this, "Экспозиция: $clamped", Toast.LENGTH_SHORT).show()
-        }
+    private fun adjustExposure(delta: Int) {
+        currentExposureIndex += delta
+        currentExposureIndex = currentExposureIndex.coerceIn(-20, 2)
+        cameraControl?.setExposureCompensationIndex(currentExposureIndex)
+        Log.d("CAMERA_EXPOSURE", "Новая экспозиция: $currentExposureIndex")
     }
 
-    private fun adjustExposure(delta: Int) {
-        cameraControl?.let { control ->
-            val newIndex = (currentExposureIndex + delta).coerceIn(-12, 2)
-            control.setExposureCompensationIndex(newIndex)
-            currentExposureIndex = newIndex
-            Log.d("EXPOSURE", "Новая компенсация: $newIndex")
-            Toast.makeText(this, "Экспозиция: $newIndex", Toast.LENGTH_SHORT).show()
-        }
+    private fun setFlash(on: Boolean) {
+        cameraControl?.enableTorch(on)
+        Log.d("CAMERA_FLASH", "Фонарик: ${if (on) "ВКЛ" else "ВЫКЛ"}")
     }
 
     private fun returnResult(value: String) {

@@ -15,7 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
-import com.google.gson.Gson
+import android.content.Context
+import android.view.inputmethod.InputMethodManager
 import com.ocr.fastscan.api.NetworkModule
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.ActivityMainBinding
@@ -25,8 +26,15 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Handler
+import android.os.Looper
+import android.view.MotionEvent
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() , SensorEventListener {
 
     private lateinit var binding: ActivityMainBinding
     private val apiService by lazy { NetworkModule.createService(this) }
@@ -34,9 +42,19 @@ class MainActivity : AppCompatActivity() {
     private val soundManager by lazy { SoundManager(this) }
     private val printHelper by lazy { PrintHelper(this) }
     private val tokenManager by lazy { TokenManager(this) }
-
     private var currentReceiverGuid: String? = null
 
+    private var originalBrightness: Float = 1f  // исходная яркость (1f = 100%)
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    private val inactivityRunnable = Runnable { dimScreen() }
+
+    private val INACTIVITY_TIMEOUT = 60_000L  // 60 секунд
+
+    private lateinit var sensorManager: SensorManager
+
+    private var accelerometer: Sensor? = null
     private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val value = result.data?.getStringExtra("scan_result") ?: ""
@@ -55,6 +73,23 @@ class MainActivity : AppCompatActivity() {
         setupButtons()
         setupClientCodeInput()   // Авто-KG + только цифры
         performAutoLogin()
+
+        // Сохраняем исходную яркость при запуске
+        originalBrightness = window.attributes.screenBrightness
+
+        // Запускаем таймер неактивности
+        resetInactivityTimer()
+        // Слушаем касания по всему экрану
+        binding.root.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN ||
+                event.action == MotionEvent.ACTION_MOVE) {
+                resetInactivityTimer()  // любое касание сбрасывает таймер
+            }
+            false
+        }
+        // Сенсор движения (акселерометр)
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
     }
 
     private fun setupButtons() {
@@ -276,6 +311,9 @@ class MainActivity : AppCompatActivity() {
                     })
                     clearFields()
                     currentReceiverGuid = null
+                    // Скрываем клавиатуру после успешной отправки
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
                 } else {
                     val errorBody = res.errorBody()?.string() ?: "Нет тела"
                     Log.e("SaveOrderError", "Код ${res.code()}: $errorBody")
@@ -362,8 +400,57 @@ class MainActivity : AppCompatActivity() {
         }
         dialog.show()
     }
+    // Сбрасываем таймер неактивности
+    private fun resetInactivityTimer() {
+        handler.removeCallbacks(inactivityRunnable)
+        handler.postDelayed(inactivityRunnable, INACTIVITY_TIMEOUT)
+        restoreBrightness()  // сразу возвращаем яркость
+    }
+
+    // Тускнеем экран
+    private fun dimScreen() {
+        val params = window.attributes
+        params.screenBrightness = 0.3f  // 30%
+        window.attributes = params
+        Log.d("BRIGHTNESS", "Экран потускнел до 30%")
+    }
+
+    // Возвращаем яркость
+    private fun restoreBrightness() {
+        val params = window.attributes
+        params.screenBrightness = originalBrightness
+        window.attributes = params
+        Log.d("BRIGHTNESS", "Яркость восстановлена")
+    }
+    // Слушатель акселерометра — любое движение телефона в руках
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            val x = event.values[0]
+            val y = event.values[1]
+            val z = event.values[2]
+
+            // Простой порог: если телефон трясут или поворачивают
+            if (Math.abs(x) > 2 || Math.abs(y) > 2 || Math.abs(z) > 2) {
+                resetInactivityTimer()
+            }
+        }
+    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+        resetInactivityTimer()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+        handler.removeCallbacks(inactivityRunnable)
+    }
     override fun onDestroy() {
         super.onDestroy()
+        handler.removeCallbacks(inactivityRunnable)
         soundManager.release()  // Освобождаем MediaPlayer, чтобы не было утечек памяти
     }
 }

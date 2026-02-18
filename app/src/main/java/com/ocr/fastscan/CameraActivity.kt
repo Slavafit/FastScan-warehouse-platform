@@ -5,7 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.view.WindowManager
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
@@ -19,23 +19,34 @@ class CameraActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCameraBinding
     private val cameraExecutor = Executors.newSingleThreadExecutor()
-    private var mode = "barcode" // barcode, kg, weight
-    private var isProcessing = false // Блокировка от двойных срабатываний
+    private var mode = "barcode"
+    private var isProcessing = false
+    private var cameraControl: CameraControl? = null
+    private var currentExposureIndex = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        // 1. Получаем режим из Intent
-        mode = intent.getStringExtra("scan_mode") ?: "barcode"
-        //Log.d("DEBUG_SCAN", "CameraActivity запущен в режиме: $mode")
 
-        // 2. Настраиваем подсказку
-        binding.tvHint.text = when(mode) {
+        mode = intent.getStringExtra("scan_mode") ?: "barcode"
+
+        Log.d("DEBUG_SCAN", "CameraActivity запущен в режиме: $mode")
+
+        // Текст подсказки (убедись, что tvHint есть в XML)
+        binding.tvHint?.text = when (mode) {
             "kg" -> "Наведите на код клиента (KG...)"
-            "weight" -> "Наведите на цифры веса (0.00)"
-            else -> "Наведите на штрих-код"
+            "weight" -> "Наведите на дисплей весов"
+            else -> "Наведите на штрих-код трека"
+        }
+
+        // Кнопки регулировки экспозиции
+        binding.btnDarker.setOnClickListener {
+            adjustExposure(-2)
+        }
+
+        binding.btnBrighter.setOnClickListener {
+            adjustExposure(+2)
         }
 
         if (allPermissionsGranted()) {
@@ -50,52 +61,79 @@ class CameraActivity : AppCompatActivity() {
 
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
-
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
             }
 
-            // Настройщик анализатора
-            val imageAnalysis = ImageAnalysis.Builder()
+            val imageAnalyzer = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
-            // ГЛАВНОЕ ИСПРАВЛЕНИЕ:
-            // Выбираем, какой анализатор подключить, в зависимости от режима
-            val myAnalyzer: ImageAnalysis.Analyzer = if (mode == "barcode") {
-                // Если режим штрихкода
-                BarcodeAnalyzer { result ->
-                    returnResult(result)
-                }
+            val analyzer: ImageAnalysis.Analyzer = if (mode == "barcode") {
+                BarcodeAnalyzer { result -> returnResult(result) }
             } else {
-                // Если режим "kg" или "weight" — используем OCR
-                // Мы передаем 'mode' внутрь, чтобы OcrAnalyzer знал, какой Regex применить
-                OcrAnalyzer(mode) { result ->
-                    returnResult(result)
-                }
+                OcrAnalyzer(mode) { result -> returnResult(result) }
             }
 
-            imageAnalysis.setAnalyzer(cameraExecutor, myAnalyzer)
+            imageAnalyzer.setAnalyzer(cameraExecutor, analyzer)
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
-                    this, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalysis
+
+                val camera = cameraProvider.bindToLifecycle(
+                    this,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
+                    preview,
+                    imageAnalyzer
                 )
+
+                cameraControl = camera.cameraControl
+
+                // Получаем диапазон экспозиции (для отладки)
+                val exposureState = camera.cameraInfo.exposureState
+                val range = exposureState.exposureCompensationRange
+                Log.d("EXPOSURE", "Диапазон компенсации: ${range.lower} .. ${range.upper}")
+
+                // Устанавливаем начальную компенсацию (отрицательное = темнее, меньше бликов)
+                setInitialExposure(-6)  // ← Здесь можно поменять на -6, -5, -3 и т.д.
+
             } catch (exc: Exception) {
-                Log.e("Camera", "Ошибка запуска камеры", exc)
+                Log.e("Camera", "Binding failed", exc)
+                Toast.makeText(this, "Ошибка камеры", Toast.LENGTH_SHORT).show()
             }
         }, ContextCompat.getMainExecutor(this))
+    }
+
+    private fun setInitialExposure(value: Int) {
+        cameraControl?.let { control ->
+            val clamped = value.coerceIn(-12, 12)  // Безопасные пределы
+            control.setExposureCompensationIndex(clamped)
+            currentExposureIndex = clamped
+            Log.d("EXPOSURE", "Установлена компенсация: $clamped")
+            Toast.makeText(this, "Экспозиция: $clamped", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun adjustExposure(delta: Int) {
+        cameraControl?.let { control ->
+            val newIndex = (currentExposureIndex + delta).coerceIn(-12, 2)
+            control.setExposureCompensationIndex(newIndex)
+            currentExposureIndex = newIndex
+            Log.d("EXPOSURE", "Новая компенсация: $newIndex")
+            Toast.makeText(this, "Экспозиция: $newIndex", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun returnResult(value: String) {
         if (isProcessing) return
         isProcessing = true
 
-        val resultIntent = Intent()
-        resultIntent.putExtra("scan_result", value)
-        resultIntent.putExtra("scan_mode", mode) // Возвращаем режим обратно, чтобы MainActivity знала, куда вставить текст
-        setResult(RESULT_OK, resultIntent)
+        Log.d("DEBUG_SCAN", "Результат найден ($mode): $value")
+
+        val intent = Intent()
+        intent.putExtra("scan_result", value)
+        intent.putExtra("scan_mode", mode)
+        setResult(RESULT_OK, intent)
         finish()
     }
 
@@ -103,12 +141,16 @@ class CameraActivity : AppCompatActivity() {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            Toast.makeText(this, "Нет доступа к камере", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Нужен доступ к камере", Toast.LENGTH_SHORT).show()
             finish()
         }
     }

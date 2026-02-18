@@ -250,7 +250,7 @@ class MainActivity : AppCompatActivity() {
             withBox = if (binding.cbWithBox.isChecked) 1 else 0
         )
 
-        Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")
+        //Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")
 
         lifecycleScope.launch {
             try {
@@ -361,5 +361,9 @@ class MainActivity : AppCompatActivity() {
             dialog.dismiss()
         }
         dialog.show()
+    }
+    override fun onDestroy() {
+        super.onDestroy()
+        soundManager.release()  // Освобождаем MediaPlayer, чтобы не было утечек памяти
     }
 }

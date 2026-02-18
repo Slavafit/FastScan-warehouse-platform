@@ -43,7 +43,7 @@ class OcrAnalyzer(
                 val rawText = visionText.text.uppercase()
                 Log.d("OCR_RAW", rawText)
                 if (mode == "kg") {
-                    val pattern = Pattern.compile("KG\\s*(\\d{4,10})")
+                    val pattern = Pattern.compile("KG\\s*(\\d{4,6})")
                     val matcher = pattern.matcher(rawText)
                     if (matcher.find()) {
                         val result = "KG" + matcher.group(1)

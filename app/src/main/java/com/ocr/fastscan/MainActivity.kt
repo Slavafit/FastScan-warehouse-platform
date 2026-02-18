@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() , SensorEventListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        //window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         setupButtons()
         setupClientCodeInput()   // Авто-KG + только цифры

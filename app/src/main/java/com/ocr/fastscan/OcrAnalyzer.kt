@@ -58,22 +58,32 @@ class OcrAnalyzer(
     private fun detectWeightFromRedDisplay(bitmap: Bitmap): String {
         val width = bitmap.width
         val height = bitmap.height
-        var redPixels = 0
-        var totalPixels = 0
-        // Считаем ярко-красные пиксели (R > 150, G < 80, B < 80) — типично для LED
+
+        // Предобработка: усиливаем красный канал, уменьшаем шум
+        val processedBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
         for (x in 0 until width) {
             for (y in 0 until height) {
                 val pixel = bitmap.getPixel(x, y)
                 val r = Color.red(pixel)
                 val g = Color.green(pixel)
                 val b = Color.blue(pixel)
-                if (r > 140 && g < 100 && b < 100) {
-                    redPixels++
+                if (r > 100 && g < 80 && b < 80) {
+                    processedBitmap.setPixel(x, y, Color.rgb(r * 2, g / 2, b / 2)) // Усиливаем красный
+                } else {
+                    processedBitmap.setPixel(x, y, Color.BLACK) // Фон чёрный
                 }
-                totalPixels++
             }
         }
-        if (redPixels < 500) return "" // слишком мало красного — не дисплей весов
+
+        var redPixels = 0
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                val pixel = processedBitmap.getPixel(x, y)
+                if (Color.red(pixel) > 140) redPixels++
+            }
+        }
+        if (redPixels < 400) return "" // Слишком мало красного — не дисплей
+
         // Делим изображение на зоны цифр (примерно 7 зон по ширине)
         val cropHeight = height * 0.3f..height * 0.8f // обрезаем верх/низ
         val digitWidth = width / 7.5f
@@ -84,10 +94,12 @@ class OcrAnalyzer(
             val segmentBrightness = getSegmentBrightness(bitmap, left, right, cropHeight)
             digits.add(classifyDigit(segmentBrightness))
         }
-        val result = digits.joinToString("").replace(" ", "")
-        // Ищем паттерн вроде "0.663" или " 0.663 "
-        val clean = result.replace(Regex("[^0-9.]"), "")
-        return if (clean.contains(".")) clean else ""
+        val result = digits.joinToString("")
+        Log.d("WEIGHT_7SEG_RAW", "Распознанные сегменты: $result")
+        // Очистка: ищем паттерн 0.XXX или X.XXX
+        val clean = result.replace(Regex("[^0-9.]"), "").trim()
+        val matcher = Pattern.compile("(\\d{1,2}\\.\\d{1,3})").matcher(clean)
+        return if (matcher.find()) matcher.group(1)!! else ""
     }
     private fun getSegmentBrightness(bitmap: Bitmap, left: Int, right: Int, yRange: ClosedFloatingPointRange<Float>): Double {
         var bright = 0
@@ -105,16 +117,18 @@ class OcrAnalyzer(
     }
     private fun classifyDigit(brightness: Double): String {
         return when {
-            brightness < 50 -> " "
-            brightness < 200 -> "1"
-            brightness < 350 -> "7"
-            brightness < 500 -> "4"
-            brightness < 650 -> "2"
-            brightness < 800 -> "5"
-            brightness < 950 -> "0"
-            brightness < 1100 -> "6"
-            brightness < 1300 -> "3"
-            brightness < 1500 -> "9"
+            brightness < 40 -> " "
+            brightness < 150 -> "1"
+            brightness < 280 -> "7"
+            brightness < 400 -> "4"
+            brightness < 520 -> "2"
+            brightness < 640 -> "5"
+            brightness < 760 -> "0"
+            brightness < 880 -> "6"
+            brightness < 1000 -> "3"
+            brightness < 1200 -> "9"
+            brightness < 1400 -> "8"
+            brightness < 1600 -> "."  // Точка имеет меньше сегментов
             else -> "8"
         }
     }

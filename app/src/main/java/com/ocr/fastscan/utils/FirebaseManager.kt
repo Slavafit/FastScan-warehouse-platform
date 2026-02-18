@@ -1,10 +1,11 @@
 package com.ocr.fastscan.utils
 
+import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ocr.fastscan.data.model.FirestoreShipment
 
-class FirebaseManager {
+class FirebaseManager(requireContext: Context) {
     private val db = FirebaseFirestore.getInstance()
     private val collectionPath = "shipments"
 

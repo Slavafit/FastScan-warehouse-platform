@@ -35,8 +35,6 @@ class CameraActivity : AppCompatActivity() {
 
         mode = intent.getStringExtra("scan_mode") ?: "barcode"
 
-        Log.d("DEBUG_SCAN", "CameraActivity запущен в режиме: $mode")
-
         // Текст подсказки (убедись, что tvHint есть в XML)
         binding.tvHint?.text = when (mode) {
             "kg" -> "Наведите на код клиента (KG...)"
@@ -111,7 +109,7 @@ class CameraActivity : AppCompatActivity() {
                     val exposureState = camera.cameraInfo.exposureState
                     if (exposureState.isExposureCompensationSupported) {
                         cameraControl?.setExposureCompensationIndex(currentExposureIndex)
-                        Log.d("CAMERA_EXPOSURE", "Экспозиция установлена: $currentExposureIndex")
+                        //Log.d("CAMERA_EXPOSURE", "Экспозиция установлена: $currentExposureIndex")
                     }
                 }
             } catch (exc: Exception) {

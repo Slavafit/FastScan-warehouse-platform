@@ -1,6 +1,7 @@
 package com.ocr.fastscan.ui
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
@@ -28,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.ocr.fastscan.SettingsActivity
 import com.ocr.fastscan.data.model.*
+import com.ocr.fastscan.data.SenderManager
 import com.ocr.fastscan.databinding.DialogVolumeBinding
 import com.ocr.fastscan.databinding.FragmentScanBinding
 import com.ocr.fastscan.utils.*
@@ -35,9 +37,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import com.ocr.fastscan.CameraActivity
-//import com.ocr.fastscan.utils.ScanUtils
-
 
 class ScanFragment : Fragment(), SensorEventListener {
 
@@ -59,15 +58,17 @@ class ScanFragment : Fragment(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private var originalBrightness: Float = 1f
 
-    //private val apiService by lazy { NetworkModule.createService(requireContext()) }
     private val apiService by lazy { AppDependencies.apiService }
     private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
     private val firebaseManager by lazy { AppDependencies.firebaseManager }
-    //private val firebaseManager by lazy { FirebaseManager (requireContext()) }
-    //private val soundManager by lazy { SoundManager(requireContext()) }
     private val printHelper by lazy { PrintHelper(requireContext()) }
-    //private val tokenManager by lazy { TokenManager(requireContext()) }
+    private val senderManager by lazy {
+        SenderManager(
+            apiService = AppDependencies.apiService,
+            context = requireContext()
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -133,15 +134,18 @@ class ScanFragment : Fragment(), SensorEventListener {
         binding.btnScanTrack.setOnClickListener {
             ScanUtils.launchCamera(requireContext(), "barcode", scanLauncher)
         }
-        binding.btnScanTrack.setOnClickListener {
+        binding.btnScanKg.setOnClickListener {
             ScanUtils.launchCamera(requireContext(), "kg", scanLauncher)
         }
-        binding.btnScanTrack.setOnClickListener {
+        binding.btnScanWeight.setOnClickListener {
             ScanUtils.launchCamera(requireContext(), "weight", scanLauncher)
         }
 
-        binding.btnVolumeCalc.setOnClickListener { showVolumeDialog() }
-
+        binding.btnVolumeCalc.setOnClickListener {
+            DialogUtils.showVolumeDialog(requireContext()) { weight ->
+                   binding.etWeight.setText(weight)
+            }
+        }
         binding.btnGenerateOnza.setOnClickListener {
             val generated = "ONZA${System.currentTimeMillis().toString().takeLast(8)}"
             binding.etTracking.setText(generated)
@@ -199,6 +203,9 @@ class ScanFragment : Fragment(), SensorEventListener {
                 val code = binding.etClientCode.text.toString().trim()
                 if (code.startsWith("KG") && code.length >= 6) {
                     fetchClientByKgCode(code)
+                    // Скрытие клавиатуры
+                    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.etClientCode.windowToken, 0)
                     true
                 } else {
                     Toast.makeText(requireContext(), "Введите минимум 4 цифры после KG", Toast.LENGTH_SHORT).show()
@@ -259,6 +266,7 @@ class ScanFragment : Fragment(), SensorEventListener {
                     binding.tvClientName.text = "Трек не найден. Сканируйте KG"
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
                     binding.etClientCode.text.clear()
+                    binding.etWeight.text.clear()
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")
@@ -285,6 +293,7 @@ class ScanFragment : Fragment(), SensorEventListener {
                     } else {
                         binding.tvClientName.text = "Клиент не найден"
                         binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
+                        soundManager.playError()
                     }
                 } else {
                     binding.tvClientName.text = "Ошибка сервера"
@@ -303,21 +312,17 @@ class ScanFragment : Fragment(), SensorEventListener {
         val track = binding.etTracking.text.toString().trim()
         val kg = binding.etClientCode.text.toString().trim().uppercase()
         val weightStr = binding.etWeight.text.toString().trim()
-        //Log.d("SubmitDebug", "track='$track', kg='$kg', weight='$weightStr', guid=$currentReceiverGuid")
-        if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
 
+        if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
             Toast.makeText(requireContext(), "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
             return
         }
 
         val grossWeight = weightStr.toDoubleOrNull() ?: 0.0
 
-        binding.btnSubmit.isEnabled = false
-        binding.btnSubmit.text = "Отправка..."
-
         val req = SaveOrderRequest(
             clientCode = kg,
-            clientName = binding.tvClientName.text.toString(),   // оставляем для Firestore
+            clientName = binding.tvClientName.text.toString(),
             trackingNumber = track,
             grossWeight = grossWeight,
             recieverGuid = currentReceiverGuid!!,
@@ -327,46 +332,25 @@ class ScanFragment : Fragment(), SensorEventListener {
 
         //Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")
 
-        lifecycleScope.launch {
-            try {
-                val res = apiService.saveOrder(req)
+        binding.btnSubmit.isEnabled = false
+        binding.btnSubmit.text = "Отправка..."
 
-                if (res.isSuccessful) {
-                    soundManager.playSuccess()
-                    Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
-                    // Сохраняем в Firebase (если нужно)
-                    val shipment = FirestoreShipment(
-                        trackingNumber = track,
-                        clientCode = kg,
-                        clientName = binding.tvClientName.text.toString(),
-                        weight = grossWeight,
-                        withBox = req.withBox.toString(),
-                        createdAt = com.google.firebase.Timestamp.now(),
-                        dateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                    )
-                    firebaseManager.saveShipment(shipment, {
-                        Log.d("Firebase", "Сохранено в Firestore")
-                    }, { e ->
-                        Log.e("Firebase", "Ошибка сохранения: ${e.message}")
-                    })
-                    ScanUtils.clearFields(binding)
-                    currentReceiverGuid = null
-                    // Скрываем клавиатуру после успешной отправки
-                    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
-                } else {
-                    val errorBody = res.errorBody()?.string() ?: "Нет тела"
-                    Log.e("SaveOrderError", "Код ${res.code()}: $errorBody")
-                    Toast.makeText(requireContext(), "Ошибка API: ${res.code()}", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                Log.e("SaveOrder", "Исключение: ${e.message}", e)
-                Toast.makeText(requireContext(), "Ошибка сети", Toast.LENGTH_SHORT).show()
-            } finally {
-                binding.btnSubmit.isEnabled = true
-                binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
+        senderManager.submitOrder(req,
+            onSuccess = {
+                soundManager.playSuccess()
+                Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
+                ScanUtils.clearFields(binding)
+                currentReceiverGuid = null
+            },
+            onError = { error ->
+                soundManager.playError()
+                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
             }
-        }
+        )
+
+        // Восстановление кнопки (можно вынести в finally внутри submitOrder)
+        binding.btnSubmit.isEnabled = true
+        binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
     }
 
     private fun showVolumeDialog() {

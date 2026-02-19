@@ -21,7 +21,9 @@ interface OnzaApiService {
     // запрос для получения имени по KG-коду
     @GET("/api/common/reciever")
     suspend fun getReceiverByCode(@Query("client_code") clientCode: String): Response<List<ReceiverResponse>>
-
+    //поиск по имени
+    @GET("/api/common/all-reciever")
+    suspend fun getAllReceivers(): Response<AllReceiversResponse>
 
 
 

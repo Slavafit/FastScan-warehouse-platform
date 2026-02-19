@@ -65,6 +65,13 @@
                 android:layout_height="wrap_content"
                 android:hint="KG123456" />
             <ImageButton android:id="@+id/btnScanKg" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
+            <!--  КНОПКА ПОИСКА -->
+            <ImageButton
+                android:id="@+id/btnSearchClient"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@android:drawable/ic_menu_search"
+                android:contentDescription="Поиск по имени" />
         </LinearLayout>
 
         <Space android:layout_width="match_parent" android:layout_height="16dp" />

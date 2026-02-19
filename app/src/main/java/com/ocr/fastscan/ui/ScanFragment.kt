@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ocr.fastscan.databinding.DialogSearchClientBinding
 
 class ScanFragment : Fragment(), SensorEventListener {
 
@@ -166,6 +167,9 @@ class ScanFragment : Fragment(), SensorEventListener {
             tokenManager.clear()
             Toast.makeText(requireContext(), "Токены очищены", Toast.LENGTH_SHORT).show()
             ScanUtils.clearFields(binding)
+        }
+        binding.btnSearchClient.setOnClickListener {
+            showSearchClientDialog()
         }
     }
 
@@ -434,5 +438,88 @@ class ScanFragment : Fragment(), SensorEventListener {
         super.onDestroyView()
         _binding = null
         handler.removeCallbacks(inactivityRunnable)
+    }
+
+    private fun showSearchClientDialog() {
+        val dialogBinding = DialogSearchClientBinding.inflate(layoutInflater)  // ← binding-класс
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Поиск по имени и фамилии")
+            .setView(dialogBinding.root)
+            .setPositiveButton("Поиск") { _, _ ->
+                val first = dialogBinding.etFirstName.text.toString().trim()
+                val last = dialogBinding.etLastName.text.toString().trim()
+                if (first.isNotEmpty() || last.isNotEmpty()) {
+                    searchClientByName(first, last)
+                } else {
+                    Toast.makeText(requireContext(), "Введите имя или фамилию", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun searchClientByName(first: String, last: String) {
+        lifecycleScope.launch {
+            binding.btnSearchClient.isEnabled = false  // отключаем кнопку, пока идёт
+            //binding.btnSearchClient.text = "Поиск..."
+            try {
+                val response = apiService.getAllReceivers()
+                if (response.isSuccessful && response.body() != null) {
+                    val receivers = response.body()!!.receivers  // или .data — подставь реальное поле
+
+                    // Поиск без учёта регистра, частичное совпадение
+                    val filtered = receivers.filter {
+                        (first.isEmpty() || it.firstName?.contains(first, ignoreCase = true) == true) &&
+                                (last.isEmpty() || it.lastName?.contains(last, ignoreCase = true) == true)
+                    }
+
+                    when {
+                        filtered.isEmpty() -> {
+                            Toast.makeText(requireContext(), "Клиент не найден", Toast.LENGTH_SHORT).show()
+                            soundManager.playError()
+                        }
+                        filtered.size == 1 -> {
+                            val match = filtered[0]
+                            val code = match.clientCode ?: ""
+                            binding.etClientCode.setText(code)
+                            val name = "${match.firstName ?: ""} ${match.lastName ?: ""}".trim()
+                            Toast.makeText(requireContext(), "Найден: $name ($code)", Toast.LENGTH_SHORT).show()
+                            soundManager.playSuccess()
+                        }
+                        else -> {
+                            // Несколько совпадений — показываем список
+                            showMultipleResultsDialog(filtered)
+                        }
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Ошибка сервера", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Log.e("SearchClient", e.message, e)
+            } finally {
+                binding.btnSearchClient.isEnabled = true
+            }
+        }
+    }
+    private fun showMultipleResultsDialog(results: List<ReceiverItem>) {
+        val items = results.mapIndexed { index, item ->
+            val name = "${item.firstName ?: ""} ${item.lastName ?: ""}".trim()
+            val code = item.clientCode ?: "Нет кода"
+            "$name ($code)"
+        }.toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Найдено несколько клиентов")
+            .setItems(items) { _, which ->
+                val selected = results[which]
+                binding.etClientCode.setText(selected.clientCode)
+                val name = "${selected.firstName ?: ""} ${selected.lastName ?: ""}".trim()
+                Toast.makeText(requireContext(), "Выбран: $name", Toast.LENGTH_SHORT).show()
+                soundManager.playSuccess()
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 }

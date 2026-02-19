@@ -63,3 +63,13 @@ data class SaveOrderRequest(
     @SerializedName("reciever_guid") val recieverGuid: String,
     @SerializedName("user_guid") val userGuid: String
 )
+
+data class AllReceiversResponse(
+    val receivers: List<ReceiverItem>  // или "data": List<ReceiverItem> — используй @SerializedName("data")
+)
+
+data class ReceiverItem(
+    @SerializedName("first_name") val firstName: String?,
+    @SerializedName("last_name") val lastName: String?,
+    @SerializedName("client_code") val clientCode: String?
+)

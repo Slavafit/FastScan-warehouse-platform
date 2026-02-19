@@ -1,5 +1,6 @@
 package com.ocr.fastscan.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
@@ -26,7 +27,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.ocr.fastscan.SettingsActivity
-import com.ocr.fastscan.api.NetworkModule
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogVolumeBinding
 import com.ocr.fastscan.databinding.FragmentScanBinding
@@ -36,6 +36,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.ocr.fastscan.CameraActivity
+//import com.ocr.fastscan.utils.ScanUtils
 
 
 class ScanFragment : Fragment(), SensorEventListener {
@@ -44,7 +45,11 @@ class ScanFragment : Fragment(), SensorEventListener {
     private val binding get() = _binding!!
 
     private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        // Твой код для обработки результата сканирования
+        if (result.resultCode == Activity.RESULT_OK) {
+            val value = result.data?.getStringExtra("scan_result") ?: ""
+            val mode = result.data?.getStringExtra("scan_mode") ?: ""
+            handleScanResult(mode, value)
+        }
     }
     private var currentReceiverGuid: String? = null
     private val handler = Handler(Looper.getMainLooper())
@@ -54,11 +59,15 @@ class ScanFragment : Fragment(), SensorEventListener {
     private var accelerometer: Sensor? = null
     private var originalBrightness: Float = 1f
 
-    private val apiService by lazy { NetworkModule.createService(requireContext()) }
-    private val firebaseManager by lazy { FirebaseManager (requireContext()) }
-    private val soundManager by lazy { SoundManager(requireContext()) }
+    //private val apiService by lazy { NetworkModule.createService(requireContext()) }
+    private val apiService by lazy { AppDependencies.apiService }
+    private val tokenManager by lazy { AppDependencies.tokenManager }
+    private val soundManager by lazy { AppDependencies.soundManager }
+    private val firebaseManager by lazy { AppDependencies.firebaseManager }
+    //private val firebaseManager by lazy { FirebaseManager (requireContext()) }
+    //private val soundManager by lazy { SoundManager(requireContext()) }
     private val printHelper by lazy { PrintHelper(requireContext()) }
-    private val tokenManager by lazy { TokenManager(requireContext()) }
+    //private val tokenManager by lazy { TokenManager(requireContext()) }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -89,11 +98,31 @@ class ScanFragment : Fragment(), SensorEventListener {
             }
             false
         }
+// Enter в поле трека → запрос
+        binding.etTracking.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE ||
+                (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
 
+                val tcode = binding.etTracking.text.toString().trim()
+                if (tcode.isNotEmpty()) {
+                    fetchOrderInfo(tcode)
+                    // Скрытие клавиатуры
+                    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.etTracking.windowToken, 0)
+                    true
+                } else {
+                    false
+                }
+            } else {
+                false
+            }
+        }
         // Твои настройки (кнопки, слушатели и т.д.)
         setupButtons()
         setupClientCodeInput()
-        performAutoLogin()
+        lifecycleScope.launch {
+            AppDependencies.performAutoLogin(requireContext())
+        }
     }
 
     private fun setupButtons() {
@@ -101,9 +130,15 @@ class ScanFragment : Fragment(), SensorEventListener {
             startActivity(Intent(requireContext(), SettingsActivity::class.java))
         }
 
-        binding.btnScanTrack.setOnClickListener { launchCamera("barcode") }
-        binding.btnScanKg.setOnClickListener { launchCamera("kg") }
-        binding.btnScanWeight.setOnClickListener { launchCamera("weight") }
+        binding.btnScanTrack.setOnClickListener {
+            ScanUtils.launchCamera(requireContext(), "barcode", scanLauncher)
+        }
+        binding.btnScanTrack.setOnClickListener {
+            ScanUtils.launchCamera(requireContext(), "kg", scanLauncher)
+        }
+        binding.btnScanTrack.setOnClickListener {
+            ScanUtils.launchCamera(requireContext(), "weight", scanLauncher)
+        }
 
         binding.btnVolumeCalc.setOnClickListener { showVolumeDialog() }
 
@@ -126,7 +161,7 @@ class ScanFragment : Fragment(), SensorEventListener {
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
             Toast.makeText(requireContext(), "Токены очищены", Toast.LENGTH_SHORT).show()
-            clearFields()
+            ScanUtils.clearFields(binding)
         }
     }
 
@@ -314,7 +349,7 @@ class ScanFragment : Fragment(), SensorEventListener {
                     }, { e ->
                         Log.e("Firebase", "Ошибка сохранения: ${e.message}")
                     })
-                    clearFields()
+                    ScanUtils.clearFields(binding)
                     currentReceiverGuid = null
                     // Скрываем клавиатуру после успешной отправки
                     val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -330,53 +365,6 @@ class ScanFragment : Fragment(), SensorEventListener {
             } finally {
                 binding.btnSubmit.isEnabled = true
                 binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
-            }
-        }
-    }
-
-    private fun clearFields() {
-        binding.etTracking.text.clear()
-        binding.etClientCode.text.clear()
-        binding.etWeight.text.clear()
-        binding.tvClientName.text = "Ожидание сканирования..."
-        binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black))
-        binding.cbWithBox.isChecked = false
-        binding.btnPrint.visibility = View.GONE
-        currentReceiverGuid = null
-    }
-
-    private fun launchCamera(mode: String) {
-        // Твой код, но Intent с requireContext()
-        val intent = Intent(requireContext(), CameraActivity::class.java)
-        intent.putExtra("scan_mode", mode)
-        scanLauncher.launch(intent)
-    }
-
-    private fun performAutoLogin() {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val loginVal = prefs.getString("login", "") ?: ""
-        val passVal = prefs.getString("password", "") ?: ""
-
-        if (loginVal.isNotEmpty() && passVal.isNotEmpty()) {
-            lifecycleScope.launch {
-                try {
-                    val response =
-                        apiService.login(mapOf("login" to loginVal, "password" to passVal))
-                    if (response.isSuccessful) {
-                        val authData = response.body()
-                        if (authData?.accessToken != null) {
-                            com.ocr.fastscan.utils.TokenManager(requireContext()).saveTokens(
-                                authData.accessToken,
-                                authData.refreshToken ?: ""
-                            )
-                            Toast.makeText(requireContext(), "Успешный вход!", Toast.LENGTH_SHORT)
-                                .show()
-                            //Log.d("Auth", "Успешный вход! Токен сохранен.")
-                        }
-                    }
-                } catch (e: Exception) {
-                    Log.e("Auth", "Ошибка сети при логине: ${e.message}")
-                }
             }
         }
     }

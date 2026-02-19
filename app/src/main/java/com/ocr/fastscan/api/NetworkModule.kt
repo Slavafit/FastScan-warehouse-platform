@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 object NetworkModule {
     fun createService(context: Context): OnzaApiService {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val baseUrl = prefs.getString("api_url", "https://onza.ibm.kg/api/")
+        val baseUrl = prefs.getString("api_url", "https://onza-api.ibm.kg")
         val tokenManager = TokenManager(context)
 
         // Добавляет Bearer токен в каждый запрос

@@ -1,7 +1,6 @@
 package com.ocr.fastscan
 
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
@@ -10,6 +9,7 @@ import com.ocr.fastscan.ui.ScanFragment
 import com.ocr.fastscan.ui.BoxFragment
 import com.ocr.fastscan.ui.BatchFragment
 import com.ocr.fastscan.R
+import com.ocr.fastscan.utils.AppDependencies
 
 class MainActivity : AppCompatActivity() {
 
@@ -19,6 +19,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        AppDependencies.init(this)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 

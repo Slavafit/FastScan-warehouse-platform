@@ -33,6 +33,7 @@
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Трек-код" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
             <EditText android:id="@+id/etTracking"
+                android:imeOptions="actionDone"
                 android:singleLine="true"
                 android:layout_width="0dp"
                 android:layout_weight="1"

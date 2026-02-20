@@ -57,8 +57,11 @@ dependencies {
 
     // Firebase
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
-    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx:24.4.0'  // для Firestore
+    implementation 'com.google.firebase:firebase-auth-ktx:22.0.0'  // для аутентификации, если нужно
 
     // Печать и Штрих-коды
     implementation 'com.google.zxing:core:3.5.3'
+    //зависимость для ProgressDialog
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }

@@ -4,14 +4,16 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.ocr.fastscan.api.OnzaApiService
+import com.ocr.fastscan.data.model.FirestoreShipment
 import com.ocr.fastscan.data.model.SaveOrderRequest
+import com.ocr.fastscan.utils.FirebaseManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class SenderManager(
     private val apiService: OnzaApiService,
+    private val firebaseManager: FirebaseManager,
     private val context: Context  // для Toast и других UI-операций
 ) {
 
@@ -27,9 +29,30 @@ class SenderManager(
             try {
                 val response = apiService.saveOrder(request)
                 if (response.isSuccessful) {
-                    uiScope.launch {
-                        onSuccess()
-                    }
+                    // Создаём объект для Firestore
+                    val shipment = FirestoreShipment(
+                        trackingNumber = request.trackingNumber,
+                        clientCode = request.clientCode,
+                        clientName = request.clientName,
+                        weight = request.grossWeight ?: 0.0,
+                        withBox = request.withBox?.toString() ?: "0",
+                        // createdAt и dateString заполняются автоматически в модели
+                    )
+
+                    // Сохраняем в Firestore
+                    firebaseManager.saveShipment(
+                        shipment = shipment,
+                        onSuccess = {
+                            uiScope.launch {
+                                onSuccess()
+                            }
+                        },
+                        onFailure = { e ->
+                            uiScope.launch {
+                                onError("API OK, но ошибка Firestore: ${e.message}")
+                            }
+                        }
+                    )
                 } else {
                     val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
                     uiScope.launch {
@@ -37,7 +60,7 @@ class SenderManager(
                     }
                 }
             } catch (e: Exception) {
-                Log.e("OrderSender", "Исключение при отправке: ${e.message}", e)
+                Log.e("SenderManager", "Исключение при отправке: ${e.message}", e)
                 uiScope.launch {
                     onError("Ошибка сети: ${e.message}")
                 }

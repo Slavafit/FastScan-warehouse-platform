@@ -23,7 +23,7 @@ interface OnzaApiService {
     suspend fun getReceiverByCode(@Query("client_code") clientCode: String): Response<List<ReceiverResponse>>
     //поиск по имени
     @GET("/api/common/all-reciever")
-    suspend fun getAllReceivers(): Response<AllReceiversResponse>
+    suspend fun getAllReceivers(): Response<List<ReceiverItem>>
 
 
 

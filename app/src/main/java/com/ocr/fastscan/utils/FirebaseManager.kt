@@ -24,9 +24,9 @@ class FirebaseManager(requireContext: Context) {
 
 
     fun saveShipment(
-        shipment: FirestoreShipment,
-        onSuccess: () -> Unit,
-        onFailure: (Exception) -> Unit)
+        shipment: FirestoreShipment,    // ← основной параметр — объект с данными
+        onSuccess: () -> Unit,          // колбэк успеха
+        onFailure: (Exception) -> Unit) // колбэк ошибки
     {
         db.collection("shipments")
             .document(shipment.trackingNumber) // Устанавливаем ID документа равным номеру трека

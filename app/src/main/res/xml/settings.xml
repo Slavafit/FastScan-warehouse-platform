@@ -24,6 +24,13 @@
         app:key="vol_weight"
         app:title="Объемный вес"
         app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:key="user_email"
+            android:title="Email для лицензии"
+            android:summary="Введите email, привязанный к лицензии"
+            android:defaultValue=""
+            android:inputType="textEmailAddress" />
 </PreferenceCategory>
 
 </PreferenceScreen>

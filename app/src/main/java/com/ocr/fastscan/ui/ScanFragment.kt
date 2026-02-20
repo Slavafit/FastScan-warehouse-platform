@@ -2,6 +2,7 @@ package com.ocr.fastscan.ui
 
 import android.app.Activity
 import android.app.Dialog
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.hardware.Sensor
@@ -62,11 +63,11 @@ class ScanFragment : Fragment(), SensorEventListener {
     private val apiService by lazy { AppDependencies.apiService }
     private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
-    private val firebaseManager by lazy { AppDependencies.firebaseManager }
     private val printHelper by lazy { PrintHelper(requireContext()) }
     private val senderManager by lazy {
         SenderManager(
             apiService = AppDependencies.apiService,
+            firebaseManager = AppDependencies.firebaseManager,
             context = requireContext()
         )
     }
@@ -460,13 +461,29 @@ class ScanFragment : Fragment(), SensorEventListener {
     }
 
     private fun searchClientByName(first: String, last: String) {
+        val searchText = (first + last).trim()
+        if (searchText.length < 3) {
+            Toast.makeText(requireContext(), "Введите минимум 3 символа", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val progress = ProgressDialog(requireContext()).apply {
+            setMessage("Загрузка клиентов...")
+            setCancelable(true)
+            setOnCancelListener { /* можно отменить запрос, если нужно */ }
+        }
+        progress.show()
         lifecycleScope.launch {
             binding.btnSearchClient.isEnabled = false  // отключаем кнопку, пока идёт
             //binding.btnSearchClient.text = "Поиск..."
             try {
                 val response = apiService.getAllReceivers()
+                if (!response.isSuccessful) {
+                    val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
+                    Toast.makeText(requireContext(), "Ошибка сервера ${response.code()}", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
                 if (response.isSuccessful && response.body() != null) {
-                    val receivers = response.body()!!.receivers  // или .data — подставь реальное поле
+                    val receivers = response.body()!!  // List<ReceiverItem>
 
                     // Поиск без учёта регистра, частичное совпадение
                     val filtered = receivers.filter {
@@ -496,7 +513,7 @@ class ScanFragment : Fragment(), SensorEventListener {
                     Toast.makeText(requireContext(), "Ошибка сервера", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Сеть ошибка search", Toast.LENGTH_SHORT).show()
                 Log.e("SearchClient", e.message, e)
             } finally {
                 binding.btnSearchClient.isEnabled = true

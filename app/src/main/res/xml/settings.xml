@@ -32,6 +32,25 @@
             android:defaultValue=""
             android:inputType="textEmailAddress" />
 </PreferenceCategory>
+    <PreferenceCategory android:title="Лицензия">
+        <Preference
+            android:key="license_status"
+            android:title="Статус лицензии"
+            android:summary="Проверка..." />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="О разработчике">
+        <Preference
+            android:key="developer_info"
+            android:title="Вячеслав Фитлин"
+            android:summary="Телеграмм: @Slavafit"/>
 
+        <!-- Если хочешь добавить ссылку или описание -->
+        <!--
+        <Preference
+            android:key="developer_link"
+            android:title="Сайт / Telegram"
+            android:summary="https://t.me/slfitofficial" />
+        -->
+    </PreferenceCategory>
 </PreferenceScreen>
 

@@ -1,6 +1,5 @@
 package com.ocr.fastscan
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
@@ -35,64 +34,34 @@ class MainActivity : AppCompatActivity() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val email = prefs.getString("user_email", "")?.trim() ?: ""
 
-        if (email.isEmpty()) {
-            Toast.makeText(this, "Введите email в настройках для активации лицензии", Toast.LENGTH_LONG).show()
-
-            // Автоматически открываем настройки
-            startActivity(Intent(this, SettingsActivity::class.java))
-
-            // Закрываем MainActivity, чтобы пользователь вернулся после ввода
-            finish()
-            return
-        }
-
-        // Если email есть — проверяем лицензию
+        // Проверка лицензии асинхронно
         lifecycleScope.launch {
             val checker = LicenseChecker(email)
-            val isValid = checker.isLicenseValid()
+            val isValid = checker.isLicenseValid(this@MainActivity)
+
             if (isValid) {
+                // Лицензия OK — показываем фрагмент
                 setupNavigation(savedInstanceState)
+
+                // Рассчитываем и показываем оставшиеся дни
+                val db = FirebaseFirestore.getInstance()
+                val doc = db.collection("licenses").document(email).get().await()
+                val expirationDate = doc.getTimestamp("expiration_date")?.toDate() ?: return@launch
+
+                val daysLeft = (expirationDate.time - Date().time) / (1000 * 60 * 60 * 24)
+
+                val message = when {
+                    daysLeft <= 0 -> "Лицензия истекла!"
+                    daysLeft <= 7 -> "Осталось $daysLeft дней до окончания лицензии!"
+                    daysLeft <= 30 -> "Лицензия активна (осталось $daysLeft дней)"
+                    else -> "Лицензия активна"
+                }
+
+                Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(this@MainActivity, "Лицензия истекла или не активна", Toast.LENGTH_LONG).show()
                 finish()
             }
-        }
-    }
-
-    private suspend fun checkLicense(email: String): Boolean {
-        Log.d("LicenseCheck", "Проверка для email: $email")
-
-        val db = FirebaseFirestore.getInstance()
-
-        return try {
-            val doc = db.collection("licenses")
-                .document(email)
-                .get()
-                .await()
-
-            Log.d("LicenseCheck", "Документ существует: ${doc.exists()}")
-
-            if (doc.exists()) {
-                val expirationTimestamp = doc.getTimestamp("expiration_date")
-                val expirationDate = expirationTimestamp?.toDate()
-                val isActive = doc.getBoolean("is_active") ?: false
-
-                Log.d("LicenseCheck", "expiration_date (Timestamp): $expirationTimestamp")
-                Log.d("LicenseCheck", "expiration_date (Date): $expirationDate")
-                Log.d("LicenseCheck", "Текущая дата: ${Date()}")
-                Log.d("LicenseCheck", "is_active: $isActive")
-
-                val isValid = isActive && expirationDate != null && Date().before(expirationDate)
-                Log.d("LicenseCheck", "Лицензия действительна: $isValid")
-
-                isValid
-            } else {
-                Log.d("LicenseCheck", "Документ не найден")
-                false
-            }
-        } catch (e: Exception) {
-            Log.e("LicenseCheck", "Ошибка проверки: ${e.message}", e)
-            false
         }
     }
 

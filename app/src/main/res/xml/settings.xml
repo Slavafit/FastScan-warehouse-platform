@@ -25,14 +25,14 @@
         app:title="Объемный вес"
         app:useSimpleSummaryProvider="true" />
 
+</PreferenceCategory>
+    <PreferenceCategory android:title="Лицензия">
         <EditTextPreference
             android:key="user_email"
             android:title="Email для лицензии"
             android:summary="Введите email, привязанный к лицензии"
             android:defaultValue=""
             android:inputType="textEmailAddress" />
-</PreferenceCategory>
-    <PreferenceCategory android:title="Лицензия">
         <Preference
             android:key="license_status"
             android:title="Статус лицензии"

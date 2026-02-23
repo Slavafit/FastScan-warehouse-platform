@@ -1,22 +1,29 @@
 package com.ocr.fastscan.ui
 
-import android.widget.Toast
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.firebase.Timestamp
+import com.ocr.fastscan.data.model.BoxEntry
+import com.ocr.fastscan.data.model.BoxOrderRequest
 import com.ocr.fastscan.data.model.BoxRequest
 import com.ocr.fastscan.data.model.OrderInBox
 import com.ocr.fastscan.data.model.RemoveOrderRequest
 import com.ocr.fastscan.databinding.FragmentBoxDetailBinding
 import com.ocr.fastscan.utils.AppDependencies
-import com.ocr.fastscan.utils.ScanUtils
 import kotlinx.coroutines.launch
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
+import com.ocr.fastscan.utils.ScanUtils
 
 class BoxDetailFragment : Fragment() {
 
@@ -34,6 +41,21 @@ class BoxDetailFragment : Fragment() {
     private val ordersAdapter = OrdersInBoxAdapter { order ->
         // Удаление заказа
         removeOrderFromBox(order.guid ?: "")
+    }
+
+    private val scanLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val value = result.data?.getStringExtra("scan_result") ?: ""
+            val mode = result.data?.getStringExtra("scan_mode") ?: ""
+
+            Log.d("BoxDetail", "Скан трека: mode=$mode, value=$value")
+
+            if (mode == "barcode" && value.isNotEmpty()) {
+                addOrderByTrack(value)
+            } else {
+                Toast.makeText(requireContext(), "Неверный результат сканирования", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     companion object {
@@ -65,23 +87,28 @@ class BoxDetailFragment : Fragment() {
         binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOrders.adapter = ordersAdapter
 
-        loadBoxDetails()
+        setupClickListeners()
+        setupSizeListeners()    // Авто-расчёт v_weight при вводе размеров
 
-        binding.btnRefresh.setOnClickListener {
-            loadBoxDetails()
+        loadBoxInfo()  // ← новая функция для загрузки данных коробки (размеры, веса)
+        loadOrdersInBox()  // ← загрузка списка заказов
+    }
+    private fun setupClickListeners() {
+        binding.btnAddOrder.setOnClickListener {
+            ScanUtils.launchCamera(requireContext(), "barcode", scanLauncher)
+        }
+
+        binding.btnSaveSizes.setOnClickListener {
+            updateSizes()
         }
 
         binding.btnPrint.setOnClickListener {
             printLabel()
         }
 
-        binding.btnAddOrder.setOnClickListener {
-            // Запуск скана трека
-            ScanUtils.launchCamera(requireContext(), "barcode", scanLauncher)
-        }
-
-        binding.btnSaveSizes.setOnClickListener {
-            updateSizes()
+        binding.btnRefresh.setOnClickListener {
+            loadBoxInfo()
+            loadOrdersInBox()
         }
 
         binding.btnBack.setOnClickListener {
@@ -94,9 +121,18 @@ class BoxDetailFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val response = apiService.getOrderDetails(boxTracking)
+                val response = apiService.getOrderDetails(boxTracking)  // boxTracking = tracking_code коробки
                 if (response.isSuccessful && response.body() != null) {
                     val orders = response.body()!!  // список заказов
+                    // Считаем суммарный вес
+                    val totalGrossWeight = orders.sumOf { it.grossWeight ?: 0.0 }
+
+                    binding.tvGrossWeight.text = "Общий вес: %.2f кг".format(totalGrossWeight)
+                    binding.tvOrderCount.text = "Заказов: ${orders.size}"
+
+                    // Пересчитываем v_weight (если размеры уже загружены или дефолтные)
+                    binding.tvVWeight.text = "Объёмный вес: %.2f кг".format(calculateVWeight())
+
                     ordersAdapter.submitList(orders)
                     binding.tvGrossWeight.text = "Вес: ${calculateGrossWeight(orders)} кг"
                     binding.tvOrderCount.text = "Заказов: ${orders.size}"
@@ -126,25 +162,46 @@ class BoxDetailFragment : Fragment() {
     }
 
     private fun updateSizes() {
+        val length = binding.etLength.text.toString().toIntOrNull() ?: 70
+        val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
+        val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
         lifecycleScope.launch {
             try {
-                val request = BoxRequest(
-                    boxTracking,
-                    binding.etWidth.text.toString().toInt(),
-                    binding.etHeight.text.toString().toInt(),
-                    binding.etLength.text.toString().toInt()
-                )
+                val request = BoxRequest(boxTracking, width, height, length)
                 val response = apiService.createOrUpdateBox(request)
-                if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Размеры обновлены", Toast.LENGTH_SHORT).show()
-                    loadBoxDetails()  // обновляем экран
+                if (response.isSuccessful && response.body()?.success == true) {
+                    Toast.makeText(requireContext(), "Размеры сохранены", Toast.LENGTH_SHORT).show()
+                    loadBoxInfo()  // перезагружаем данные коробки
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка обновления размеров", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Ошибка сохранения размеров", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+
+    //авто-расчёт v_weight при изменении полей
+    private fun setupSizeListeners() {
+        val watcher = object : TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val length = binding.etLength.text.toString().toIntOrNull() ?: 70
+                val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
+                val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
+
+                val divider = PreferenceManager.getDefaultSharedPreferences(requireContext()).getInt("vol_weight", 6000)
+                val vWeight = (length * width * height) / divider.toDouble()
+
+                binding.tvVWeight.text = "Объёмный вес: $vWeight кг"
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
+
+        binding.etLength.addTextChangedListener(watcher)
+        binding.etWidth.addTextChangedListener(watcher)
+        binding.etHeight.addTextChangedListener(watcher)
     }
 
     private fun removeOrderFromBox(orderGuid: String) {
@@ -170,6 +227,95 @@ class BoxDetailFragment : Fragment() {
 
         printHelper.printBoxLabel(boxTracking, weight, last4)
         soundManager.playSuccess()
+    }
+
+    private fun addOrderByTrack(tcode: String) {
+        lifecycleScope.launch {
+            try {
+                val response = apiService.searchOrder(tcode)
+                if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
+                    val order = response.body()!![0]
+                    val orderGuid = order.guid ?: return@launch
+
+                    // Добавляем заказ в коробку
+                    val addRequest = BoxOrderRequest(
+                        order = orderGuid,
+                        box = boxGuid,  // guid коробки из аргументов фрагмента
+                        desc = "Добавлен по скану"
+                    )
+
+                    val addResponse = apiService.addOrderToBox(addRequest)
+                    if (addResponse.isSuccessful && addResponse.body()?.success == true) {
+                        Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
+                        soundManager.playSuccess()
+                        loadBoxDetails()  // обновляем список заказов и веса
+                        // Сохраняем в Firebase Boxes
+                        val entry = BoxEntry(
+                            orderTracking = tcode,
+                            boxTracking = boxTracking,
+                            date = Timestamp.now(),
+                            orderWeight = order.grossWeight ?: 0.0
+                        )
+                        firebaseManager.saveBoxEntry(entry)
+                    } else {
+                        Toast.makeText(requireContext(), "Ошибка добавления заказа", Toast.LENGTH_SHORT).show()
+                        soundManager.playError()
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Заказ не найден", Toast.LENGTH_SHORT).show()
+                    soundManager.playError()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                soundManager.playError()
+            }
+        }
+    }
+    private fun loadBoxInfo() {
+        binding.progressBar.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            try {
+                val response = apiService.getBoxes(tCode = boxTracking)  // GET /api/order/box?tCode=tracking_code
+                if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
+                    val box = response.body()!![0]  // берём первую (единственную) коробку по tCode
+
+                    // Заполняем поля размеров
+                    binding.etLength.setText(box.length?.toString() ?: "70")
+                    binding.etWidth.setText(box.width?.toString() ?: "45")
+                    binding.etHeight.setText(box.height?.toString() ?: "50")
+
+                    // Показываем веса из API
+                    binding.tvGrossWeight.text = "Общий вес: %.2f кг".format(box.grossWeight ?: 0.0)
+                    binding.tvVWeight.text = "Объёмный вес: %.2f кг".format(box.vWeight ?: 0.0)
+
+                    // Если размеры изменились — пересчитываем v_weight локально
+                    //setupSizeListeners()
+                } else {
+                    Toast.makeText(requireContext(), "Ошибка загрузки данных коробки", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun loadOrdersInBox() {
+        lifecycleScope.launch {
+            try {
+                val response = apiService.getOrderDetails(boxTracking)  // GET /api/order/order-tracking-code?boxId=tracking_code
+                if (response.isSuccessful && response.body() != null) {
+                    val orders = response.body()!!
+                    ordersAdapter.submitList(orders)
+
+                    // Пересчитываем суммарный вес из заказов (на всякий случай, если API не дал gross_weight)
+                    val calculatedGross = orders.sumOf { it.grossWeight ?: 0.0 }
+                    binding.tvGrossWeight.text = "Общий вес: %.2f кг".format(calculatedGross)
+                    binding.tvOrderCount.text = "Заказов: ${orders.size}"
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Ошибка загрузки заказов", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

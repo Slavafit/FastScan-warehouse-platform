@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <!-- шапка, список заказов, добавление заказа ... -->
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,4 +31,57 @@
         <ProgressBar android:id="@+id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:visibility="gone" />
 
     </LinearLayout>
+
+    <!-- Блок размеров -->
+    <LinearLayout
+        android:id="@+id/layoutSizes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <EditText
+            android:id="@+id/etLength"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="Длина (см)"
+            android:inputType="number"
+            android:text="70" />
+
+        <EditText
+            android:id="@+id/etWidth"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="Ширина (см)"
+            android:inputType="number"
+            android:text="45"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <EditText
+            android:id="@+id/etHeight"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="Высота (см)"
+            android:inputType="number"
+            android:text="50" />
+
+    </LinearLayout>
+
+    <!-- Кнопка "Сохранить размеры" -->
+    <Button
+        android:id="@+id/btnSaveSizes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Сохранить размеры"
+        android:textAllCaps="false"
+        android:backgroundTint="#2E7D32"
+        android:textColor="#FFFFFF" />
+
+    <!-- ... остальные кнопки (Печать, Обновить, Назад) ... -->
 </ScrollView>

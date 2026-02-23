@@ -3,11 +3,12 @@ package com.ocr.fastscan.utils
 import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.ocr.fastscan.data.model.BoxEntry
 import com.ocr.fastscan.data.model.FirestoreShipment
+import java.security.Timestamp
 
 class FirebaseManager(requireContext: Context) {
     private val db = FirebaseFirestore.getInstance()
-    private val collectionPath = "shipments"
 
     fun checkTrackExists(tracking: String, onResult: (Boolean) -> Unit) {
         db.collection("shipments") // Убедитесь, что имя коллекции совпадает
@@ -38,6 +39,16 @@ class FirebaseManager(requireContext: Context) {
             .addOnFailureListener { e ->
                 Log.e("FirebaseManager", "Error saving data", e)
                 onFailure(e)
+            }
+    }
+    fun saveBoxEntry(entry: BoxEntry) {
+        db.collection("Boxes")
+            .add(entry)
+            .addOnSuccessListener {
+                Log.d("FirebaseManager", "Box entry saved: order ${entry.orderTracking} in box ${entry.boxTracking}")
+            }
+            .addOnFailureListener { e ->
+                Log.e("FirebaseManager", "Error saving box entry", e)
             }
     }
 }

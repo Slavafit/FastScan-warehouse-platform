@@ -36,6 +36,9 @@ class MainActivity : AppCompatActivity() {
 
         // Проверка лицензии асинхронно
         lifecycleScope.launch {
+            if (AppDependencies.tokenManager.getToken() == null) {
+                AppDependencies.performAutoLogin(this@MainActivity)
+            }
             val checker = LicenseChecker(email)
             val isValid = checker.isLicenseValid(this@MainActivity)
 

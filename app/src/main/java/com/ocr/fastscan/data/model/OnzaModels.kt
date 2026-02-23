@@ -37,11 +37,6 @@ data class ReceiverResponse(
 data class SaveResponse(
     val success: Boolean
 )
-// Для простых ответов сервера (успех/ошибка)
-data class SimpleResponse(
-    @SerializedName("success") val success: Boolean,
-    @SerializedName("message") val message: String?
-)
 data class FirestoreShipment(
     val trackingNumber: String = "",
     val clientCode: String = "",
@@ -64,12 +59,91 @@ data class SaveOrderRequest(
     @SerializedName("user_guid") val userGuid: String
 )
 
-data class AllReceiversResponse(
-    val receivers: List<ReceiverItem>  // или "data": List<ReceiverItem> — используй @SerializedName("data")
-)
-
 data class ReceiverItem(
     @SerializedName("first_name") val firstName: String?,
     @SerializedName("last_name") val lastName: String?,
     @SerializedName("client_code") val clientCode: String?
+)
+// Новые модели для коробок
+
+// Модель для коробки из GET /api/order/box
+data class BoxItem(
+    @SerializedName("guid") val guid: String?,
+    @SerializedName("codeid") val codeid: String?,
+    @SerializedName("tracking_code") val trackingCode: String?,
+    @SerializedName("warehouse") val warehouse: String?,
+    @SerializedName("warehouse_guid") val warehouseGuid: String?,
+    @SerializedName("width") val width: Int?,
+    @SerializedName("height") val height: Int?,
+    @SerializedName("length") val length: Int?,
+    @SerializedName("v_weight") val vWeight: Double?,
+    @SerializedName("gross_weight") val grossWeight: Double?,
+    @SerializedName("date_created") val dateCreated: String?,
+    @SerializedName("orderCount") val orderCount: Int?
+)
+
+// Запрос для создания/update коробки (POST /api/order/box)
+data class BoxRequest(
+    @SerializedName("tracking_code") val trackingCode: String,
+    @SerializedName("width") val width: Int,
+    @SerializedName("height") val height: Int,
+    @SerializedName("length") val length: Int
+)
+
+// Ответ на POST /api/order/box
+data class BoxResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String,
+    @SerializedName("result") val result: List<BoxResultItem>?
+)
+
+data class BoxResultItem(
+    @SerializedName("NewCodeID") val newCodeID: Int?
+)
+
+// Модель для заказа из GET /api/order/order-search?tcode=...
+data class OrderSearchResponse(
+    @SerializedName("guid") val guid: String?,
+    @SerializedName("tracking_number") val trackingNumber: String?,
+    @SerializedName("tracking_code") val trackingCode: String?,
+    @SerializedName("status_name") val statusName: String?
+)
+
+// Запрос для добавления заказа в коробку (POST /api/order/box-order)
+data class BoxOrderRequest(
+    @SerializedName("order") val order: String,  // guid заказа
+    @SerializedName("box") val box: String,  // guid коробки
+    @SerializedName("desc") val desc: String = "España"
+)
+
+// Ответ на POST /api/order/box-order
+data class BoxOrderResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String
+)
+
+// Запрос для удаления заказа из коробки (DELETE /api/order/box-order)
+data class RemoveOrderRequest(
+    @SerializedName("guid") val guid: String  // guid заказа
+)
+
+// Ответ на DELETE /api/order/box-order
+data class RemoveOrderResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String
+)
+
+// Модель для заказа в коробке (из GET /api/order/order-tracking-code?boxId=...)
+data class OrderInBox(
+    @SerializedName("guid") val guid: String?,
+    @SerializedName("tracking_number") val trackingNumber: String?,
+    @SerializedName("weight") val weight: Double?  // предположим, вес заказа
+)
+
+// Модель для записи в Firebase Boxes
+data class BoxEntry(
+    val orderTracking: String,  // трек заказа
+    val boxTracking: String,  // трек коробки
+    val date: Timestamp = Timestamp.now(),
+    val orderWeight: Double
 )

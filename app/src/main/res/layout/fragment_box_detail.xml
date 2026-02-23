@@ -2,86 +2,132 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-    <!-- шапка, список заказов, добавление заказа ... -->
 
+    <!-- Один-единственный прямой ребёнок -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView android:id="@+id/tvBoxNumber" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="20sp" android:textStyle="bold" />
+        <!-- Шапка -->
+        <TextView
+            android:id="@+id/tvBoxNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Номер коробки"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-        <TextView android:id="@+id/tvGrossWeight" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tvGrossWeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Общий вес: 0.0 кг"
+            android:textSize="16sp" />
 
-        <TextView android:id="@+id/tvVWeight" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tvVWeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Объёмный вес: 0.0 кг"
+            android:textSize="16sp" />
 
-        <TextView android:id="@+id/tvOrderCount" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/tvOrderCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Заказов: 0"
+            android:textSize="16sp" />
 
-        <androidx.recyclerview.widget.RecyclerView android:id="@+id/rvOrders" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        <!-- Блок размеров -->
+        <LinearLayout
+            android:id="@+id/layoutSizes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="16dp">
 
-        <Button android:id="@+id/btnAddOrder" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Сканировать трек заказа" />
+            <EditText
+                android:id="@+id/etLength"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Длина (см)"
+                android:inputType="number" />
 
-        <Button android:id="@+id/btnPrint" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Печать лейбла" />
+            <EditText
+                android:id="@+id/etWidth"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Ширина (см)"
+                android:inputType="number"
+                android:layout_marginHorizontal="8dp" />
 
-        <Button android:id="@+id/btnRefresh" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Обновить" />
+            <EditText
+                android:id="@+id/etHeight"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:hint="Высота (см)"
+                android:inputType="number" />
 
-        <Button android:id="@+id/btnBack" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Назад" />
+        </LinearLayout>
 
-        <ProgressBar android:id="@+id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:visibility="gone" />
+        <Button
+            android:id="@+id/btnSaveSizes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Сохранить размеры"
+            android:backgroundTint="#2E7D32"
+            android:textColor="#FFFFFF" />
+
+        <!-- Список заказов -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvOrders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/btnAddOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Сканировать трек заказа" />
+
+        <Button
+            android:id="@+id/btnPrint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Печать лейбла" />
+
+        <Button
+            android:id="@+id/btnRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Обновить" />
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Назад" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center" />
 
     </LinearLayout>
 
-    <!-- Блок размеров -->
-    <LinearLayout
-        android:id="@+id/layoutSizes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="16dp">
-
-        <EditText
-            android:id="@+id/etLength"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="Длина (см)"
-            android:inputType="number"
-            android:text="70" />
-
-        <EditText
-            android:id="@+id/etWidth"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="Ширина (см)"
-            android:inputType="number"
-            android:text="45"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp" />
-
-        <EditText
-            android:id="@+id/etHeight"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="Высота (см)"
-            android:inputType="number"
-            android:text="50" />
-
-    </LinearLayout>
-
-    <!-- Кнопка "Сохранить размеры" -->
-    <Button
-        android:id="@+id/btnSaveSizes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Сохранить размеры"
-        android:textAllCaps="false"
-        android:backgroundTint="#2E7D32"
-        android:textColor="#FFFFFF" />
-
-    <!-- ... остальные кнопки (Печать, Обновить, Назад) ... -->
 </ScrollView>
+

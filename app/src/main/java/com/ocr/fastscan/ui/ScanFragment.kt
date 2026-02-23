@@ -368,8 +368,14 @@ class ScanFragment : Fragment(), SensorEventListener {
                 val l = dialogBinding.etLength.text.toString().toDoubleOrNull() ?: 0.0
                 val w = dialogBinding.etWidth.text.toString().toDoubleOrNull() ?: 0.0
                 val h = dialogBinding.etHeight.text.toString().toDoubleOrNull() ?: 0.0
-                val divider = prefs.getString("vol_weight", "6000")?.toDoubleOrNull() ?: 6000.0
-
+                //val divider = prefs.getString("vol_weight", "6000")?.toDoubleOrNull() ?: 6000.0
+                val divider = try {
+                    prefs.getInt("vol_weight", 6000)
+                } catch (e: ClassCastException) {
+                    Log.e("BoxDetail", "vol_weight хранится как строка, исправляем")
+                    val strValue = prefs.getString("vol_weight", "6000") ?: "6000"
+                    strValue.toIntOrNull() ?: 6000
+                }
                 val res = (l * w * h) / divider
                 dialogBinding.tvResultPreview.text = "Вес: ${String.format("%.2f", res)} кг"
             }

@@ -2,6 +2,7 @@ package com.ocr.fastscan.ui
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,13 +11,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
-import com.ocr.fastscan.data.model.BoxItem
 import com.ocr.fastscan.data.model.BoxRequest
-import com.ocr.fastscan.data.model.BoxResponse
 import com.ocr.fastscan.databinding.DialogAddBoxBinding
 import com.ocr.fastscan.databinding.FragmentBoxBinding
 import com.ocr.fastscan.utils.AppDependencies
-import com.ocr.fastscan.utils.AppDependencies.soundManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -84,17 +82,26 @@ class BoxFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
+                Log.d("BoxFragment", "Загрузка коробок: isOpenOnly=$isOpenOnly")
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
+                Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body() != null) {
-                    val boxes = response.body()!!
+                    val boxes = response.body()!!.map { box ->
+                        box.copy(
+                            dateCreated = formatBoxDate(box.dateCreated)  // ← форматируем
+                        )
+                    }
+                    Log.d("BoxFragment", "Получено коробок: ${boxes.size}")
                     boxesAdapter.submitList(boxes)
                     if (boxes.isEmpty()) {
                         binding.tvNoBoxes.visibility = View.VISIBLE
                     }
                 } else {
+                    Log.e("BoxFragment", "Ошибка API: ${response.code()} - ${response.message()}")
                     Toast.makeText(requireContext(), "Ошибка загрузки коробок", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("BoxFragment", "Сеть/исключение: ${e.message}", e)
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
@@ -160,6 +167,21 @@ class BoxFragment : Fragment() {
         val time = SimpleDateFormat("HHmm", Locale.getDefault()).format(Date())
         val random = (0..9999).random().toString().padStart(4, '0')
         return "NBX$date$time$random"
+    }
+    //формат даты Результат: "23.02.2026 17:14"
+    private fun formatBoxDate(isoDate: String?): String {
+        if (isoDate.isNullOrBlank()) return "Нет даты"
+
+        try {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            val date = inputFormat.parse(isoDate) ?: return "Ошибка даты"
+
+            val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+            return outputFormat.format(date)
+        } catch (e: Exception) {
+            return isoDate
+        }
     }
 
     override fun onDestroyView() {

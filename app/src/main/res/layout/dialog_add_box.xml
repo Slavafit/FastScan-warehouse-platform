@@ -4,6 +4,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
+    <!-- Показываем будущий номер коробки -->
+    <TextView
+        android:id="@+id/tvTrackingCode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Будет создан номер: ..."
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp" />
 
     <EditText android:id="@+id/etLength" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Длина (см)" android:inputType="number" />
 

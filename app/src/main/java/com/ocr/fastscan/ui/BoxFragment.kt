@@ -16,6 +16,7 @@ import com.ocr.fastscan.data.model.BoxResponse
 import com.ocr.fastscan.databinding.DialogAddBoxBinding
 import com.ocr.fastscan.databinding.FragmentBoxBinding
 import com.ocr.fastscan.utils.AppDependencies
+import com.ocr.fastscan.utils.AppDependencies.soundManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,6 +28,8 @@ class BoxFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val apiService = AppDependencies.apiService
+
+    private val soundManager = AppDependencies.soundManager
 
     private var isShowingAllBoxes = false  // флаг для "Показать все"
 
@@ -101,6 +104,11 @@ class BoxFragment : Fragment() {
 
     private fun showAddNewBoxDialog() {
         val dialogBinding = DialogAddBoxBinding.inflate(layoutInflater)
+
+        // Генерируем tracking_code сразу
+        val generatedTrackingCode = generateTrackingCode()
+        dialogBinding.tvTrackingCode.text = "Будет создан номер: $generatedTrackingCode"  // добавь TextView в dialog_add_box.xml
+
         AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             .setTitle("Новая коробка")
@@ -109,32 +117,39 @@ class BoxFragment : Fragment() {
                 val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
                 val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
 
-                val trackingCode = generateTrackingCode()
-
                 lifecycleScope.launch {
                     try {
-                        val request = BoxRequest(trackingCode, width, height, length)
+                        val request = BoxRequest(
+                            trackingCode = generatedTrackingCode,  // используем сгенерированный
+                            width = width,
+                            height = height,
+                            length = length
+                        )
                         val response = apiService.createOrUpdateBox(request)
-                        if (response.isSuccessful && response.body()?.success == true) {  // ← body() + success
-                            Toast.makeText(requireContext(), "Коробка создана: $trackingCode", Toast.LENGTH_SHORT).show()
+                        if (response.isSuccessful && response.body()?.success == true) {
+                            Toast.makeText(requireContext(), "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
+                            soundManager.playSuccess()
                             loadBoxes(isOpenOnly = true)
-                            // Открываем детальный экран
-                            val detailFragment = BoxDetailFragment.newInstance("", trackingCode)
+                            // Открываем детальный экран новой коробки
+                            val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
                             parentFragmentManager.beginTransaction()
                                 .replace(R.id.fragment_container, detailFragment)
                                 .addToBackStack(null)
                                 .commit()
                         } else {
                             Toast.makeText(requireContext(), "Ошибка создания", Toast.LENGTH_SHORT).show()
+                            soundManager.playError()
                         }
                     } catch (e: Exception) {
                         Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                        soundManager.playError()
                     }
                 }
             }
             .setNegativeButton("Отмена", null)
             .show()
 
+        // Устанавливаем дефолтные размеры
         dialogBinding.etLength.setText("70")
         dialogBinding.etWidth.setText("45")
         dialogBinding.etHeight.setText("50")

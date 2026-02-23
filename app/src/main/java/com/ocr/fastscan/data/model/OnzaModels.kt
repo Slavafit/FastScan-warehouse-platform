@@ -22,6 +22,8 @@ data class AuthResponse(
 )
 // Данные из GET запроса по треку (приходит массив []) Для получения данных о клиенте
 data class OrderDetails(
+    @SerializedName("guid") val guid: String?,
+    @SerializedName("tracking_number") val trackingNumber: String?,
     @SerializedName("client") val clientName: String?,
     @SerializedName("client_code") val clientCode: String?,
     @SerializedName("with_box") val withBox: String?, // Приходит "1" или null
@@ -106,7 +108,8 @@ data class OrderSearchResponse(
     @SerializedName("guid") val guid: String?,
     @SerializedName("tracking_number") val trackingNumber: String?,
     @SerializedName("tracking_code") val trackingCode: String?,
-    @SerializedName("status_name") val statusName: String?
+    @SerializedName("status_name") val statusName: String?,
+    @SerializedName("gross_weight") val grossWeight: Double?
 )
 
 // Запрос для добавления заказа в коробку (POST /api/order/box-order)
@@ -137,7 +140,8 @@ data class RemoveOrderResponse(
 data class OrderInBox(
     @SerializedName("guid") val guid: String?,
     @SerializedName("tracking_number") val trackingNumber: String?,
-    @SerializedName("weight") val weight: Double?  // предположим, вес заказа
+    @SerializedName("gross_weight") val grossWeight: Double?,  // ← добавь это
+    @SerializedName("weight") val weight: Double? = null  // если есть отдельное поле weight — оставь, но gross_weight важнее
 )
 
 // Модель для записи в Firebase Boxes

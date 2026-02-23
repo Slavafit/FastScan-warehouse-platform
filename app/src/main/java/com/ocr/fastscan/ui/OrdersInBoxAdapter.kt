@@ -5,17 +5,17 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.ocr.fastscan.data.model.OrderInBox
+import com.ocr.fastscan.data.model.OrderDetails
 import com.ocr.fastscan.databinding.ItemOrderInBoxBinding
 
-class OrdersInBoxAdapter(
-    private val onDelete: (OrderInBox) -> Unit
-) : ListAdapter<OrderInBox, OrdersInBoxAdapter.ViewHolder>(DiffCallback) {
+class OrdersAdapter(
+    private val onDelete: (OrderDetails) -> Unit
+) : ListAdapter<OrderDetails, OrdersAdapter.ViewHolder>(DiffCallback) {
 
     class ViewHolder(private val binding: ItemOrderInBoxBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(order: OrderInBox, onDelete: (OrderInBox) -> Unit) {
-            binding.tvTrackingNumber.text = order.trackingNumber
-            binding.tvWeight.text = "Вес: ${order.weight} кг"
+        fun bind(order: OrderDetails, onDelete: (OrderDetails) -> Unit) {
+            binding.tvTrackingNumber.text = order.trackingNumber ?: "Нет номера"
+            binding.tvWeight.text = "Вес: %.2f кг".format(order.grossWeight ?: 0.0)
 
             binding.btnDelete.setOnClickListener { onDelete(order) }
         }
@@ -30,8 +30,13 @@ class OrdersInBoxAdapter(
         holder.bind(getItem(position), onDelete)
     }
 
-    object DiffCallback : DiffUtil.ItemCallback<OrderInBox>() {
-        override fun areItemsTheSame(oldItem: OrderInBox, newItem: OrderInBox): Boolean = oldItem.guid == newItem.guid
-        override fun areContentsTheSame(oldItem: OrderInBox, newItem: OrderInBox): Boolean = oldItem == newItem
+    object DiffCallback : DiffUtil.ItemCallback<OrderDetails>() {
+        override fun areItemsTheSame(oldItem: OrderDetails, newItem: OrderDetails): Boolean {
+            return oldItem.guid == newItem.guid  // сравниваем по уникальному guid
+        }
+
+        override fun areContentsTheSame(oldItem: OrderDetails, newItem: OrderDetails): Boolean {
+            return oldItem == newItem  // полное сравнение
+        }
     }
 }

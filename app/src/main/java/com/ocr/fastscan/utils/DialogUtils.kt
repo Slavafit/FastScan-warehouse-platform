@@ -3,8 +3,8 @@ package com.ocr.fastscan.utils
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
-import androidx.preference.PreferenceManager
 import com.ocr.fastscan.databinding.DialogVolumeBinding
+import com.ocr.fastscan.utils.getVolWeightDivider
 
 object DialogUtils {
 
@@ -20,8 +20,7 @@ object DialogUtils {
             .setView(dialogBinding.root)
             .create()
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val divider = prefs.getString("vol_weight", "6000")?.toDoubleOrNull() ?: 6000.0
+        val divider = context.getVolWeightDivider()
 
         val watcher = object : android.text.TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) {

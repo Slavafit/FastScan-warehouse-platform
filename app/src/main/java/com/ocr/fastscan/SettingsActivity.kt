@@ -18,6 +18,8 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.ocr.fastscan.utils.saveVolWeightDivider
+
 
 class SettingsActivity : AppCompatActivity() {
 
@@ -34,6 +36,13 @@ class SettingsActivity : AppCompatActivity() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             // Загружаем XML настроек
             setPreferencesFromResource(R.xml.settings, rootKey)
+
+            val volWeightPref = findPreference<EditTextPreference>("vol_weight")
+            volWeightPref?.setOnPreferenceChangeListener { _, newValue ->
+                val newDivider = (newValue as? String)?.toDoubleOrNull() ?: 6000.0
+                requireContext().saveVolWeightDivider(newDivider)
+                true
+            }
 
             // Находим и обновляем статус лицензии
             findPreference<Preference>("license_status")?.let { licensePref ->

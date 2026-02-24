@@ -161,7 +161,7 @@ class PrintHelper(private val context: Context) {
     private fun drawLabelBox(canvas: Canvas, trackingCode: String, weight: String, last4: String) {
         val paint = Paint().apply {
             color = Color.BLACK
-            textSize = 14f
+            textSize = 15f
             isAntiAlias = true
         }
 
@@ -174,24 +174,17 @@ class PrintHelper(private val context: Context) {
         paint.isFakeBoldText = false
         canvas.drawText(trackingCode, 70f, 160f, paint)
 
+        // Линия разделения
+        canvas.drawLine(20f, 180f, 320f, 181f, paint)
+
         // 4 цифры штрих-кода
         paint.textSize = 50f
         paint.isFakeBoldText = false
-        canvas.drawText(last4, 70f, 160f, paint)
+        canvas.drawText(last4, 85f, 240f, paint)
 
         // Вес
         paint.textSize = 30f
-        canvas.drawText("Weight: $weight kg", 20f, 270f, paint)
+        canvas.drawText("Weight: $weight kg", 20f, 300f, paint)
 
-        // Линия разделения
-        canvas.drawLine(20f, 180f, 260f, 180f, paint)
     }
-
-    //fun printBoxLabel(trackingCode: String, weight: String, last4: String) {
-        // 2. Штрих-код (генерируем Bitmap и рисуем)
-        // Твой текущий код печати + генерация лейбла 150x100
-        // Используй BarcodeUtils.generateBarcode(trackingCode, 240, 80)
-        // Рисуй Canvas: штрих-код, номер, последние 4 цифры крупно, вес
-        //Для последних 4 цифр: trackingCode.takeLast(4)
-    //}
 }

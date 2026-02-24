@@ -24,6 +24,7 @@ import android.text.TextWatcher
 import android.util.Log
 import com.ocr.fastscan.data.model.OrderDetails
 import com.ocr.fastscan.utils.ScanUtils
+import com.ocr.fastscan.utils.getVolWeightDivider
 
 class BoxDetailFragment : Fragment() {
 
@@ -187,7 +188,8 @@ class BoxDetailFragment : Fragment() {
                 val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
                 val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
 
-                val divider = PreferenceManager.getDefaultSharedPreferences(requireContext()).getInt("vol_weight", 6000)
+
+                val divider = requireContext().getVolWeightDivider()  // всегда Double, минимум 6000.0
                 val vWeight = (length * width * height) / divider.toDouble()
 
                 binding.tvVWeight.text = "Объёмный вес: $vWeight кг"
@@ -218,14 +220,31 @@ class BoxDetailFragment : Fragment() {
         }
     }
 
-    private fun printLabel() {
-        val weight = binding.tvGrossWeight.text.toString().replace("Вес: ", "").replace(" кг", "")
-        val last4 = boxTracking.takeLast(4)
+private fun printLabel() {
+    // 1. Полный текст из UI
+    val fullWeightText = binding.tvGrossWeight.text.toString()
+    Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText'")
 
-        printHelper.printBoxLabel(boxTracking, weight, last4)
-        soundManager.playSuccess()
+    // 2. Надёжная очистка веса (убираем всё лишнее, меняем запятую на точку)
+    val weightClean = fullWeightText
+        .replace("Общий вес: ", "")
+        .replace("Вес: ", "")
+        .replace(" кг", "")
+        .replace("kg", "")
+        .replace(",", ".")  // ← ключевой фикс для русского формата
+        .trim()
+
+    // 3. last4 — с защитой от пробелов и коротких строк
+    val trimmedTracking = boxTracking.trim()  // убираем пробелы в конце
+    val last4 = if (trimmedTracking.length >= 4) {
+        trimmedTracking.takeLast(4)
+    } else {
+        trimmedTracking.padStart(4, '0')  // если меньше 4 символов — дополняем нулями
     }
-
+    // 4. Печать
+    printHelper.printBoxLabel(trimmedTracking, weightClean, last4)
+    soundManager.playSuccess()
+}
     private fun addOrderByTrack(tcode: String) {
         lifecycleScope.launch {
             try {
@@ -277,6 +296,8 @@ class BoxDetailFragment : Fragment() {
                 if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
                     val box = response.body()!![0]  // берём первую (единственную) коробку по tCode
 
+                    binding.tvBoxNumber.text = "Номер коробки: ${boxTracking}"
+
                     // Заполняем поля размеров
                     binding.etLength.setText(box.length?.toString() ?: "70")
                     binding.etWidth.setText(box.width?.toString() ?: "45")
@@ -295,14 +316,16 @@ class BoxDetailFragment : Fragment() {
             } catch (e: Exception) {
                 Log.e("loadBoxInfo", "Сеть/исключение: ${e.message}", e)
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+            } finally {
+                binding.progressBar.visibility = View.GONE
             }
         }
     }
 
     private fun loadOrdersInBox() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = apiService.getOrderDetails(boxTracking)
+                val response = apiService.getOrderDetails(boxTracking) ///api/order/order-tracking-code
                 if (response.isSuccessful && response.body() != null) {
                     val orders = response.body()!!
                     ordersAdapter.submitList(orders)

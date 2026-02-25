@@ -40,6 +40,28 @@
             android:text="Заказов: 0"
             android:textSize="16sp" />
 
+        <Button
+            android:id="@+id/btnAddOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Сканировать трек заказа" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center" />
+
+        <!-- Список заказов -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvOrders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp" />
+
+
         <!-- Блок размеров -->
         <LinearLayout
             android:id="@+id/layoutSizes"
@@ -84,27 +106,6 @@
             android:text="Сохранить размеры"
             android:backgroundTint="#2E7D32"
             android:textColor="#FFFFFF" />
-
-        <!-- Список заказов -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvOrders"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" />
-
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_gravity="center" />
-
-        <Button
-            android:id="@+id/btnAddOrder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Сканировать трек заказа" />
 
         <Button
             android:id="@+id/btnPrint"

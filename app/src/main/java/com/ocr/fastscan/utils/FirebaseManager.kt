@@ -10,20 +10,6 @@ import java.security.Timestamp
 class FirebaseManager(requireContext: Context) {
     private val db = FirebaseFirestore.getInstance()
 
-    fun checkTrackExists(tracking: String, onResult: (Boolean) -> Unit) {
-        db.collection("shipments") // Убедитесь, что имя коллекции совпадает
-            .whereEqualTo("tracking", tracking)
-            .get()
-            .addOnSuccessListener { documents ->
-                onResult(!documents.isEmpty) // Возвращает true, если список документов не пуст
-            }
-            .addOnFailureListener {
-                onResult(false) // В случае ошибки считаем, что не нашли
-            }
-    }
-
-
-
     fun saveShipment(
         shipment: FirestoreShipment,    // ← основной параметр — объект с данными
         onSuccess: () -> Unit,          // колбэк успеха
@@ -41,14 +27,22 @@ class FirebaseManager(requireContext: Context) {
                 onFailure(e)
             }
     }
-    fun saveBoxEntry(entry: BoxEntry) {
-        db.collection("Boxes")
-            .add(entry)
+    fun saveBoxEntry
+                (entry: BoxEntry,
+                 onSuccess: () -> Unit = {},          // колбэк успеха
+                 onFailure: (Exception) -> Unit = {}     // колбэк ошибки)
+    )    {
+        val collection = db.collection("box_entries")  // твоя коллекция
+            // Используем трек как ID документа — если запись уже есть, она перезапишется
+            collection.document(entry.orderTracking)  // ← трек как document ID
+            .set(entry)
             .addOnSuccessListener {
                 Log.d("FirebaseManager", "Box entry saved: order ${entry.orderTracking} in box ${entry.boxTracking}")
+                onSuccess()
             }
             .addOnFailureListener { e ->
                 Log.e("FirebaseManager", "Error saving box entry", e)
+                onFailure(e)
             }
     }
 }

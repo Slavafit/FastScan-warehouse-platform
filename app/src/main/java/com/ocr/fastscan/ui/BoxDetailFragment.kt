@@ -246,43 +246,107 @@ private fun printLabel() {
     soundManager.playSuccess()
 }
     private fun addOrderByTrack(tcode: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = apiService.searchOrder(tcode)
-                if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
-                    val order = response.body()!![0]
-                    val orderGuid = order.guid ?: return@launch
+                Log.d("AddOrder", "Шаг 1: Поиск заказа по треку $tcode")
+                val searchResponse = apiService.searchOrder(tcode)
 
-                    // Добавляем заказ в коробку
-                    val addRequest = BoxOrderRequest(
-                        order = orderGuid,
-                        box = boxGuid,  // guid коробки из аргументов фрагмента
-                        desc = "Добавлен по скану"
-                    )
+                if (!searchResponse.isSuccessful || searchResponse.body().isNullOrEmpty()) {
+                    val msg = if (!searchResponse.isSuccessful) "Ошибка поиска: ${searchResponse.code()}" else "Заказ не найден"
+                    Log.e("AddOrder", msg)
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                    soundManager.playError()
+                    return@launch
+                }
 
-                    val addResponse = apiService.addOrderToBox(addRequest)
-                    if (addResponse.isSuccessful && addResponse.body()?.success == true) {
+                val order = searchResponse.body()!![0]
+                val orderGuid = order.guid ?: run {
+                    Log.e("AddOrder", "У заказа нет GUID")
+                    Toast.makeText(requireContext(), "У заказа нет GUID", Toast.LENGTH_SHORT).show()
+                    soundManager.playError()
+                    return@launch
+                }
+
+                Log.d("AddOrder", "Шаг 2: Добавляем заказ $orderGuid в коробку $boxGuid")
+
+                val addRequest = BoxOrderRequest(
+                    order = orderGuid,
+                    box = boxGuid,
+                    desc = "По скану"  // короткое описание
+                )
+
+                val addResponse = apiService.addOrderToBox(addRequest)
+
+                Log.d("AddOrder", "Ответ сервера: код ${addResponse.code()}, тело: ${addResponse.body()}")
+
+                if (addResponse.isSuccessful) {
+                    val rawBody = addResponse.body()
+
+                    // Успех: массив с GUID
+                    if (rawBody is List<*> && rawBody.isNotEmpty()) {
+                        val firstItem = rawBody[0] as? Map<*, *>
+                        val newGuid = firstItem?.get("guid") as? String
+
+                        Log.d("AddOrder", "Успех: добавлен GUID $newGuid")
                         Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
                         soundManager.playSuccess()
-                        loadBoxDetails()  // обновляем список заказов и веса
-                        // Сохраняем в Firebase Boxes
+                        loadBoxDetails()
+
+                        // Firebase
                         val entry = BoxEntry(
                             orderTracking = tcode,
+                            clientCode = order.clientCode,
+                            client = order.client,
                             boxTracking = boxTracking,
                             date = Timestamp.now(),
                             orderWeight = order.grossWeight ?: 0.0
                         )
-                        firebaseManager.saveBoxEntry(entry)
-                    } else {
-                        Toast.makeText(requireContext(), "Ошибка добавления заказа", Toast.LENGTH_SHORT).show()
+                        firebaseManager.saveBoxEntry(
+                            entry = entry,
+                            onSuccess = {
+                                Log.d("AddOrder", "Запись в Firebase прошла успешно")
+                                // Здесь можно обновить UI, если нужно (например, перезагрузить список коробок)
+                            },
+                            onFailure = { e ->
+                                Log.e("AddOrder", "Ошибка записи в Firebase", e)
+                                Toast.makeText(requireContext(), "Не удалось сохранить в Firebase: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                soundManager.playError()
+                            }
+                        )
+                    }
+                    // Ошибка: объект с сообщением
+                    else if (rawBody is Map<*, *>) {
+                        val success = rawBody["success"] as? Boolean ?: false
+                        val message = rawBody["message"] as? String
+                            ?: rawBody["error"] as? String
+                            ?: "Неизвестная ошибка"
+
+                        if (success) {
+                            Log.d("AddOrder", "Успех в объектном формате")
+                            Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
+                            soundManager.playSuccess()
+                            loadBoxDetails()
+                        } else {
+                            Log.e("AddOrder", "Ошибка от сервера: $message")
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
+                            soundManager.playError()
+                        }
+                    }
+                    // Неизвестный формат
+                    else {
+                        Log.e("AddOrder", "Неожиданный формат ответа: $rawBody")
+                        Toast.makeText(requireContext(), "Неизвестный ответ сервера", Toast.LENGTH_LONG).show()
                         soundManager.playError()
                     }
                 } else {
-                    Toast.makeText(requireContext(), "Заказ не найден", Toast.LENGTH_SHORT).show()
+                    val errorBody = addResponse.errorBody()?.string() ?: "Нет тела ошибки"
+                    Log.e("AddOrder", "Ошибка сервера: код ${addResponse.code()}, тело: $errorBody")
+                    Toast.makeText(requireContext(), "Ошибка сервера: ${addResponse.code()}", Toast.LENGTH_LONG).show()
                     soundManager.playError()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Log.e("AddOrder", "Сетевая/другая ошибка при добавлении заказа", e)
+                Toast.makeText(requireContext(), "Сеть/ошибка: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
                 soundManager.playError()
             }
         }

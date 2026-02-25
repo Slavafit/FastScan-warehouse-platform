@@ -44,7 +44,7 @@ interface OnzaApiService {
     suspend fun searchOrder(@Query("tcode") tcode: String): Response<List<OrderSearchResponse>>
 
     @POST("/api/order/box-order")
-    suspend fun addOrderToBox(@Body request: BoxOrderRequest): Response<BoxOrderResponse>
+    suspend fun addOrderToBox(@Body request: BoxOrderRequest): Response<List<BoxOrderResponse>>
 
     @HTTP(method = "DELETE", path = "/api/order/box-order", hasBody = true)
     suspend fun removeOrderFromBox(@Body request: RemoveOrderRequest): Response<RemoveOrderResponse>

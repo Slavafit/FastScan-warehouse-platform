@@ -157,34 +157,38 @@ class PrintHelper(private val context: Context) {
         // Линия разделения
         canvas.drawLine(20f, 180f, 260f, 180f, paint)
     }
-
     private fun drawLabelBox(canvas: Canvas, trackingCode: String, weight: String, last4: String) {
         val paint = Paint().apply {
             color = Color.BLACK
-            textSize = 15f
             isAntiAlias = true
         }
 
-        // Штрих-код (генерируем Bitmap и рисуем)
-        val barcodeBmp = BarcodeUtils.generateBarcode(trackingCode, 240, 80)
-        canvas.drawBitmap(barcodeBmp, 20f, 60f, paint)
+        // 1. Штрих-код
+        // Рисуем чуть выше (y = 40f), чтобы сэкономить место.
+        // Занимает пространство от 40 до 160 по вертикали (40 + 120).
+        val barcodeBmp = BarcodeUtils.generateBarcode(trackingCode, 360, 120)
+        canvas.drawBitmap(barcodeBmp, 20f, 40f, paint)
 
-        // Текст под штрих-кодом
-        paint.textSize = 16f
+        // 2. Полный трек-номер прямо под штрих-кодом
+        paint.textSize = 30f // Сделали чуть крупнее (было 16f) для читаемости
         paint.isFakeBoldText = false
-        canvas.drawText(trackingCode, 70f, 160f, paint)
+        // Рисуем на уровне 185 (ровно под штрих-кодом). Сдвинули X на 40, чтобы текст был центричнее.
+        canvas.drawText(trackingCode, 50f, 185f, paint)
 
-        // Линия разделения
-        canvas.drawLine(20f, 180f, 320f, 181f, paint)
+        // 3. Линия разделения
+        paint.strokeWidth = 2f // Делаем линию чуть толще для термопринтера
+        // Растягиваем линию от 20 до 380, чтобы она была ровно по ширине штрих-кода (20 + 360 = 380)
+        canvas.drawLine(20f, 210f, 380f, 210f, paint)
 
-        // 4 цифры штрих-кода
-        paint.textSize = 50f
-        paint.isFakeBoldText = false
-        canvas.drawText(last4, 85f, 240f, paint)
+        // 4. Последние 4 цифры (Крупно)
+        paint.textSize = 70f // Делаем еще крупнее (было 50)
+        paint.isFakeBoldText = true // Включаем жирный шрифт для акцента
+        // X=110 сдвигает цифры ближе к центру, Y=280 дает отступ от линии
+        canvas.drawText(last4, 90f, 280f, paint)
 
-        // Вес
-        paint.textSize = 30f
-        canvas.drawText("Weight: $weight kg", 20f, 300f, paint)
-
+        // 5. Вес
+        paint.textSize = 35f // Чуть крупнее для склада
+        paint.isFakeBoldText = false // Возвращаем обычный шрифт
+        canvas.drawText("Weight: $weight kg", 20f, 340f, paint)
     }
 }

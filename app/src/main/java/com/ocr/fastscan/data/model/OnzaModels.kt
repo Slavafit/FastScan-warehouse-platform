@@ -109,7 +109,9 @@ data class OrderSearchResponse(
     @SerializedName("tracking_number") val trackingNumber: String?,
     @SerializedName("tracking_code") val trackingCode: String?,
     @SerializedName("status_name") val statusName: String?,
-    @SerializedName("gross_weight") val grossWeight: Double?
+    @SerializedName("gross_weight") val grossWeight: Double?,
+    @SerializedName("client_code") val clientCode: String?,
+    @SerializedName("client") val client: String?
 )
 
 // Запрос для добавления заказа в коробку (POST /api/order/box-order)
@@ -122,8 +124,12 @@ data class BoxOrderRequest(
 // Ответ на POST /api/order/box-order
 data class BoxOrderResponse(
     @SerializedName("success") val success: Boolean,
-    @SerializedName("message") val message: String
-)
+    @SerializedName("message") val message: String,
+    @SerializedName("error") val error: String,
+    @SerializedName("guid") val guid: String
+
+
+    )
 
 // Запрос для удаления заказа из коробки (DELETE /api/order/box-order)
 data class RemoveOrderRequest(
@@ -148,6 +154,8 @@ data class OrderInBox(
 data class BoxEntry(
     val orderTracking: String,  // трек заказа
     val boxTracking: String,  // трек коробки
+    val clientCode: String?,
+    val client: String?,
     val date: Timestamp = Timestamp.now(),
     val orderWeight: Double
 )

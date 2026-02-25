@@ -14,7 +14,11 @@ interface OnzaApiService {
 
     // Поиск по треку (возвращает объект OrderDetails)
     @GET("/api/order/order-tracking-code")
-    suspend fun getOrderDetails(@Query("boxId") boxId: String): Response<List<OrderDetails>>
+    suspend fun getOrderDetailsBox(@Query("boxId") boxId: String): Response<List<OrderDetails>>
+
+    // Поиск по треку в коробке (возвращает объект OrderDetails)
+    @GET("/api/order/order-tracking-code")
+    suspend fun getOrderDetails(@Query("tcode") boxId: String): Response<List<OrderDetails>>
 
     @POST("/api/order/set-user")
     suspend fun saveOrder(@Body data: SaveOrderRequest): Response<SaveResponse>
@@ -42,6 +46,6 @@ interface OnzaApiService {
     @POST("/api/order/box-order")
     suspend fun addOrderToBox(@Body request: BoxOrderRequest): Response<BoxOrderResponse>
 
-    @DELETE("/api/order/box-order")
+    @HTTP(method = "DELETE", path = "/api/order/box-order", hasBody = true)
     suspend fun removeOrderFromBox(@Body request: RemoveOrderRequest): Response<RemoveOrderResponse>
 }

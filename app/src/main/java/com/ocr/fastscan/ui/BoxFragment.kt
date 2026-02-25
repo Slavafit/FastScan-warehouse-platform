@@ -112,54 +112,69 @@ class BoxFragment : Fragment() {
     private fun showAddNewBoxDialog() {
         val dialogBinding = DialogAddBoxBinding.inflate(layoutInflater)
 
-        // Генерируем tracking_code сразу
+        // Генерируем tracking_code сразу (но используем только при нажатии)
         val generatedTrackingCode = generateTrackingCode()
-        dialogBinding.tvTrackingCode.text = "Будет создан номер: $generatedTrackingCode"  // добавь TextView в dialog_add_box.xml
+        dialogBinding.tvTrackingCode.text = "Будет создан номер: $generatedTrackingCode"
 
-        AlertDialog.Builder(requireContext())
+        // Создаём диалог, но пока не показываем
+        val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             .setTitle("Новая коробка")
-            .setPositiveButton("Создать") { _, _ ->
-                val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
-                val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
-                val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
-
-                lifecycleScope.launch {
-                    try {
-                        val request = BoxRequest(
-                            trackingCode = generatedTrackingCode,  // используем сгенерированный
-                            width = width,
-                            height = height,
-                            length = length
-                        )
-                        val response = apiService.createOrUpdateBox(request)
-                        if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(requireContext(), "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
-                            soundManager.playSuccess()
-                            loadBoxes(isOpenOnly = true)
-                            // Открываем детальный экран новой коробки
-                            val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
-                            parentFragmentManager.beginTransaction()
-                                .replace(R.id.fragment_container, detailFragment)
-                                .addToBackStack(null)
-                                .commit()
-                        } else {
-                            Toast.makeText(requireContext(), "Ошибка создания", Toast.LENGTH_SHORT).show()
-                            soundManager.playError()
-                        }
-                    } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
-                        soundManager.playError()
-                    }
-                }
-            }
+            .setPositiveButton("Создать", null)  // Обработчик позже
             .setNegativeButton("Отмена", null)
-            .show()
+            .create()
 
         // Устанавливаем дефолтные размеры
         dialogBinding.etLength.setText("70")
         dialogBinding.etWidth.setText("45")
         dialogBinding.etHeight.setText("50")
+
+        // Переопределяем кнопку "Создать"
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
+            val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
+            val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
+
+            if (length <= 0 || width <= 0 || height <= 0) {
+                Toast.makeText(requireContext(), "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val request = BoxRequest(
+                        trackingCode = generatedTrackingCode,
+                        width = width,
+                        height = height,
+                        length = length
+                    )
+                    val response = apiService.createOrUpdateBox(request)
+
+                    if (response.isSuccessful && response.body()?.success == true) {
+                        Toast.makeText(requireContext(), "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
+                        soundManager.playSuccess()
+                        loadBoxes(isOpenOnly = true)
+
+                        val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
+                        parentFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, detailFragment)
+                            .addToBackStack(null)
+                            .commit()
+
+                        dialog.dismiss()  // ← теперь dialog доступен
+                    } else {
+                        Toast.makeText(requireContext(), "Ошибка создания", Toast.LENGTH_SHORT).show()
+                        soundManager.playError()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Сеть/ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                    soundManager.playError()
+                }
+            }
+        }
+
+        // Показываем диалог после настройки
+        dialog.show()
     }
 
     private fun generateTrackingCode(): String {

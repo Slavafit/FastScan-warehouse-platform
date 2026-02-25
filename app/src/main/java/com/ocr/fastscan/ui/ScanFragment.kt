@@ -358,43 +358,7 @@ class ScanFragment : Fragment(), SensorEventListener {
         binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
     }
 
-    private fun showVolumeDialog() {
-        val dialogBinding = DialogVolumeBinding.inflate(layoutInflater)
-        val dialog = AlertDialog.Builder(requireContext()).setView(dialogBinding.root).create()
-        val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
-
-        val watcher = object : android.text.TextWatcher {
-            override fun afterTextChanged(s: android.text.Editable?) {
-                val l = dialogBinding.etLength.text.toString().toDoubleOrNull() ?: 0.0
-                val w = dialogBinding.etWidth.text.toString().toDoubleOrNull() ?: 0.0
-                val h = dialogBinding.etHeight.text.toString().toDoubleOrNull() ?: 0.0
-                //val divider = prefs.getString("vol_weight", "6000")?.toDoubleOrNull() ?: 6000.0
-                val divider = try {
-                    prefs.getInt("vol_weight", 6000)
-                } catch (e: ClassCastException) {
-                    Log.e("BoxDetail", "vol_weight хранится как строка, исправляем")
-                    val strValue = prefs.getString("vol_weight", "6000") ?: "6000"
-                    strValue.toIntOrNull() ?: 6000
-                }
-                val res = (l * w * h) / divider
-                dialogBinding.tvResultPreview.text = "Вес: ${String.format("%.2f", res)} кг"
-            }
-            override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) {}
-            override fun onTextChanged(s: CharSequence?, st: Int, b: Int, c: Int) {}
-        }
-        dialogBinding.etLength.addTextChangedListener(watcher)
-        dialogBinding.etWidth.addTextChangedListener(watcher)
-        dialogBinding.etHeight.addTextChangedListener(watcher)
-
-        dialogBinding.btnApplyVolume.setOnClickListener {
-            val resText = dialogBinding.tvResultPreview.text.toString().replace("Вес: ", "").replace(" кг", "").replace(",", ".")
-            binding.etWeight.setText(resText)
-            dialog.dismiss()
-        }
-        dialog.show()
-    }
-
-    // Сбрасываем таймер неактивности
+        // Сбрасываем таймер неактивности
     private fun resetInactivityTimer() {
         handler.removeCallbacks(inactivityRunnable)
         handler.postDelayed(inactivityRunnable, INACTIVITY_TIMEOUT)
@@ -438,12 +402,6 @@ class ScanFragment : Fragment(), SensorEventListener {
     override fun onPause() {
         super.onPause()
         sensorManager.unregisterListener(this)
-        handler.removeCallbacks(inactivityRunnable)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
         handler.removeCallbacks(inactivityRunnable)
     }
 
@@ -544,5 +502,11 @@ class ScanFragment : Fragment(), SensorEventListener {
             }
             .setNegativeButton("Отмена", null)
             .show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        handler.removeCallbacks(inactivityRunnable)
     }
 }

@@ -122,7 +122,7 @@ class BoxDetailFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val response = apiService.getOrderDetails(boxTracking)  // boxTracking = tracking_code коробки
+                val response = apiService.getOrderDetailsBox(boxTracking)  // boxTracking = tracking_code коробки
                 if (response.isSuccessful && response.body() != null) {
                     val orders = response.body()!!  // список заказов
                     ordersAdapter.submitList(orders)
@@ -325,7 +325,7 @@ private fun printLabel() {
     private fun loadOrdersInBox() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = apiService.getOrderDetails(boxTracking) ///api/order/order-tracking-code
+                val response = apiService.getOrderDetailsBox(boxTracking) ///api/order/order-tracking-code
                 if (response.isSuccessful && response.body() != null) {
                     val orders = response.body()!!
                     ordersAdapter.submitList(orders)

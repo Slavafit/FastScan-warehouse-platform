@@ -166,14 +166,14 @@ class PrintHelper(private val context: Context) {
         // 1. Штрих-код
         // Рисуем чуть выше (y = 40f), чтобы сэкономить место.
         // Занимает пространство от 40 до 160 по вертикали (40 + 120).
-        val barcodeBmp = BarcodeUtils.generateBarcode(trackingCode, 360, 120)
+        val barcodeBmp = BarcodeUtils.generateBarcode(trackingCode, 300, 100)
         canvas.drawBitmap(barcodeBmp, 20f, 40f, paint)
 
         // 2. Полный трек-номер прямо под штрих-кодом
-        paint.textSize = 30f // Сделали чуть крупнее (было 16f) для читаемости
+        paint.textSize = 25f
         paint.isFakeBoldText = false
         // Рисуем на уровне 185 (ровно под штрих-кодом). Сдвинули X на 40, чтобы текст был центричнее.
-        canvas.drawText(trackingCode, 50f, 185f, paint)
+        canvas.drawText(trackingCode, 20f, 180f, paint)
 
         // 3. Линия разделения
         paint.strokeWidth = 2f // Делаем линию чуть толще для термопринтера
@@ -181,13 +181,13 @@ class PrintHelper(private val context: Context) {
         canvas.drawLine(20f, 210f, 380f, 210f, paint)
 
         // 4. Последние 4 цифры (Крупно)
-        paint.textSize = 70f // Делаем еще крупнее (было 50)
+        paint.textSize = 50f
         paint.isFakeBoldText = true // Включаем жирный шрифт для акцента
         // X=110 сдвигает цифры ближе к центру, Y=280 дает отступ от линии
         canvas.drawText(last4, 90f, 280f, paint)
 
         // 5. Вес
-        paint.textSize = 35f // Чуть крупнее для склада
+        paint.textSize = 25f // Чуть крупнее для склада
         paint.isFakeBoldText = false // Возвращаем обычный шрифт
         canvas.drawText("Weight: $weight kg", 20f, 340f, paint)
     }

@@ -10,7 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ocr.fastscan.databinding.ActivityMainBinding
-import com.ocr.fastscan.ui.BatchFragment
+import com.ocr.fastscan.ui.PartyFragment
 import com.ocr.fastscan.ui.BoxFragment
 import com.ocr.fastscan.ui.ScanFragment
 import com.ocr.fastscan.utils.AppDependencies
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_batches -> {
                     supportFragmentManager.commit {
-                        replace(R.id.fragment_container, BatchFragment())
+                        replace(R.id.fragment_container, PartyFragment())
                     }
                     true
                 }

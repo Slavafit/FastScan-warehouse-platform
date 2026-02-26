@@ -159,3 +159,39 @@ data class BoxEntry(
     val date: Timestamp = Timestamp.now(),
     val orderWeight: Double
 )
+//fragment 3 Cajas
+// Партия (Partial)
+data class Partial(
+    val guid: String,
+    val partial_code: String,
+    val partial_name: String,
+    val warehouse_name: String,
+    val date_created: String,
+    val boxCount: Int,
+    val status: Int,  // 0 - открыта, 1 - завершена
+    val gross_weight: Double? = null
+)
+
+// Коробка в партии
+data class BoxInPartial(
+    val guid: String,
+    val tracking_code: String,
+    val width: Int,
+    val height: Int,
+    val length: Int,
+    val v_weight: Double,
+    val gross_weight: Double,
+    val orderCount: Int,
+    val date_created: String,
+    val warehouse_name: String
+)
+
+// Ответ на создание партии
+data class PartialCreateResponse(
+    val success: Boolean
+)
+
+// Ответ на отправку партии
+data class SendPartialResponse(
+    val result: Any?  // пустой объект
+)

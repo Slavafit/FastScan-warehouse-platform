@@ -9,12 +9,16 @@
         android:id="@+id/etFirstName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Имя" />
+        android:hint="Имя"
+        android:inputType="text"
+        android:maxLines="1" />
 
     <EditText
         android:id="@+id/etLastName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Фамилия" />
+        android:hint="Фамилия"
+        android:inputType="text"
+        android:maxLines="1" />
 
 </LinearLayout>

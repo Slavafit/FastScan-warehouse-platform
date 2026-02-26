@@ -46,14 +46,6 @@
             android:key="developer_info"
             android:title="Вячеслав Фитлин"
             android:summary="Телеграмм: @Slavafit"/>
-
-        <!-- Если хочешь добавить ссылку или описание -->
-        <!--
-        <Preference
-            android:key="developer_link"
-            android:title="Сайт / Telegram"
-            android:summary="https://t.me/slfitofficial" />
-        -->
     </PreferenceCategory>
 </PreferenceScreen>
 

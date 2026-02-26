@@ -159,6 +159,7 @@ data class BoxEntry(
     val date: Timestamp = Timestamp.now(),
     val orderWeight: Double
 )
+
 //fragment 3 Cajas
 // Партия (Partial)
 data class Partial(
@@ -194,4 +195,23 @@ data class PartialCreateResponse(
 // Ответ на отправку партии
 data class SendPartialResponse(
     val result: Any?  // пустой объект
+)
+
+data class AddBoxRequest(
+    val guid: String,           // guid коробки
+    val tracking_code: String,
+    val width: Int,
+    val height: Int,
+    val length: Int,
+    val v_weight: Double,
+    val gross_weight: Double,
+    val orderCount: Int
+)
+data class SendPartialRequest(
+    val partial: String  // guid партии
+)
+
+data class PartialCreateRequest(
+    val partial_code: String,
+    val partial_name: String
 )

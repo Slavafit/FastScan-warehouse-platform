@@ -15,7 +15,9 @@ import java.util.Locale
 import android.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.ocr.fastscan.databinding.DialogCreatePartyBinding
 import kotlinx.coroutines.launch
+import com.ocr.fastscan.data.model.*
 
 class PartyFragment : Fragment() {
 

@@ -158,6 +158,7 @@ class ScanFragment : Fragment(), SensorEventListener {
             printHelper.printLabel(
                 binding.etTracking.text.toString(),
                 binding.etClientCode.text.toString(),
+                binding.tvClientName.text.toString(),
                 binding.etWeight.text.toString()
             )
         }
@@ -433,12 +434,11 @@ class ScanFragment : Fragment(), SensorEventListener {
         val progress = ProgressDialog(requireContext()).apply {
             setMessage("Загрузка клиентов...")
             setCancelable(true)
-            setOnCancelListener { /* можно отменить запрос, если нужно */ }
+            //setOnCancelListener { /* можно отменить запрос, если нужно */ }
         }
         progress.show()
         lifecycleScope.launch {
             binding.btnSearchClient.isEnabled = false  // отключаем кнопку, пока идёт
-            //binding.btnSearchClient.text = "Поиск..."
             try {
                 val response = apiService.getAllReceivers()
                 if (!response.isSuccessful) {
@@ -464,6 +464,10 @@ class ScanFragment : Fragment(), SensorEventListener {
                             val match = filtered[0]
                             val code = match.clientCode ?: ""
                             binding.etClientCode.setText(code)
+                            binding.etClientCode.requestFocus()
+                            binding.etClientCode.setSelection(code.length)
+                            // Вызываем действие Done
+                            binding.etClientCode.onEditorAction(EditorInfo.IME_ACTION_DONE)
                             val name = "${match.firstName ?: ""} ${match.lastName ?: ""}".trim()
                             Toast.makeText(requireContext(), "Найден: $name ($code)", Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
@@ -480,6 +484,7 @@ class ScanFragment : Fragment(), SensorEventListener {
                 Toast.makeText(requireContext(), "Сеть ошибка search", Toast.LENGTH_SHORT).show()
                 Log.e("SearchClient", e.message, e)
             } finally {
+                progress.dismiss()
                 binding.btnSearchClient.isEnabled = true
             }
         }
@@ -495,7 +500,13 @@ class ScanFragment : Fragment(), SensorEventListener {
             .setTitle("Найдено несколько клиентов")
             .setItems(items) { _, which ->
                 val selected = results[which]
-                binding.etClientCode.setText(selected.clientCode)
+                val client = selected.clientCode ?: ""
+                // Вставляем код клиента
+                binding.etClientCode.setText(client)
+                binding.etClientCode.requestFocus()
+                binding.etClientCode.setSelection(client.length)
+                // Вызываем действие Done
+                binding.etClientCode.onEditorAction(EditorInfo.IME_ACTION_DONE)
                 val name = "${selected.firstName ?: ""} ${selected.lastName ?: ""}".trim()
                 Toast.makeText(requireContext(), "Выбран: $name", Toast.LENGTH_SHORT).show()
                 soundManager.playSuccess()

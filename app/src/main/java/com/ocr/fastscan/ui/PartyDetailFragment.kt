@@ -5,9 +5,17 @@ import androidx.fragment.app.Fragment
 import com.ocr.fastscan.databinding.FragmentPartyDetailBinding
 import com.ocr.fastscan.utils.AppDependencies
 import android.app.AlertDialog
+import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
-import androidx.activity.result.ActivityResultLauncher
-
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.ocr.fastscan.data.model.*
+import com.ocr.fastscan.databinding.DialogSelectBoxBinding
+import kotlinx.coroutines.launch
+import com.ocr.fastscan.ui.BoxesInPartialAdapter
 
 class PartyDetailFragment : Fragment() {
 
@@ -20,18 +28,22 @@ class PartyDetailFragment : Fragment() {
     private var partialGuid: String = ""
     private var partialCode: String = ""
 
-    private val boxesAdapter = BoxesInPartialAdapter { box ->
-        // Долгое нажатие или кнопка удаления — удаляем коробку
-        AlertDialog.Builder(requireContext())
-            .setTitle("Удалить коробку?")
-            .setMessage("Удалить ${box.tracking_code} из партии?")
-            .setPositiveButton("Удалить") { _, _ ->
-                removeBoxFromParty(box.guid)
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
-    }
-
+//    private val boxesAdapter = BoxesInPartialAdapter { box ->
+//        // Долгое нажатие или кнопка удаления — удаляем коробку
+//        AlertDialog.Builder(requireContext())
+//            .setTitle("Удалить коробку?")
+//            .setMessage("Удалить ${box.tracking_code} из партии? (пока не реализовано)")
+//            .setPositiveButton("Удалить") { _, _ ->
+//                Toast.makeText(requireContext(), "Удаление пока не реализовано", Toast.LENGTH_SHORT).show()
+//                //removeBoxFromParty(box.guid)
+//            }
+//            .setNegativeButton("Отмена", null)
+//            .show()
+//    }
+private val boxesAdapter = BoxesInPartialAdapter { box ->
+    // Удаление пока отключено
+    Toast.makeText(requireContext(), "Удаление коробки временно недоступно", Toast.LENGTH_SHORT).show()
+}
     companion object {
         fun newInstance(guid: String, code: String) = PartyDetailFragment().apply {
             arguments = Bundle().apply {
@@ -73,6 +85,13 @@ class PartyDetailFragment : Fragment() {
 
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvBoxes.adapter = boxesAdapter
+
+        binding.btnBack.setOnClickListener {
+            // Возврат назад по back stack (в список партий)
+            //parentFragmentManager.popBackStack()
+            // Или, если хочешь анимацию и чистый возврат:
+            parentFragmentManager.popBackStackImmediate()
+        }
 
         loadBoxDetails()
     }
@@ -121,7 +140,6 @@ class PartyDetailFragment : Fragment() {
                 Toast.makeText(requireContext(), "Ошибка загрузки коробок", Toast.LENGTH_SHORT).show()
             }
         }
-
         dialog.show()
     }
 
@@ -153,7 +171,28 @@ class PartyDetailFragment : Fragment() {
             }
         }
     }
-
+//    private fun removeBoxFromParty(boxGuid: String) {
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            try {
+//                // Пока заглушка — замени на реальный запрос, когда дашь путь
+//                // Пример для DELETE /api/order/partial-box?guid=boxGuid&partial=partialGuid
+//                val response = apiService.removeBoxFromPartial(boxGuid, partialGuid)
+//
+//                if (response.isSuccessful) {
+//                    Toast.makeText(requireContext(), "Коробка удалена из партии", Toast.LENGTH_SHORT).show()
+//                    soundManager.playSuccess()
+//                    loadBoxDetails()  // обновляем список коробок
+//                } else {
+//                    Toast.makeText(requireContext(), "Ошибка удаления коробки", Toast.LENGTH_SHORT).show()
+//                    soundManager.playError()
+//                }
+//            } catch (e: Exception) {
+//                Log.e("PartyDetail", "Ошибка удаления коробки", e)
+//                Toast.makeText(requireContext(), "Сеть/ошибка удаления: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+//                soundManager.playError()
+//            }
+//        }
+//    }
     private fun finishParty() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {

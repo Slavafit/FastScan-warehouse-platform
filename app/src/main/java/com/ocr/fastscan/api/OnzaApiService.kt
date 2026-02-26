@@ -57,18 +57,9 @@ interface OnzaApiService {
     @POST("/api/order/partial")
     suspend fun createPartial(@Body request: PartialCreateRequest): Response<PartialCreateResponse>
 
-    data class PartialCreateRequest(
-        val partial_code: String,
-        val partial_name: String
-    )
-
     // Отправить партию
     @POST("/api/order/send-partial")
     suspend fun sendPartial(@Body request: SendPartialRequest): Response<SendPartialResponse>
-
-    data class SendPartialRequest(
-        val partial: String  // guid партии
-    )
 
     // Список коробок в партии
     @GET("/api/order/partial-box")
@@ -82,18 +73,11 @@ interface OnzaApiService {
     @POST("/api/order/box")
     suspend fun addBoxToPartial(@Body request: AddBoxRequest): Response<Any>
 
-    data class AddBoxRequest(
-        val guid: String,           // guid коробки
-        val tracking_code: String,
-        val width: Int,
-        val height: Int,
-        val length: Int,
-        val v_weight: Double,
-        val gross_weight: Double,
-        val orderCount: Int
-    )
 
     // Удаление коробки из партии (пока заглушка — замени на реальный путь)
-    @DELETE("/api/order/partial-box")  // уточни путь
-    suspend fun removeBoxFromPartial(@Query("guid") boxGuid: String, @Query("partial") partialGuid: String): Response<Any>
+    //@DELETE("/api/order/partial-box")  // уточни путь
+    //suspend fun removeBoxFromPartial(@Query("guid") boxGuid: String, @Query("partial") partialGuid: String): Response<Any>
+
+    @HTTP(method = "DELETE", path = "/api/order/partial-box", hasBody = true)
+    suspend fun removeBoxFromPartial(@Body request: PartialCreateRequest): Response<Any>
 }

@@ -17,7 +17,7 @@ import java.io.FileOutputStream
 
 class PrintHelper(private val context: Context) {
 
-    fun printLabel(trackingNumber: String, clientCode: String, weight: String) {
+    fun printLabel(trackingNumber: String, clientCode: String, client: String, weight: String) {
         val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
         val jobName = "Onza_Label_$trackingNumber"
 
@@ -55,7 +55,7 @@ class PrintHelper(private val context: Context) {
                 val page = pdfDocument.startPage(pageInfo)
                 val canvas = page.canvas
 
-                drawLabelContent(canvas, trackingNumber, clientCode, weight)
+                drawLabelContent(canvas, trackingNumber, clientCode, client, weight)
 
                 pdfDocument.finishPage(page)
 
@@ -124,7 +124,7 @@ class PrintHelper(private val context: Context) {
         }, null)
     }
 
-    private fun drawLabelContent(canvas: Canvas, track: String, client: String, weight: String) {
+    private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {
         val paint = Paint().apply {
             color = Color.BLACK
             textSize = 14f
@@ -134,7 +134,7 @@ class PrintHelper(private val context: Context) {
         // 1. Заголовок
         paint.textSize = 24f
         paint.isFakeBoldText = true
-        canvas.drawText("ONZA", 20f, 40f, paint)
+        canvas.drawText("ONZA ESPAÑA", 20f, 40f, paint)
 
         // 2. Штрих-код (генерируем Bitmap и рисуем)
         val barcodeBmp = BarcodeUtils.generateBarcode(track, 240, 80)
@@ -145,17 +145,23 @@ class PrintHelper(private val context: Context) {
         paint.isFakeBoldText = false
         canvas.drawText(track, 70f, 160f, paint)
 
+        // Линия разделения
+        canvas.drawLine(20f, 180f, 260f, 180f, paint)
+
         // 4. Данные клиента
         paint.textSize = 20f
         paint.isFakeBoldText = true
-        canvas.drawText("Client: $client", 20f, 220f, paint)
+        canvas.drawText("Client Code: $clientCode", 20f, 220f, paint)
+
+        paint.textSize = 20f
+        paint.isFakeBoldText = true
+        canvas.drawText("Client: $client", 20f, 270f, paint)
 
         // 5. Вес
-        paint.textSize = 30f
-        canvas.drawText("Weight: $weight kg", 20f, 270f, paint)
+        paint.textSize = 25f
+        canvas.drawText("Weight: $weight kg", 20f, 320f, paint)
 
-        // Линия разделения
-        canvas.drawLine(20f, 180f, 260f, 180f, paint)
+
     }
     private fun drawLabelBox(canvas: Canvas, trackingCode: String, weight: String, last4: String) {
         val paint = Paint().apply {

@@ -12,10 +12,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogSelectBoxBinding
 import kotlinx.coroutines.launch
-import com.ocr.fastscan.ui.BoxesInPartialAdapter
+import com.ocr.fastscan.utils.PrintHelper
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class PartyDetailFragment : Fragment() {
 
@@ -27,6 +30,7 @@ class PartyDetailFragment : Fragment() {
 
     private var partialGuid: String = ""
     private var partialCode: String = ""
+    private var partialName: String = ""   // заполняй в onViewCreated или newInstance
 
 //    private val boxesAdapter = BoxesInPartialAdapter { box ->
 //        // Долгое нажатие или кнопка удаления — удаляем коробку
@@ -41,14 +45,25 @@ class PartyDetailFragment : Fragment() {
 //            .show()
 //    }
 private val boxesAdapter = BoxesInPartialAdapter { box ->
+    Log.d("PartyDetail", "Открываем детали коробки, передаём partialName: '$partialName'")  // ← лог для проверки
     // Удаление пока отключено
     Toast.makeText(requireContext(), "Удаление коробки временно недоступно", Toast.LENGTH_SHORT).show()
-}
+    val detailFragment = BoxDetailFragment.newInstance(
+        boxGuid = box.guid ?: "",
+        boxTracking = box.tracking_code ?: "",
+        partialName = partialName
+    )
+    parentFragmentManager.beginTransaction()
+        .replace(R.id.fragment_container, detailFragment)
+        .addToBackStack(null)
+        .commit()
+    }
     companion object {
-        fun newInstance(guid: String, code: String) = PartyDetailFragment().apply {
+        fun newInstance(guid: String, code: String, name: String) = PartyDetailFragment().apply {
             arguments = Bundle().apply {
                 putString("partial_guid", guid)
                 putString("partial_code", code)
+                putString("partial_name", name)
             }
         }
     }
@@ -57,6 +72,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
         super.onCreate(savedInstanceState)
         partialGuid = arguments?.getString("partial_guid") ?: ""
         partialCode = arguments?.getString("partial_code") ?: ""
+        partialName = arguments?.getString("partial_name") ?: "Без названия"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -65,6 +81,9 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
+
         super.onViewCreated(view, savedInstanceState)
 
         binding.tvTitle.text = "Партия $partialCode"
@@ -107,7 +126,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                     //Log.d("PartyDetail", "Получен: ${boxes}")
 
                     boxesAdapter.submitList(boxes)
-                    binding.tvInfo.text = "Склад: ... | Создано: ... | Коробок: ${boxes.size}"
+                    binding.tvInfo.text = "Склад: BMG | Создано: ... | Коробок: ${boxes.size}"
                 } else {
                     Toast.makeText(requireContext(), "Ошибка загрузки", Toast.LENGTH_SHORT).show()
                 }
@@ -196,26 +215,45 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
 //            }
 //        }
 //    }
-    private fun finishParty() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                val request = SendPartialRequest(partial = partialGuid)
-                val response = apiService.sendPartial(request)
-                if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
-                    soundManager.playSuccess()
-                    parentFragmentManager.popBackStack()
-                } else {
-                    Toast.makeText(requireContext(), "Ошибка завершения", Toast.LENGTH_SHORT).show()
+private fun finishParty() {
+    AlertDialog.Builder(requireContext())
+        .setTitle("Завершить партию?")
+        .setMessage("Завершить партию $partialCode?")
+        .setPositiveButton("Завершить") { _, _ ->
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val request = SendPartialRequest(partial = partialGuid)
+                    val response = apiService.sendPartial(request)
+                    if (response.isSuccessful) {
+                        Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
+                        soundManager.playSuccess()
+
+                        // Печать документа
+                        val printHelper = PrintHelper(requireContext())
+                        partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
+                        printHelper.printParty(
+                            partialCode = partialCode,
+                            partialName = partialName,  //переменная с именем партии (KG 87 и т.д.
+                            warehouseName = "Spain",    // или откуда берёшь
+                            dateCreated = SimpleDateFormat("dd.MM.yyyy").format(Date()), // или откуда берёшь
+                            boxes = boxesAdapter.currentList
+                        )
+
+                        // Возврат в список
+                        parentFragmentManager.popBackStack()
+                    } else {
+                        Toast.makeText(requireContext(), "Ошибка завершения", Toast.LENGTH_SHORT).show()
+                        soundManager.playError()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
-                soundManager.playError()
             }
         }
-    }
-
+        .setNegativeButton("Отмена", null)
+        .show()
+}
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

@@ -33,7 +33,10 @@ class BoxFragment : Fragment() {
 
     private val boxesAdapter = BoxesAdapter { box ->
         // Клик по коробке — открываем детальный экран
-        val detailFragment = BoxDetailFragment.newInstance(box.guid ?: "", box.trackingCode ?: "")
+        val detailFragment = BoxDetailFragment.newInstance(
+            box.guid ?: "",
+            box.trackingCode ?: ""
+        )
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, detailFragment)
             .addToBackStack(null)

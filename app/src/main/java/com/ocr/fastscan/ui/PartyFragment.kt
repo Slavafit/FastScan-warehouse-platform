@@ -28,7 +28,11 @@ class PartyFragment : Fragment() {
     private val soundManager = AppDependencies.soundManager
 
     private val partiesAdapter = PartiesAdapter { partial ->
-        val detailFragment = PartyDetailFragment.newInstance(partial.guid, partial.partial_code)
+        val detailFragment = PartyDetailFragment.newInstance(
+            partial.guid,
+            partial.partial_code,
+            partial.partial_name
+        )
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, detailFragment)
             .addToBackStack(null)

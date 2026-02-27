@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import android.text.TextWatcher
 import android.util.Log
 import com.ocr.fastscan.data.model.OrderDetails
+import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.ScanUtils
 import com.ocr.fastscan.utils.getVolWeightDivider
 
@@ -39,6 +40,8 @@ class BoxDetailFragment : Fragment() {
     private var boxGuid: String = ""
     private var boxTracking: String = ""
 
+    private var partialName: String = ""
+
     private val ordersAdapter = OrdersAdapter { order: OrderDetails ->
         // Удаление заказа
         removeOrderFromBox(order.guid ?: "")
@@ -49,7 +52,7 @@ class BoxDetailFragment : Fragment() {
             val value = result.data?.getStringExtra("scan_result") ?: ""
             val mode = result.data?.getStringExtra("scan_mode") ?: ""
 
-            Log.d("BoxDetail", "Скан трека: mode=$mode, value=$value")
+            //Log.d("BoxDetail", "Скан трека: mode=$mode, value=$value")
 
             if (mode == "barcode" && value.isNotEmpty()) {
                 addOrderByTrack(value)
@@ -60,14 +63,21 @@ class BoxDetailFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(boxGuid: String, boxTracking: String): BoxDetailFragment {
+        fun newInstance(boxGuid: String, boxTracking: String, partialName: String = ""): BoxDetailFragment {
             val fragment = BoxDetailFragment()
             val args = Bundle()
             args.putString("box_guid", boxGuid)
             args.putString("box_tracking", boxTracking)
+            args.putString("partial_name", partialName)
             fragment.arguments = args
             return fragment
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        partialName = arguments?.getString("partial_name") ?: ""  // ← ключевой момент!
+        Log.d("BoxDetail", "Получено имя партии из аргументов: '$partialName'")
     }
 
     override fun onCreateView(
@@ -190,7 +200,7 @@ class BoxDetailFragment : Fragment() {
 
 
                 val divider = requireContext().getVolWeightDivider()  // всегда Double, минимум 6000.0
-                val vWeight = (length * width * height) / divider.toDouble()
+                val vWeight = (length * width * height) / divider
 
                 binding.tvVWeight.text = "Объёмный вес: $vWeight кг"
             }
@@ -220,40 +230,88 @@ class BoxDetailFragment : Fragment() {
         }
     }
 
+//private fun printLabel() {
+//    // 1. Полный текст из UI
+//    val fullWeightText = binding.tvGrossWeight.text.toString()
+//    Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText'")
+//
+//    // 2. Надёжная очистка веса (убираем всё лишнее, меняем запятую на точку)
+//    val weightClean = fullWeightText
+//        .replace("Общий вес: ", "")
+//        .replace("Вес: ", "")
+//        .replace(" кг", "")
+//        .replace("kg", "")
+//        .replace(",", ".")  // ← ключевой фикс для русского формата
+//        .trim()
+//
+//    // 3. last4 — с защитой от пробелов и коротких строк
+//    val trimmedTracking = boxTracking.trim()  // убираем пробелы в конце
+//    val last4 = if (trimmedTracking.length >= 4) {
+//        trimmedTracking.takeLast(4)
+//    } else {
+//        trimmedTracking.padStart(4, '0')  // если меньше 4 символов — дополняем нулями
+//    }
+//    // 4. Печать
+//    printHelper.printBoxLabel(trimmedTracking, weightClean, last4, partialName)
+//    soundManager.playSuccess()
+//}
 private fun printLabel() {
-    // 1. Полный текст из UI
+    // 1. Полный текст из UI (логируем для отладки)
     val fullWeightText = binding.tvGrossWeight.text.toString()
-    Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText'")
+    Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText', Имя партии перед печатью: '$partialName'")
 
-    // 2. Надёжная очистка веса (убираем всё лишнее, меняем запятую на точку)
+    // 2. Очень надёжная очистка веса (убираем всё лишнее)
     val weightClean = fullWeightText
-        .replace("Общий вес: ", "")
-        .replace("Вес: ", "")
-        .replace(" кг", "")
-        .replace("kg", "")
-        .replace(",", ".")  // ← ключевой фикс для русского формата
+        .replace("Общий вес:", "", ignoreCase = true)
+        .replace("Вес:", "", ignoreCase = true)
+        .replace(" кг", "", ignoreCase = true)
+        .replace("kg", "", ignoreCase = true)
+        .replace(",", ".")          // запятая → точка (русский формат)
+        .replace("\\s+", "")        // все пробелы убираем
         .trim()
 
-    // 3. last4 — с защитой от пробелов и коротких строк
-    val trimmedTracking = boxTracking.trim()  // убираем пробелы в конце
-    val last4 = if (trimmedTracking.length >= 4) {
-        trimmedTracking.takeLast(4)
-    } else {
-        trimmedTracking.padStart(4, '0')  // если меньше 4 символов — дополняем нулями
+    // 3. Проверяем, что вес — это число (защита от краша в PrintHelper)
+    val weightValue = weightClean.toDoubleOrNull()
+    if (weightValue == null || weightValue <= 0) {
+        Log.e("printHelper", "Некорректный вес: '$weightClean'")
+        Toast.makeText(requireContext(), "Некорректный вес для печати", Toast.LENGTH_SHORT).show()
+        soundManager.playError()
+        return
     }
-    // 4. Печать
-    printHelper.printBoxLabel(trimmedTracking, weightClean, last4)
-    soundManager.playSuccess()
+
+    // 4. Трек-номер (убираем лишние пробелы)
+    val trimmedTracking = boxTracking.trim()
+
+    // 5. last4 — всегда 4 символа (дополняем нулями слева, если короткий)
+    val last4 = if (trimmedTracking.isNotEmpty()) {
+        trimmedTracking.takeLast(4).padStart(4, '0')
+    } else {
+        "0000"  // fallback на случай пустого трека
+    }
+
+    Log.d("printHelper", "Параметры для печати: track='$trimmedTracking', weight='$weightClean', last4='$last4', partial='$partialName'")
+
+    // 6. Печать
+    try {
+        val printHelper = PrintHelper(requireContext())
+        printHelper.printBoxLabel(trimmedTracking, weightClean, last4, partialName)
+        soundManager.playSuccess()
+        Toast.makeText(requireContext(), "Этикетка отправлена на печать", Toast.LENGTH_SHORT).show()
+    } catch (e: Exception) {
+        Log.e("printHelper", "Ошибка печати этикетки", e)
+        Toast.makeText(requireContext(), "Ошибка печати: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        soundManager.playError()
+    }
 }
     private fun addOrderByTrack(tcode: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                Log.d("AddOrder", "Шаг 1: Поиск заказа по треку $tcode")
+                //Log.d("AddOrder", "Шаг 1: Поиск заказа по треку $tcode")
                 val searchResponse = apiService.searchOrder(tcode)
 
                 if (!searchResponse.isSuccessful || searchResponse.body().isNullOrEmpty()) {
                     val msg = if (!searchResponse.isSuccessful) "Ошибка поиска: ${searchResponse.code()}" else "Заказ не найден"
-                    Log.e("AddOrder", msg)
+                    //Log.e("AddOrder", msg)
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                     return@launch
@@ -261,13 +319,13 @@ private fun printLabel() {
 
                 val order = searchResponse.body()!![0]
                 val orderGuid = order.guid ?: run {
-                    Log.e("AddOrder", "У заказа нет GUID")
+                    //Log.e("AddOrder", "У заказа нет GUID")
                     Toast.makeText(requireContext(), "У заказа нет GUID", Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                     return@launch
                 }
 
-                Log.d("AddOrder", "Шаг 2: Добавляем заказ $orderGuid в коробку $boxGuid")
+                //Log.d("AddOrder", "Шаг 2: Добавляем заказ $orderGuid в коробку $boxGuid")
 
                 val addRequest = BoxOrderRequest(
                     order = orderGuid,
@@ -277,7 +335,7 @@ private fun printLabel() {
 
                 val addResponse = apiService.addOrderToBox(addRequest)
 
-                Log.d("AddOrder", "Ответ сервера: код ${addResponse.code()}, тело: ${addResponse.body()}")
+                //Log.d("AddOrder", "Ответ сервера: код ${addResponse.code()}, тело: ${addResponse.body()}")
 
                 if (addResponse.isSuccessful) {
                     val rawBody = addResponse.body()
@@ -287,7 +345,7 @@ private fun printLabel() {
                         val firstItem = rawBody[0] as? Map<*, *>
                         val newGuid = firstItem?.get("guid") as? String
 
-                        Log.d("AddOrder", "Успех: добавлен GUID $newGuid")
+                        //Log.d("AddOrder", "Успех: добавлен GUID $newGuid")
                         Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
                         soundManager.playSuccess()
                         loadBoxDetails()
@@ -304,7 +362,7 @@ private fun printLabel() {
                         firebaseManager.saveBoxEntry(
                             entry = entry,
                             onSuccess = {
-                                Log.d("AddOrder", "Запись в Firebase прошла успешно")
+                                //Log.d("AddOrder", "Запись в Firebase прошла успешно")
                                 // Здесь можно обновить UI, если нужно (например, перезагрузить список коробок)
                             },
                             onFailure = { e ->
@@ -322,12 +380,12 @@ private fun printLabel() {
                             ?: "Неизвестная ошибка"
 
                         if (success) {
-                            Log.d("AddOrder", "Успех в объектном формате")
+                            //Log.d("AddOrder", "Успех в объектном формате")
                             Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
                             loadBoxDetails()
                         } else {
-                            Log.e("AddOrder", "Ошибка от сервера: $message")
+                            //Log.e("AddOrder", "Ошибка от сервера: $message")
                             Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                             soundManager.playError()
                         }

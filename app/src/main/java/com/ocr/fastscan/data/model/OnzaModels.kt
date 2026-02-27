@@ -160,7 +160,7 @@ data class BoxEntry(
     val orderWeight: Double
 )
 
-//fragment 3 Cajas
+//fragment 3. Cajas
 // Партия (Partial)
 data class Partial(
     val guid: String,

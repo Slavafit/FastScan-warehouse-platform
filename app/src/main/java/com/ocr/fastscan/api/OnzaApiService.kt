@@ -67,7 +67,7 @@ interface OnzaApiService {
 
     // Список открытых коробок (для выбора)
     @GET("/api/order/box")
-    suspend fun getOpenBoxes(): Response<List<BoxInPartial>>  // предполагаем, что возвращает те же поля
+    suspend fun getOpenBoxes(@Query("status") status: Int = 0): Response<List<BoxInPartial>>  // предполагаем, что возвращает те же поля
 
     // Привязать коробку к партии
     @POST("/api/order/box")

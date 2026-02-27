@@ -101,8 +101,11 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
             binding.progressBar.visibility = View.VISIBLE
             try {
                 val response = apiService.getBoxesInPartial(partialGuid)
+                //Log.d("PartyDetail", "Ответ сервера: код ${response.code()}, тело: ${response.body()}")
                 if (response.isSuccessful) {
                     val boxes = response.body() ?: emptyList()
+                    //Log.d("PartyDetail", "Получен: ${boxes}")
+
                     boxesAdapter.submitList(boxes)
                     binding.tvInfo.text = "Склад: ... | Создано: ... | Коробок: ${boxes.size}"
                 } else {
@@ -120,7 +123,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
         val dialogBinding = DialogSelectBoxBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
-            .setTitle("Выберите коробку")
+            //.setTitle("Выберите коробку")
             .create()
 
         dialogBinding.rvOpenBoxes.layoutManager = LinearLayoutManager(requireContext())

@@ -82,22 +82,22 @@ class BoxFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                Log.d("BoxFragment", "Загрузка коробок: isOpenOnly=$isOpenOnly")
+                //Log.d("BoxFragment", "Загрузка коробок: isOpenOnly=$isOpenOnly")
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
-                Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
+                //Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body() != null) {
                     val boxes = response.body()!!.map { box ->
                         box.copy(
                             dateCreated = formatBoxDate(box.dateCreated)  // ← форматируем
                         )
                     }
-                    Log.d("BoxFragment", "Получено коробок: ${boxes.size}")
+                    //Log.d("BoxFragment", "Получено коробок: ${boxes.size}")
                     boxesAdapter.submitList(boxes)
                     if (boxes.isEmpty()) {
                         binding.tvNoBoxes.visibility = View.VISIBLE
                     }
                 } else {
-                    Log.e("BoxFragment", "Ошибка API: ${response.code()} - ${response.message()}")
+                    //Log.e("BoxFragment", "Ошибка API: ${response.code()} - ${response.message()}")
                     Toast.makeText(requireContext(), "Ошибка загрузки коробок", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {

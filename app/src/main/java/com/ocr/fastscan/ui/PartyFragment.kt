@@ -84,7 +84,7 @@ class PartyFragment : Fragment() {
     private fun showCreatePartyDialog() {
         val dialogBinding = DialogCreatePartyBinding.inflate(layoutInflater)
 
-        val generatedCode = "NPX" + SimpleDateFormat("MMddHHmmss", Locale.getDefault()).format(Date()) + (100000..999999).random()
+        val generatedCode = "NPX" + SimpleDateFormat("MMddHH", Locale.getDefault()).format(Date()) + (100000..999999).random()
 
         dialogBinding.etPartialCode.setText(generatedCode)
         dialogBinding.etPartialName.requestFocus()

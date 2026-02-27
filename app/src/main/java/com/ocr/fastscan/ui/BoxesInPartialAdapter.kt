@@ -1,5 +1,6 @@
 package com.ocr.fastscan.ui  // или твой пакет
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -24,14 +25,16 @@ class BoxesInPartialAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val box = getItem(position)
         holder.bind(box)
+        Log.d("onBindViewHolder", "получено: $box")
+
     }
 
     inner class ViewHolder(private val binding: ItemBoxInPartialBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(box: BoxInPartial) {
-            binding.tvTrackingCode.text = box.tracking_code
-            binding.tvDimensions.text = "${box.width} × ${box.height} × ${box.length} см"
+            binding.tvTrackingCode.text = "Коробка: ${box.tracking_code}"
+            binding.tvDimensions.text = "Размеры: ${box.width} × ${box.height} × ${box.length} см"
             binding.tvGrossWeight.text = "Вес: ${box.gross_weight} кг"
-            binding.tvVWeight.text = "Объёмный: ${box.v_weight} кг"
+            binding.tvVWeight.text = "Объёмный вес: ${box.v_weight} кг"
             binding.tvOrderCount.text = "Заказов: ${box.orderCount}"
 
             binding.root.setOnLongClickListener {

@@ -46,6 +46,9 @@ class BoxFragment : Fragment() {
 
     private var isCreating = false  // флаг, чтобы избежать повторных запусков
 
+    private var loadBoxesCallCount = 0
+
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -82,10 +85,17 @@ class BoxFragment : Fragment() {
         }
     }
 
-    private fun loadBoxes(isOpenOnly: Boolean) {
+    private fun loadBoxes(isOpenOnly: Boolean = true) {
         binding.progressBar.visibility = View.VISIBLE
         binding.tvNoBoxes.visibility = View.GONE
 
+            loadBoxesCallCount++
+            Log.d("BoxFragment", "loadBoxes вызван #$loadBoxesCallCount, isOpenOnly=$isOpenOnly")
+
+            if (loadBoxesCallCount > 10) {
+                Log.e("BoxFragment", "ОБНАРУЖЕНА ПЕТЛЯ! Более 10 вызовов loadBoxes подряд")
+                return
+            }
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 Log.d("BoxDialog", "Загрузка коробок: isOpenOnly=$isOpenOnly")
@@ -153,9 +163,13 @@ private fun showAddNewBoxDialog() {
         Log.d("BoxDialog", "Диалог показан, переопределяем кнопку Create")
 
 
-        val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-        positiveButton?.setOnClickListener {
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener { v ->
             Log.d("BoxDialog", "Нажата кнопка 'Создать'")
+
+            if (isCreating) return@setOnClickListener  // если уже в процессе — игнор
+
+            v.isEnabled = false  // отключить кнопку
+            isCreating = true
 
             val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
             val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
@@ -187,43 +201,36 @@ private fun showAddNewBoxDialog() {
                         Toast.makeText(requireContext(), "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
                         soundManager.playSuccess()
 
+                        Log.d("BoxDialog", "Закрываем диалог")
+                        dialog.dismiss()
+
                         Log.d("BoxDialog", "Загружаем список коробок")
                         loadBoxes(isOpenOnly = true)
-                        Log.d("BoxDialog", "Шаг 1 завершён")
 
                         Log.d("BoxDialog", "Переходим на детальный экран коробки")
                         val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
-                        Log.d("BoxDialog", "Шаг 2.1: detailFragment создан")
-                        val fm = parentFragmentManager
-                        if (fm.isStateSaved || fm.isDestroyed) {
-                            Log.w("BoxDialog", "FragmentManager уже уничтожен или saved — пропускаем переход")
-                        } else {
-                            fm.beginTransaction()
-                                .replace(R.id.fragment_container, detailFragment)
-                                .addToBackStack(null)
-                                .commitAllowingStateLoss()  // ← позволяй потерю состояния
-                        }
                         parentFragmentManager.beginTransaction()
                             .replace(R.id.fragment_container, detailFragment)
                             .addToBackStack(null)
-                            .commit()
+                            .commitAllowingStateLoss()
 
-                        Log.d("BoxDialog", "Закрываем диалог")
-                        if (dialog.isShowing) {
-                            dialog.dismiss()
                         } else {
-                            Log.w("BoxDialog", "Диалог уже закрыт")
-                        }
-                    } else {
                         val errorMsg = response.body()?.message ?: "Ошибка создания"
                         Log.e("BoxDialog", "Ошибка от сервера: $errorMsg")
                         Toast.makeText(requireContext(), "Ошибка создания: $errorMsg", Toast.LENGTH_LONG).show()
                         soundManager.playError()
-                    }
+
+                        v.isEnabled = true
+                        }
+
                 } catch (e: Exception) {
                     Log.e("BoxDialog", "Исключение при создании коробки", e)
                     Toast.makeText(requireContext(), "Сеть/ошибка: ${e.localizedMessage ?: "Неизвестно"}", Toast.LENGTH_LONG).show()
                     soundManager.playError()
+                    v.isEnabled = true
+                }
+                finally {
+                    isCreating = false
                 }
             }
         }

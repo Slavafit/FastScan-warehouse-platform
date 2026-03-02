@@ -30,6 +30,7 @@
         android:id="@+id/rvBoxes"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="10dp"
         android:visibility="visible"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintBottom_toTopOf="@id/btnAddNewBox"
@@ -57,6 +58,7 @@
         android:layout_height="wrap_content"
         android:text="Показать все"
         android:textAllCaps="false"
+        android:layout_marginBottom="2dp"
         app:layout_constraintBottom_toTopOf="@id/btnAddNewBox"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

@@ -178,7 +178,11 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                     gross_weight = box.gross_weight,
                     orderCount = box.orderCount
                 )
+                Log.d("addBoxToParty", "request: ${request}")
+
                 val response = apiService.addBoxToPartial(request)
+                Log.d("addBoxToParty", "response: ${response}")
+
                 if (response.isSuccessful) {
                     Toast.makeText(requireContext(), "Коробка добавлена", Toast.LENGTH_SHORT).show()
                     soundManager.playSuccess()

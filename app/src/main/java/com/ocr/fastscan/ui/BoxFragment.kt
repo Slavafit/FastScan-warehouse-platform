@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
@@ -42,6 +43,8 @@ class BoxFragment : Fragment() {
             .addToBackStack(null)
             .commit()
     }
+
+    private var isCreating = false  // флаг, чтобы избежать повторных запусков
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -83,9 +86,15 @@ class BoxFragment : Fragment() {
         binding.progressBar.visibility = View.VISIBLE
         binding.tvNoBoxes.visibility = View.GONE
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
-                //Log.d("BoxFragment", "Загрузка коробок: isOpenOnly=$isOpenOnly")
+                Log.d("BoxDialog", "Загрузка коробок: isOpenOnly=$isOpenOnly")
+                Log.d("BoxDialog", "Загружаем список коробок")
+                if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    loadBoxes(isOpenOnly = true)
+                } else {
+                    Log.w("BoxDialog", "View уничтожен — пропускаем loadBoxes")
+                }
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
                 //Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body() != null) {
@@ -112,73 +121,6 @@ class BoxFragment : Fragment() {
         }
     }
 
-//    private fun showAddNewBoxDialog() {
-//        val dialogBinding = DialogAddBoxBinding.inflate(layoutInflater)
-//
-//        // Генерируем tracking_code сразу (но используем только при нажатии)
-//        val generatedTrackingCode = generateTrackingCode()
-//        dialogBinding.tvTrackingCode.text = "Будет создан номер: $generatedTrackingCode"
-//
-//        // Создаём диалог, но пока не показываем
-//        val dialog = AlertDialog.Builder(requireContext())
-//            .setView(dialogBinding.root)
-//            .setTitle("Новая коробка")
-//            .setPositiveButton("Создать", null)  // Обработчик позже
-//            .setNegativeButton("Отмена", null)
-//            .create()
-//
-//        // Устанавливаем дефолтные размеры
-//        dialogBinding.etLength.setText("70")
-//        dialogBinding.etWidth.setText("45")
-//        dialogBinding.etHeight.setText("50")
-//
-//        // Переопределяем кнопку "Создать"
-//        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-//            val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
-//            val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
-//            val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
-//
-//            if (length <= 0 || width <= 0 || height <= 0) {
-//                Toast.makeText(requireContext(), "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
-//                return@setOnClickListener
-//            }
-//
-//            viewLifecycleOwner.lifecycleScope.launch {
-//                try {
-//                    val request = BoxRequest(
-//                        trackingCode = generatedTrackingCode,
-//                        width = width,
-//                        height = height,
-//                        length = length
-//                    )
-//                    val response = apiService.createOrUpdateBox(request)
-//
-//                    if (response.isSuccessful && response.body()?.success == true) {
-//                        Toast.makeText(requireContext(), "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
-//                        soundManager.playSuccess()
-//                        loadBoxes(isOpenOnly = true)
-//
-//                        val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
-//                        parentFragmentManager.beginTransaction()
-//                            .replace(R.id.fragment_container, detailFragment)
-//                            .addToBackStack(null)
-//                            .commit()
-//
-//                        dialog.dismiss()  // ← теперь dialog доступен
-//                    } else {
-//                        Toast.makeText(requireContext(), "Ошибка создания", Toast.LENGTH_SHORT).show()
-//                        soundManager.playError()
-//                    }
-//                } catch (e: Exception) {
-//                    Toast.makeText(requireContext(), "Сеть/ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
-//                    soundManager.playError()
-//                }
-//            }
-//        }
-//
-//        // Показываем диалог после настройки
-//        dialog.show()
-//    }
 private fun showAddNewBoxDialog() {
     Log.d("BoxDialog", "Открыт диалог создания коробки")
 
@@ -209,6 +151,8 @@ private fun showAddNewBoxDialog() {
     // Переопределяем кнопку "Создать"
     dialog.setOnShowListener {
         Log.d("BoxDialog", "Диалог показан, переопределяем кнопку Create")
+
+
         val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
         positiveButton?.setOnClickListener {
             Log.d("BoxDialog", "Нажата кнопка 'Создать'")
@@ -245,16 +189,31 @@ private fun showAddNewBoxDialog() {
 
                         Log.d("BoxDialog", "Загружаем список коробок")
                         loadBoxes(isOpenOnly = true)
+                        Log.d("BoxDialog", "Шаг 1 завершён")
 
                         Log.d("BoxDialog", "Переходим на детальный экран коробки")
                         val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
+                        Log.d("BoxDialog", "Шаг 2.1: detailFragment создан")
+                        val fm = parentFragmentManager
+                        if (fm.isStateSaved || fm.isDestroyed) {
+                            Log.w("BoxDialog", "FragmentManager уже уничтожен или saved — пропускаем переход")
+                        } else {
+                            fm.beginTransaction()
+                                .replace(R.id.fragment_container, detailFragment)
+                                .addToBackStack(null)
+                                .commitAllowingStateLoss()  // ← позволяй потерю состояния
+                        }
                         parentFragmentManager.beginTransaction()
                             .replace(R.id.fragment_container, detailFragment)
                             .addToBackStack(null)
                             .commit()
 
                         Log.d("BoxDialog", "Закрываем диалог")
-                        dialog.dismiss()
+                        if (dialog.isShowing) {
+                            dialog.dismiss()
+                        } else {
+                            Log.w("BoxDialog", "Диалог уже закрыт")
+                        }
                     } else {
                         val errorMsg = response.body()?.message ?: "Ошибка создания"
                         Log.e("BoxDialog", "Ошибка от сервера: $errorMsg")

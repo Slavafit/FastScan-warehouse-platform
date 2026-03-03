@@ -3,8 +3,17 @@ package com.ocr.fastscan.utils
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
+import androidx.lifecycle.LifecycleOwner
 import com.ocr.fastscan.databinding.DialogVolumeBinding
-import com.ocr.fastscan.utils.getVolWeightDivider
+import android.util.Log
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import com.ocr.fastscan.data.model.BoxRequest
+import com.ocr.fastscan.databinding.DialogAddBoxBinding
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 object DialogUtils {
 
@@ -49,6 +58,8 @@ object DialogUtils {
 
         dialog.show()
     }
+
+
     fun showAddNewBoxDialog(
         lifecycleOwner: LifecycleOwner,
         context: Context,
@@ -87,11 +98,15 @@ object DialogUtils {
 
                 lifecycleOwner.lifecycleScope.launch {
                     try {
+                        //вызов конструктора для передачи
                         val request = BoxRequest(
+                            guid = "",
+                            codeid = "",
                             trackingCode = generatedTrackingCode,
                             width = width,
                             height = height,
-                            length = length
+                            length = length,
+                            vWeight = (length * width * height) / context.getVolWeightDivider(),
                         )
                         val response = AppDependencies.apiService.createOrUpdateBox(request)
 
@@ -125,5 +140,4 @@ object DialogUtils {
         val random = (0..9999).random().toString().padStart(4, '0')
         return "NBX$date$time$random"
     }
-}
 }

@@ -49,11 +49,11 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
     // Удаление пока отключено
     Toast.makeText(requireContext(), "Удаление коробки временно недоступно", Toast.LENGTH_SHORT).show()
     val detailFragment = BoxDetailFragment.newInstance(
-        boxGuid = box.guid ?: "",
-        boxTracking = box.tracking_code ?: "",
-        boxWeight = box.gross_weight?.toString() ?: "0.0",  // ← Double → String
+        box.guid ?: "",
+        box.codeid ?: "",
+        box.tracking_code ?: "",
+        box.gross_weight?.toString() ?: "0.0",  // ← Double → String
         partialName = partialName,
-
     )
     parentFragmentManager.beginTransaction()
         .replace(R.id.fragment_container, detailFragment)
@@ -178,7 +178,8 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                     length = box.length,
                     v_weight = box.v_weight,
                     gross_weight = box.gross_weight,
-                    orderCount = box.orderCount
+                    orderCount = box.orderCount,
+                    codeid = box.codeid
                 )
                 Log.d("addBoxToParty", "request: ${request}")
 

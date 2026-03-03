@@ -86,19 +86,21 @@ data class BoxItem(
 
 // Запрос для создания/update коробки (POST /api/order/box)
 data class BoxRequest(
+    @SerializedName("guid") val guid: String? = null,
+    @SerializedName("codeid") val codeid: String?,
     @SerializedName("tracking_code") val trackingCode: String,
     @SerializedName("width") val width: Int,
     @SerializedName("height") val height: Int,
     @SerializedName("length") val length: Int,
-    @SerializedName("weigth") val weight: Double
-
+    @SerializedName("v_weight") val vWeight: Double = 0.0,
+    @SerializedName("gross_weight") val weight: Double? = null,
 )
 
 // Ответ на POST /api/order/box
 data class BoxResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("message") val message: String,
-    @SerializedName("result") val result: List<BoxResultItem>?
+    @SerializedName("result") val result: List<BoxResultItem>?  //массив с объектом
 )
 
 data class BoxResultItem(
@@ -178,6 +180,7 @@ data class Partial(
 // Коробка в партии
 data class BoxInPartial(
     val guid: String,
+    val codeid: String,
     val tracking_code: String,
     val width: Int,
     val height: Int,
@@ -201,6 +204,7 @@ data class SendPartialResponse(
 
 data class AddBoxRequest(
     val guid: String,           // guid коробки
+    val codeid: String,
     val tracking_code: String,
     val width: Int,
     val height: Int,

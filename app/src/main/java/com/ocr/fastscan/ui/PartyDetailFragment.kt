@@ -51,7 +51,9 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
     val detailFragment = BoxDetailFragment.newInstance(
         boxGuid = box.guid ?: "",
         boxTracking = box.tracking_code ?: "",
-        partialName = partialName
+        boxWeight = box.gross_weight?.toString() ?: "0.0",  // ← Double → String
+        partialName = partialName,
+
     )
     parentFragmentManager.beginTransaction()
         .replace(R.id.fragment_container, detailFragment)

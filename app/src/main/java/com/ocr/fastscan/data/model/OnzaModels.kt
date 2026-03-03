@@ -89,7 +89,9 @@ data class BoxRequest(
     @SerializedName("tracking_code") val trackingCode: String,
     @SerializedName("width") val width: Int,
     @SerializedName("height") val height: Int,
-    @SerializedName("length") val length: Int
+    @SerializedName("length") val length: Int,
+    @SerializedName("weigth") val weight: Double
+
 )
 
 // Ответ на POST /api/order/box

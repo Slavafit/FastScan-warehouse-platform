@@ -32,22 +32,26 @@ class BoxFragment : Fragment() {
 
     private var isShowingAllBoxes = false  // флаг для "Показать все"
 
+    private var isCreating = false  // флаг, чтобы избежать повторных запусков
+
+    private var isLoading = false  // Флаг для предотвращения петли
+
+
     private val boxesAdapter = BoxesAdapter { box ->
         // Клик по коробке — открываем детальный экран
         val detailFragment = BoxDetailFragment.newInstance(
-            box.guid ?: "",
-            box.trackingCode ?: ""
-        )
+            boxGuid =box.guid ?: "",
+            boxTracking = box.trackingCode ?: "",
+            boxWeight = box.grossWeight?.toString() ?: "0.0",
+            //partialName = partialName ?: ""
+            )
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, detailFragment)
             .addToBackStack(null)
             .commit()
     }
 
-    private var isCreating = false  // флаг, чтобы избежать повторных запусков
-
     private var loadBoxesCallCount = 0
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,7 +71,6 @@ class BoxFragment : Fragment() {
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvBoxes.adapter = boxesAdapter
 
-        loadBoxes(isOpenOnly = true)
 
         binding.btnRefresh.setOnClickListener {
             loadBoxes(isOpenOnly = isShowingAllBoxes)
@@ -77,28 +80,50 @@ class BoxFragment : Fragment() {
             showAddNewBoxDialog()
         }
 
+//        binding.btnShowAll.setOnClickListener {
+//            isShowingAllBoxes = !isShowingAllBoxes
+//            binding.btnShowAll.text = if (isShowingAllBoxes) "Показать открытые" else "Показать все"
+//            binding.tvTitle.text = if (isShowingAllBoxes) "Все коробки" else "Открытые коробки"
+//            loadBoxes(isOpenOnly = !isShowingAllBoxes)
+//        }
         binding.btnShowAll.setOnClickListener {
             isShowingAllBoxes = !isShowingAllBoxes
             binding.btnShowAll.text = if (isShowingAllBoxes) "Показать открытые" else "Показать все"
             binding.tvTitle.text = if (isShowingAllBoxes) "Все коробки" else "Открытые коробки"
-            loadBoxes(isOpenOnly = !isShowingAllBoxes)
+
+            // Анимация обновления списка
+            binding.rvBoxes.animate()
+                .alpha(0f)
+                .setDuration(150)
+                .withEndAction {
+                    loadBoxes(isOpenOnly = !isShowingAllBoxes)
+                    binding.rvBoxes.animate().alpha(1f).setDuration(150).start()
+                }.start()
         }
+
+        loadBoxes(isOpenOnly = true)
     }
 
     private fun loadBoxes(isOpenOnly: Boolean = true) {
         binding.progressBar.visibility = View.VISIBLE
         binding.tvNoBoxes.visibility = View.GONE
 
+        if (isLoading) {
+            Log.w("BoxFragment", "Уже загружается — пропускаем вызов loadBoxes")
+            return
+        }
+        isLoading = true
+
             loadBoxesCallCount++
             Log.d("BoxFragment", "loadBoxes вызван #$loadBoxesCallCount, isOpenOnly=$isOpenOnly")
 
             if (loadBoxesCallCount > 10) {
                 Log.e("BoxFragment", "ОБНАРУЖЕНА ПЕТЛЯ! Более 10 вызовов loadBoxes подряд")
+                isLoading = false
                 return
             }
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                Log.d("BoxDialog", "Загрузка коробок: isOpenOnly=$isOpenOnly")
                 Log.d("BoxDialog", "Загружаем список коробок")
                 if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                     loadBoxes(isOpenOnly = true)
@@ -113,11 +138,12 @@ class BoxFragment : Fragment() {
                             dateCreated = formatBoxDate(box.dateCreated)  // ← форматируем
                         )
                     }
-                    //Log.d("BoxFragment", "Получено коробок: ${boxes.size}")
                     boxesAdapter.submitList(boxes)
                     if (boxes.isEmpty()) {
                         binding.tvNoBoxes.visibility = View.VISIBLE
                     }
+                    Log.d("BoxFragment", "Загрузка завершена, коробок: ${boxes.size}")
+
                 } else {
                     //Log.e("BoxFragment", "Ошибка API: ${response.code()} - ${response.message()}")
                     Toast.makeText(requireContext(), "Ошибка загрузки коробок", Toast.LENGTH_SHORT).show()
@@ -127,6 +153,7 @@ class BoxFragment : Fragment() {
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
+                isLoading = false  // Снимаем флаг
             }
         }
     }
@@ -152,10 +179,13 @@ private fun showAddNewBoxDialog() {
 
     Log.d("BoxDialog", "AlertDialog создан")
 
+
     // Дефолтные размеры
     dialogBinding.etLength.setText("70")
     dialogBinding.etWidth.setText("45")
     dialogBinding.etHeight.setText("50")
+    dialogBinding.etGrossWeight.setText(0.0)
+
     Log.d("BoxDialog", "Установлены дефолтные размеры")
 
     // Переопределяем кнопку "Создать"
@@ -174,6 +204,8 @@ private fun showAddNewBoxDialog() {
             val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
             val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
             val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
+            val weight = dialogBinding.etGrossWeight.text.toString().toIntOrNull() ?: 0
+
             Log.d("BoxDialog", "Размеры: L=$length, W=$width, H=$height")
 
             if (length <= 0 || width <= 0 || height <= 0) {
@@ -189,7 +221,8 @@ private fun showAddNewBoxDialog() {
                         trackingCode = generatedTrackingCode,
                         width = width,
                         height = height,
-                        length = length
+                        length = length,
+                        weight = weight.toDouble()
                     )
                     Log.d("BoxDialog", "Запрос сформирован: $request")
 
@@ -208,7 +241,7 @@ private fun showAddNewBoxDialog() {
                         loadBoxes(isOpenOnly = true)
 
                         Log.d("BoxDialog", "Переходим на детальный экран коробки")
-                        val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode)
+                        val detailFragment = BoxDetailFragment.newInstance("", generatedTrackingCode, boxWeight)
                         parentFragmentManager.beginTransaction()
                             .replace(R.id.fragment_container, detailFragment)
                             .addToBackStack(null)

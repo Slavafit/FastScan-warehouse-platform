@@ -35,11 +35,10 @@ class BoxDetailFragment : Fragment() {
     private val apiService = AppDependencies.apiService
     private val firebaseManager = AppDependencies.firebaseManager
     private val soundManager = AppDependencies.soundManager
-    private val printHelper = AppDependencies.printHelper
 
     private var boxGuid: String = ""
     private var boxTracking: String = ""
-
+    private var boxWeight: String = ""
     private var partialName: String = ""
 
     private val ordersAdapter = OrdersAdapter { order: OrderDetails ->
@@ -62,12 +61,14 @@ class BoxDetailFragment : Fragment() {
         }
     }
 
+
     companion object {
-        fun newInstance(boxGuid: String, boxTracking: String, partialName: String = ""): BoxDetailFragment {
+        fun newInstance(boxGuid: String, boxTracking: String, boxWeight: String, partialName: String = ""): BoxDetailFragment {
             val fragment = BoxDetailFragment()
             val args = Bundle()
             args.putString("box_guid", boxGuid)
             args.putString("box_tracking", boxTracking)
+            args.putString("box_weight", boxWeight)
             args.putString("partial_name", partialName)
             fragment.arguments = args
             return fragment
@@ -76,8 +77,15 @@ class BoxDetailFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        partialName = arguments?.getString("partial_name") ?: ""  // ← ключевой момент!
+        boxGuid = arguments?.getString("box_guid") ?: ""
+        boxTracking = arguments?.getString("box_tracking") ?: ""
+        boxWeight = arguments?.getString("box_weight") ?: ""
+        partialName = arguments?.getString("partial_name") ?: "KG"  // ← ключевой момент!
+
+
         Log.d("BoxDetail", "Получено имя партии из аргументов: '$partialName'")
+        Log.d("BoxDetail", "Получено вес из аргументов: '$boxWeight'")
+
     }
 
     override fun onCreateView(
@@ -94,6 +102,9 @@ class BoxDetailFragment : Fragment() {
 
         boxGuid = arguments?.getString("box_guid") ?: ""
         boxTracking = arguments?.getString("box_tracking") ?: ""
+        boxWeight = arguments?.getString("gross_weight") ?: ""
+
+        //binding.etGrossWeight.setText(currentBox?.gross_weight?.toString() ?: "0.0")
 
         binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOrders.adapter = ordersAdapter
@@ -125,6 +136,8 @@ class BoxDetailFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+
+
     }
 
     private fun loadBoxDetails() {
@@ -175,7 +188,12 @@ class BoxDetailFragment : Fragment() {
         val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
         lifecycleScope.launch {
             try {
-                val request = BoxRequest(boxTracking, width, height, length)
+                val request = BoxRequest(
+                    boxTracking,
+                    length,
+                    width,
+                    height,
+                    weight = 0.0               )
                 val response = apiService.createOrUpdateBox(request)
                 if (response.isSuccessful && response.body()?.success == true) {
                     Toast.makeText(requireContext(), "Размеры сохранены", Toast.LENGTH_SHORT).show()
@@ -230,31 +248,6 @@ class BoxDetailFragment : Fragment() {
         }
     }
 
-//private fun printLabel() {
-//    // 1. Полный текст из UI
-//    val fullWeightText = binding.tvGrossWeight.text.toString()
-//    Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText'")
-//
-//    // 2. Надёжная очистка веса (убираем всё лишнее, меняем запятую на точку)
-//    val weightClean = fullWeightText
-//        .replace("Общий вес: ", "")
-//        .replace("Вес: ", "")
-//        .replace(" кг", "")
-//        .replace("kg", "")
-//        .replace(",", ".")  // ← ключевой фикс для русского формата
-//        .trim()
-//
-//    // 3. last4 — с защитой от пробелов и коротких строк
-//    val trimmedTracking = boxTracking.trim()  // убираем пробелы в конце
-//    val last4 = if (trimmedTracking.length >= 4) {
-//        trimmedTracking.takeLast(4)
-//    } else {
-//        trimmedTracking.padStart(4, '0')  // если меньше 4 символов — дополняем нулями
-//    }
-//    // 4. Печать
-//    printHelper.printBoxLabel(trimmedTracking, weightClean, last4, partialName)
-//    soundManager.playSuccess()
-//}
 private fun printLabel() {
     // 1. Полный текст из UI (логируем для отладки)
     val fullWeightText = binding.tvGrossWeight.text.toString()

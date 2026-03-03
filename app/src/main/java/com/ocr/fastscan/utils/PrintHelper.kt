@@ -162,46 +162,64 @@ class PrintHelper(private val context: Context) {
         last4: String,
         partialName: String
     ) {
+
+        val padding = 20f // Отступ от краев этикетки в пикселях
+        val usableWidth = canvas.width - (padding * 2) // Доступная ширина для самого кода
+        var y = 30f
         val paint = Paint().apply {
             color = Color.BLACK
             isAntiAlias = true
         }
-
-        var y = 40f
+        val barcodePaint = Paint().apply {
+            isAntiAlias = false
+            isFilterBitmap = false
+        }
 
         // Заголовок
         paint.textSize = 18f
         paint.isFakeBoldText = true
-        canvas.drawText("FastScan Pro", 40f, y, paint)
-        y += 30f
-
-        // Партия
-        paint.textSize = 14f
-        paint.isFakeBoldText = false
-        canvas.drawText("Партия: $partialName", 40f, y, paint)
-        y += 30f
-
-        // Трек-номер
-        paint.textSize = 20f
-        paint.isFakeBoldText = true
-        canvas.drawText("Трек: $trackingNumber", 40f, y, paint)
+        canvas.drawText("Onza España", padding + 20f, y, paint)
         y += 40f
 
+        //Штрих-код (генерируем Bitmap и рисуем)
+        val barcodeHeight = 100
+        // Генерируем код ровно под ширину этикетки минус отступы
+        val barcodeBmp = BarcodeUtils.generateBarcode(trackingNumber, usableWidth.toInt(), barcodeHeight)
+        // Рисуем строго по центру
+        canvas.drawBitmap(barcodeBmp, padding, y, barcodePaint)
+        y += (barcodeHeight + 20f)
+
+
+        // Трек-номер
+        paint.textSize = 18f
+        paint.isFakeBoldText = false // Обычный шрифт для длинного номера
+        canvas.drawText(trackingNumber, padding + 60f, y, paint)
+        y += 70f
+
         // Последние 4 цифры крупно
-        paint.textSize = 28f
-        canvas.drawText(last4, 40f, y, paint)
-        y += 50f
+        paint.textSize = 40f
+        paint.isFakeBoldText = true
+        canvas.drawText(last4, padding + 90f, y, paint)
+        y += 40f
+
+
+        // Партия
+        paint.textSize = 30f
+        paint.isFakeBoldText = false
+        canvas.drawText("KG $partialName", padding + 40f, y, paint)
+        y += 40f
 
         // Вес
         paint.textSize = 16f
         paint.isFakeBoldText = false
-        canvas.drawText("Вес: $weight кг", 40f, y, paint)
-        y += 30f
+        canvas.drawText("Weight brutto: $weight kg", padding + 40f, y, paint)
+        y += 60f
 
         // Дата печати
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
         paint.textSize = 12f
-        canvas.drawText("Печать: $dateStr", 40f, y, paint)
+        paint.isFakeBoldText = false
+        canvas.drawText("Printed: $dateStr", padding + 40f, y, paint)
     }
 
     private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {

@@ -30,6 +30,7 @@ class PartyFragment : Fragment() {
     private val partiesAdapter = PartiesAdapter { partial ->
         val detailFragment = PartyDetailFragment.newInstance(
             partial.guid,
+            partial.codeid,
             partial.partial_code,
             partial.partial_name
         )

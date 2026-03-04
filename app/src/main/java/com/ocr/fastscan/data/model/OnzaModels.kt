@@ -168,6 +168,7 @@ data class BoxEntry(
 // Партия (Partial)
 data class Partial(
     val guid: String,
+    val codeid: String,
     val partial_code: String,
     val partial_name: String,
     val warehouse_name: String,

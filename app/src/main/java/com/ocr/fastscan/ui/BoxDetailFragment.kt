@@ -188,11 +188,7 @@ class BoxDetailFragment : Fragment() {
         }
     }
 
-    private fun calculateGrossWeight(orders: List<OrderInBox>): Double {
-        return orders.sumOf { it.weight ?: 0.0 }
-    }
-
-    private fun calculateVWeight(): Double {
+     private fun calculateVWeight(): Double {
         val length = binding.etLength.text.toString().toIntOrNull() ?: 70
         val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
         val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
@@ -205,11 +201,6 @@ class BoxDetailFragment : Fragment() {
         val widthStr = binding.etWidth.text.toString().trim()
         val heightStr = binding.etHeight.text.toString().trim()
         val weightStr = binding.etGrossWeight.text.toString().trim()
-
-//        val length = binding.etLength.text.toString().toIntOrNull() ?: 70
-//        val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
-//        val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
-//        val weight = binding.etGrossWeight.text.toString().toDoubleOrNull() ?: 0.0
 
         val length = lengthStr.toIntOrNull() ?: 70
         val width = widthStr.toIntOrNull() ?: 45
@@ -514,6 +505,25 @@ private fun printLabel() {
             }
         }
     }
+    //всегда загружать имя партии по коробке
+    private fun loadPartialNameFromBox() {
+        viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val response = apiService.getOpenPartials()
+                    if (response.isSuccessful) {
+                        val parties = response.body() ?: emptyList()
+                        //partialNamepartialName = boxInfo?.partial_name ?: "Без названия"
+                        //partiesAdapter.submitList(parties)
+                    } else {
+                        //binding.tvNoParties.text = "Ошибка загрузки"
+                    }
+                } catch (e: Exception) {
+                    Log.e("BoxDetail", "Ошибка получения имени партии", e)
+                    //binding.tvNoParties.text = "Сеть ошибка"
+                    //binding.tvNoParties.visibility = View.VISIBLE
+                }
+            }
+        }
 
     override fun onDestroyView() {
         super.onDestroyView()

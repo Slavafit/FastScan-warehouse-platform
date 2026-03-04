@@ -29,21 +29,12 @@ class PartyDetailFragment : Fragment() {
     private val soundManager = AppDependencies.soundManager
 
     private var partialGuid: String = ""
+
+    private var partialCodeid: String = ""
+
     private var partialCode: String = ""
     private var partialName: String = ""   // заполняй в onViewCreated или newInstance
 
-//    private val boxesAdapter = BoxesInPartialAdapter { box ->
-//        // Долгое нажатие или кнопка удаления — удаляем коробку
-//        AlertDialog.Builder(requireContext())
-//            .setTitle("Удалить коробку?")
-//            .setMessage("Удалить ${box.tracking_code} из партии? (пока не реализовано)")
-//            .setPositiveButton("Удалить") { _, _ ->
-//                Toast.makeText(requireContext(), "Удаление пока не реализовано", Toast.LENGTH_SHORT).show()
-//                //removeBoxFromParty(box.guid)
-//            }
-//            .setNegativeButton("Отмена", null)
-//            .show()
-//    }
 private val boxesAdapter = BoxesInPartialAdapter { box ->
     Log.d("PartyDetail", "Открываем детали коробки, передаём partialName: '$partialName'")  // ← лог для проверки
     // Удаление пока отключено
@@ -53,7 +44,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
         box.codeid ?: "",
         box.tracking_code ?: "",
         box.gross_weight?.toString() ?: "0.0",  // ← Double → String
-        partialName = partialName,
+        partialName,
     )
     parentFragmentManager.beginTransaction()
         .replace(R.id.fragment_container, detailFragment)
@@ -61,18 +52,22 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
         .commit()
     }
     companion object {
-        fun newInstance(guid: String, code: String, name: String) = PartyDetailFragment().apply {
-            arguments = Bundle().apply {
-                putString("partial_guid", guid)
-                putString("partial_code", code)
-                putString("partial_name", name)
-            }
+        fun newInstance(guid: String, codeid: String, code: String, name: String) = PartyDetailFragment().apply {
+            val fragment = PartyDetailFragment()
+            val args = Bundle()
+            args.putString("partial_guid", guid)
+            args.putString("codeid", codeid)
+            args.putString("partial_code", code)
+            args.putString("partial_name", name)
+            fragment.arguments = args
+            return fragment
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         partialGuid = arguments?.getString("partial_guid") ?: ""
+        partialCodeid = arguments?.getString("codeid") ?: ""
         partialCode = arguments?.getString("partial_code") ?: ""
         partialName = arguments?.getString("partial_name") ?: "Без названия"
     }
@@ -122,13 +117,13 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
             binding.progressBar.visibility = View.VISIBLE
             try {
                 val response = apiService.getBoxesInPartial(partialGuid)
-                //Log.d("PartyDetail", "Ответ сервера: код ${response.code()}, тело: ${response.body()}")
+                Log.d("PartyDetail", "Ответ сервера: код ${response.code()}, тело: ${response.body()}")
                 if (response.isSuccessful) {
                     val boxes = response.body() ?: emptyList()
-                    //Log.d("PartyDetail", "Получен: ${boxes}")
+                    Log.d("PartyDetail", "Получен: ${boxes}")
 
                     boxesAdapter.submitList(boxes)
-                    binding.tvInfo.text = "Склад: BMG | Создано: ... | Коробок: ${boxes.size}"
+                    binding.tvInfo.text = "Склад: BMG | Коробок: ${boxes.size}"
                 } else {
                     Toast.makeText(requireContext(), "Ошибка загрузки", Toast.LENGTH_SHORT).show()
                 }

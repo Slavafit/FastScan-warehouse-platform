@@ -206,7 +206,7 @@ class PrintHelper(private val context: Context) {
         // Партия
         paint.textSize = 30f
         paint.isFakeBoldText = false
-        canvas.drawText("KG $partialName", padding + 40f, y, paint)
+        canvas.drawText("$partialName", padding + 40f, y, paint)
         y += 40f
 
         // Вес

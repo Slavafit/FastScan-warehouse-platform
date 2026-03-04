@@ -167,14 +167,14 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
             try {
                 val request = AddBoxRequest(
                     guid = box.guid,
+                    codeid = box.codeid,
                     tracking_code = box.tracking_code,
                     width = box.width,
                     height = box.height,
                     length = box.length,
                     v_weight = box.v_weight,
                     gross_weight = box.gross_weight,
-                    orderCount = box.orderCount,
-                    codeid = box.codeid
+                    orderCount = box.orderCount
                 )
                 Log.d("addBoxToParty", "request: ${request}")
 

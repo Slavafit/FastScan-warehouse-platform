@@ -109,7 +109,7 @@ class PartyFragment : Fragment() {
                     try {
                         val request = PartialCreateRequest(generatedCode, name)
                         val response = apiService.createPartial(request)
-                        Log.d("CreateParty", "Отправляем: ${response}")
+                        //Log.d("CreateParty", "Отправляем: ${response}")
                         Log.d("CreateParty", "Получаем: ${request}")
 
                         if (response.isSuccessful && response.body()?.success == true) {

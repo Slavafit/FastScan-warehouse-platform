@@ -169,6 +169,7 @@ data class BoxEntry(
 data class Partial(
     val guid: String,
     val codeid: String,
+    val partial: String,
     val partial_code: String,
     val partial_name: String,
     val warehouse_name: String,
@@ -182,13 +183,13 @@ data class Partial(
 data class BoxInPartial(
     val guid: String,
     val codeid: String,
+    val partial: String,
     val tracking_code: String,
     val width: Int,
     val height: Int,
     val length: Int,
     val v_weight: Double,
     val gross_weight: Double,
-    val orderCount: Int,
     val date_created: String,
     val warehouse_name: String
 )
@@ -202,23 +203,35 @@ data class PartialCreateResponse(
 data class SendPartialResponse(
     val result: Any?  // пустой объект
 )
-
+//запрос на сервера при добавлении коробки в партию
 data class AddBoxRequest(
     val guid: String,           // guid коробки
     val codeid: String,
+    val partial: String,        // guid партии
     val tracking_code: String,
     val width: Int,
     val height: Int,
     val length: Int,
     val v_weight: Double,
     val gross_weight: Double,
-    val orderCount: Int
 )
-data class SendPartialRequest(
-    val partial: String  // guid партии
+
+//ответ сервера при добавлении коробки в партию
+data class AddBoxResponse(
+    val success: Boolean,
+    val message: String,
+    val result: List<UpdatedCodeResult>?
+)
+
+data class UpdatedCodeResult(
+    val UpdatedCodeID: String
 )
 
 data class PartialCreateRequest(
     val partial_code: String,
     val partial_name: String
+)
+
+data class SendPartialRequest(
+    val partial: String  // guid партии
 )

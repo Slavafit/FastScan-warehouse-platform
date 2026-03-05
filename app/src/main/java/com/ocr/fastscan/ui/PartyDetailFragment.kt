@@ -163,35 +163,50 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
     }
 
     private fun addBoxToParty(box: BoxInPartial) {
+        binding.progressBar.visibility = View.VISIBLE
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val request = AddBoxRequest(
                     guid = box.guid,
                     codeid = box.codeid,
+                    partial = partialGuid,
                     tracking_code = box.tracking_code,
                     width = box.width,
                     height = box.height,
                     length = box.length,
                     v_weight = box.v_weight,
-                    gross_weight = box.gross_weight,
-                    orderCount = box.orderCount
+                    gross_weight = box.gross_weight
                 )
-                Log.d("addBoxToParty", "request: ${request}")
+                Log.d("AddBox", "Отправка запроса:: ${request}")
 
                 val response = apiService.addBoxToPartial(request)
-                Log.d("addBoxToParty", "response: ${response}")
-
                 if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Коробка добавлена", Toast.LENGTH_SHORT).show()
-                    soundManager.playSuccess()
-                    loadBoxDetails()
+                    val body = response.body()
+                    if (body?.success == true) {
+                        val message = body.message ?: "Коробка добавлена"
+                        Toast.makeText(requireContext(), "$message", Toast.LENGTH_LONG).show()
+                        soundManager.playSuccess()
+
+                        // Обновляем список коробок в партии
+                        loadBoxDetails()
+                    } else {
+                        Toast.makeText(requireContext(), "Сервер вернул success=false: ${body?.message}", Toast.LENGTH_LONG).show()
+                        soundManager.playError()
+                    }
                 } else {
+                    val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
+                    Log.e("AddBox", "Ошибка добавления коробки: код ${response.code()}, тело: $errorBody")
                     Toast.makeText(requireContext(), "Ошибка добавления коробки", Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Log.e("AddBox", "Сетевая ошибка при добавлении коробки", e)
+
                 soundManager.playError()
+            }
+            finally {
+                binding.progressBar.visibility = View.GONE
             }
         }
     }

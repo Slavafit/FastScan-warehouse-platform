@@ -71,7 +71,7 @@ interface OnzaApiService {
 
     // Привязать коробку к партии
     @POST("/api/order/box")
-    suspend fun addBoxToPartial(@Body request: AddBoxRequest): Response<Any>
+    suspend fun addBoxToPartial(@Body request: AddBoxRequest): Response<AddBoxResponse>
 
 
     // Удаление коробки из партии (пока заглушка — замени на реальный путь)

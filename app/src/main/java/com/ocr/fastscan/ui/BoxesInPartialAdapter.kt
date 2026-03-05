@@ -35,7 +35,6 @@ class BoxesInPartialAdapter(
             binding.tvDimensions.text = "Размеры: ${box.width} × ${box.height} × ${box.length} см"
             binding.tvGrossWeight.text = "Вес: ${box.gross_weight} кг"
             binding.tvVWeight.text = "Объёмный вес: ${box.v_weight} кг"
-            binding.tvOrderCount.text = "Заказов: ${box.orderCount}"
 
             binding.root.setOnLongClickListener {
                 onLongClick(box)

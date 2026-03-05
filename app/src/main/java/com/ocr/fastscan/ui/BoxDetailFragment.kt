@@ -161,8 +161,8 @@ class BoxDetailFragment : Fragment() {
     }
 
     private fun loadBoxDetails() {
-        binding.progressBar.visibility = View.VISIBLE
-                lifecycleScope.launch {
+        lifecycleScope.launch {
+            binding.progressBar.visibility = View.VISIBLE
             try {
                 val response = apiService.getOrderDetailsBox(boxTracking)  // boxTracking = tracking_code коробки
                 if (response.isSuccessful && response.body() != null) {
@@ -224,7 +224,7 @@ class BoxDetailFragment : Fragment() {
                     length = length,
                     weight = weight,
                     vWeight = calculateVWeight(),
-                                        )
+                    )
                 Log.d("BoxDetail", "Отправляем обновление: $request")
                 val response = apiService.createOrUpdateBox(request)
                 Log.d("BoxDetail", "response: $response")

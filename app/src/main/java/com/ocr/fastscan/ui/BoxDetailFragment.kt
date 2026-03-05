@@ -18,6 +18,7 @@ import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.launch
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.EditText
 import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.ScanUtils
 import com.ocr.fastscan.utils.getVolWeightDivider
@@ -131,6 +132,7 @@ class BoxDetailFragment : Fragment() {
 
         loadBoxInfo()  // ← функция для загрузки данных коробки (размеры, веса)
         loadOrdersInBox()  // ← загрузка списка заказов
+        loadPartialName() //функция запроса имени партии
     }
 
     private fun setupClickListeners() {
@@ -160,8 +162,7 @@ class BoxDetailFragment : Fragment() {
 
     private fun loadBoxDetails() {
         binding.progressBar.visibility = View.VISIBLE
-
-        lifecycleScope.launch {
+                lifecycleScope.launch {
             try {
                 val response = apiService.getOrderDetailsBox(boxTracking)  // boxTracking = tracking_code коробки
                 if (response.isSuccessful && response.body() != null) {
@@ -207,7 +208,7 @@ class BoxDetailFragment : Fragment() {
         val height = heightStr.toIntOrNull() ?: 50
         val weight = weightStr.toDoubleOrNull() ?: 0.0
         // Валидация
-        if (length <= 0 || width <= 0 || height <= 0 || weight <= 0) {
+        if (length <= 0 || width <= 0 || height <= 0 ) {
             Toast.makeText(requireContext(), "Все значения должны быть положительными",
                 Toast.LENGTH_SHORT).show()
             return
@@ -295,8 +296,11 @@ class BoxDetailFragment : Fragment() {
 
 private fun printLabel() {
     // 1. Полный текст из UI (логируем для отладки)
+    //Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText', Имя партии перед печатью: '$partialName'")
+    val length = binding.etLength.text.toString().toIntOrNull()
+    val width = binding.etWidth.text.toString().toIntOrNull()
+    val height = binding.etHeight.text.toString().toIntOrNull()
     val fullWeightText = binding.tvGrossWeight.text.toString()
-    Log.d("printHelper", "Полный текст веса из UI: '$fullWeightText', Имя партии перед печатью: '$partialName'")
 
     // 2. Очень надёжная очистка веса (убираем всё лишнее)
     val weightClean = fullWeightText
@@ -327,12 +331,22 @@ private fun printLabel() {
         "0000"  // fallback на случай пустого трека
     }
 
-    Log.d("printHelper", "Параметры для печати: track='$trimmedTracking', weight='$weightClean', last4='$last4', partial='$partialName'")
+    //Log.d("printHelper", "Параметры для печати: track='$trimmedTracking', weight='$weightClean', " +
+            //"last4='$last4', partial='$partialName', length='$length', width='$width', height='$height'")
 
     // 6. Печать
     try {
+
         val printHelper = PrintHelper(requireContext())
-        printHelper.printBoxLabel(trimmedTracking, weightClean, last4, partialName)
+        printHelper.printBoxLabel(
+            trimmedTracking,
+            weightClean,
+            last4,
+            partialName,
+            length = length.toString(),
+            width = width.toString(),
+            height = height.toString()
+            )
         soundManager.playSuccess()
         Toast.makeText(requireContext(), "Этикетка отправлена на печать", Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
@@ -368,7 +382,7 @@ private fun printLabel() {
                 val addRequest = BoxOrderRequest(
                     order = orderGuid,
                     box = boxGuid,
-                    desc = "По скану"  // короткое описание
+                    desc = "España BMG"  // короткое описание
                 )
 
                 val addResponse = apiService.addOrderToBox(addRequest)
@@ -506,21 +520,24 @@ private fun printLabel() {
         }
     }
     //всегда загружать имя партии по коробке
-    private fun loadPartialNameFromBox() {
+    private fun loadPartialName() {
         viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val response = apiService.getOpenPartials()
                     if (response.isSuccessful) {
                         val parties = response.body() ?: emptyList()
-                        //partialNamepartialName = boxInfo?.partial_name ?: "Без названия"
-                        //partiesAdapter.submitList(parties)
-                    } else {
-                        //binding.tvNoParties.text = "Ошибка загрузки"
+                        Log.d("BoxDetail", "Получено ${parties.size} партий: $parties")
+                        if (parties.isNotEmpty()) {
+                            partialName = parties.first().partial_name.trim()
+                            Log.d("BoxDetail", "Взято первое имя партии: '$partialName'")
+                        } else {
+                        Log.e("BoxDetail", "Ошибка API: ${response.code()} ")
+                        Toast.makeText(requireContext(), "Ошибка загрузки заказов", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } catch (e: Exception) {
-                    Log.e("BoxDetail", "Ошибка получения имени партии", e)
-                    //binding.tvNoParties.text = "Сеть ошибка"
-                    //binding.tvNoParties.visibility = View.VISIBLE
+                    Log.e("BoxDetail", "Ошибка сети", e)
+                    Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
                 }
             }
         }

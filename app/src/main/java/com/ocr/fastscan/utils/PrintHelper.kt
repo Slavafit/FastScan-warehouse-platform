@@ -14,7 +14,6 @@ import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.print.PrintManager
 import android.util.Log
-import android.widget.Toast
 import java.io.File
 import java.io.FileOutputStream
 import com.ocr.fastscan.data.model.BoxInPartial
@@ -25,7 +24,12 @@ import java.util.Locale
 
 class PrintHelper(private val context: Context) {
 
-    fun printLabel(trackingNumber: String, clientCode: String, client: String, weight: String) {
+    fun printLabel(
+        trackingNumber: String,
+        clientCode: String,
+        client: String,
+        weight: String
+    ) {
         val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
         val jobName = "Onza_Label_$trackingNumber"
 
@@ -82,7 +86,10 @@ class PrintHelper(private val context: Context) {
         trackingNumber: String,
         weight: String,
         last4: String,
-        partialName: String
+        partialName: String,
+        length: String,
+        width: String,
+        height: String
     ) {
         val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager
         if (printManager == null) {
@@ -137,7 +144,7 @@ class PrintHelper(private val context: Context) {
                 val page = pdfDocument.startPage(pageInfo)
                 val canvas = page.canvas
 
-                drawLabelBox(canvas, trackingNumber, weight, last4, partialName)
+                drawLabelBox(canvas, trackingNumber, weight, last4, partialName, length, width, height)
 
                 pdfDocument.finishPage(page)
 
@@ -160,7 +167,10 @@ class PrintHelper(private val context: Context) {
         trackingNumber: String,
         weight: String,
         last4: String,
-        partialName: String
+        partialName: String,
+        length: String,
+        width: String,
+        height: String
     ) {
 
         val padding = 20f // Отступ от краев этикетки в пикселях
@@ -193,7 +203,7 @@ class PrintHelper(private val context: Context) {
         // Трек-номер
         paint.textSize = 18f
         paint.isFakeBoldText = false // Обычный шрифт для длинного номера
-        canvas.drawText(trackingNumber, padding + 60f, y, paint)
+        canvas.drawText(trackingNumber, padding + 50f, y, paint)
         y += 70f
 
         // Последние 4 цифры крупно
@@ -206,20 +216,26 @@ class PrintHelper(private val context: Context) {
         // Партия
         paint.textSize = 30f
         paint.isFakeBoldText = false
-        canvas.drawText("$partialName", padding + 40f, y, paint)
+        canvas.drawText("Party: $partialName", padding + 40f, y, paint)
         y += 40f
 
         // Вес
         paint.textSize = 16f
         paint.isFakeBoldText = false
         canvas.drawText("Weight brutto: $weight kg", padding + 40f, y, paint)
-        y += 60f
+        y += 40f
+
+        // Размеры
+        paint.textSize = 12f
+        paint.isFakeBoldText = false
+        canvas.drawText("Box size: $length X $height X $width", padding + 40f, y, paint)
+        y += 20f
 
         // Дата печати
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
         paint.textSize = 12f
         paint.isFakeBoldText = false
-        canvas.drawText("Printed: $dateStr", padding + 40f, y, paint)
+        canvas.drawText("Printed: $dateStr", padding + 30f, y, paint)
     }
 
     private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {

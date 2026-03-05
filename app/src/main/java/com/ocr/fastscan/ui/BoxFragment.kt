@@ -32,8 +32,8 @@ class BoxFragment : Fragment() {
             boxGuid =box.guid ?: "",
             boxСodeid = box.codeid ?: "",
             boxTracking = box.trackingCode ?: "",
-            boxWeight = box.grossWeight?.toString() ?: "0.0",
-            partialName = partialName ?: ""
+            boxWeight = box.grossWeight?.toString() ?: "",
+            partialName = partialName ?: "KG..."
             )
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, detailFragment)

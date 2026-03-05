@@ -95,7 +95,8 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:hint="Длина (см)"
+                    android:selectAllOnFocus="true"
+                    android:hint="Дл (см)"
                     android:inputType="number"
                     android:textSize="16sp" />
 
@@ -104,7 +105,8 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:hint="Ширина (см)"
+                    android:selectAllOnFocus="true"
+                    android:hint="Шир (см)"
                     android:inputType="number"
                     android:textSize="16sp"
                     android:layout_marginHorizontal="8dp" />
@@ -114,7 +116,8 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:hint="Высота (см)"
+                    android:selectAllOnFocus="true"
+                    android:hint="Выс (см)"
                     android:inputType="number"
                     android:textSize="16sp" />
             </LinearLayout>
@@ -131,6 +134,7 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
+                    android:selectAllOnFocus="true"
                     android:hint="Вес (кг)"
                     android:inputType="numberDecimal"
                     android:textSize="16sp" />

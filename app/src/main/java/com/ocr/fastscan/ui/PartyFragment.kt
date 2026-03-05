@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import android.app.AlertDialog
+import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.databinding.DialogCreatePartyBinding
@@ -108,6 +109,9 @@ class PartyFragment : Fragment() {
                     try {
                         val request = PartialCreateRequest(generatedCode, name)
                         val response = apiService.createPartial(request)
+                        Log.d("CreateParty", "Отправляем: ${response}")
+                        Log.d("CreateParty", "Получаем: ${request}")
+
                         if (response.isSuccessful && response.body()?.success == true) {
                             Toast.makeText(requireContext(), "Партия создана", Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()

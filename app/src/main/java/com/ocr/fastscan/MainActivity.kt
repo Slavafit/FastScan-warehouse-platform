@@ -1,7 +1,6 @@
 package com.ocr.fastscan
 
 import android.os.Bundle
-import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity

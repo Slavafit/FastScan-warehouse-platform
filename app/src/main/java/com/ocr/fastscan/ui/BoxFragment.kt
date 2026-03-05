@@ -22,17 +22,10 @@ class BoxFragment : Fragment() {
 
     private var _binding: FragmentBoxBinding? = null
     private val binding get() = _binding!!
-
-    private val apiService = AppDependencies.apiService
-
     private var isShowingAllBoxes = false  // флаг для "Показать все"
-
     private var isLoading = false  // Флаг для предотвращения петли
-
-    private val partialName = arguments?.getString("partial_name")
-
-
     private val boxesAdapter = BoxesAdapter { box ->
+        val partialName = arguments?.getString("partial_name")
         Log.d("boxesAdapter", "Перед открытием деталей коробки. partialName = '$partialName'")
         // Клик по коробке — открываем детальный экран
         val detailFragment = BoxDetailFragment.newInstance(
@@ -47,8 +40,6 @@ class BoxFragment : Fragment() {
             .addToBackStack(null)
             .commit()
     }
-
-    private var loadBoxesCallCount = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,11 +59,11 @@ class BoxFragment : Fragment() {
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvBoxes.adapter = boxesAdapter
 
-
+        // Кнопка обновления
         binding.btnRefresh.setOnClickListener {
             loadBoxes(isOpenOnly = isShowingAllBoxes)
         }
-
+        // Кнопка добавления коробки
         binding.btnAddNewBox.setOnClickListener {
             DialogUtils.showAddNewBoxDialog(
                 lifecycleOwner = viewLifecycleOwner,
@@ -80,7 +71,12 @@ class BoxFragment : Fragment() {
                 onSuccess = { trackingCode ->
                     // Успех: обновляем список, переходим в детали
                     loadBoxes(isOpenOnly = true)
-                    val detailFragment = BoxDetailFragment.newInstance("", trackingCode, "0.0","")
+                    val detailFragment = BoxDetailFragment.newInstance(
+                        "",
+                        "",
+                        trackingCode,
+                        ""
+                        )
                     parentFragmentManager.beginTransaction()
                         .replace(R.id.fragment_container, detailFragment)
                         .addToBackStack(null)
@@ -92,13 +88,7 @@ class BoxFragment : Fragment() {
                 }
             )
         }
-
-//        binding.btnShowAll.setOnClickListener {
-//            isShowingAllBoxes = !isShowingAllBoxes
-//            binding.btnShowAll.text = if (isShowingAllBoxes) "Показать открытые" else "Показать все"
-//            binding.tvTitle.text = if (isShowingAllBoxes) "Все коробки" else "Открытые коробки"
-//            loadBoxes(isOpenOnly = !isShowingAllBoxes)
-//        }
+        // Кнопка переключения "Все / Открытые"
         binding.btnShowAll.setOnClickListener {
             isShowingAllBoxes = !isShowingAllBoxes
             binding.btnShowAll.text = if (isShowingAllBoxes) "Показать открытые" else "Показать все"
@@ -118,6 +108,7 @@ class BoxFragment : Fragment() {
     }
 
     private fun loadBoxes(isOpenOnly: Boolean = true) {
+        var loadBoxesCallCount = 0
         binding.progressBar.visibility = View.VISIBLE
         binding.tvNoBoxes.visibility = View.GONE
 
@@ -143,6 +134,7 @@ class BoxFragment : Fragment() {
                 } else {
                     Log.w("BoxDialog", "View уничтожен — пропускаем loadBoxes")
                 }
+                val apiService = AppDependencies.apiService
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
                 //Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body() != null) {

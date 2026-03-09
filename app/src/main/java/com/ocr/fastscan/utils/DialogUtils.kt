@@ -19,42 +19,38 @@ object DialogUtils {
 
     fun showVolumeDialog(
         context: Context,
-        onResult: (String) -> Unit
+        onResult: (VolumeCalcResult) -> Unit
     ) {
-        val dialogBinding = DialogVolumeBinding.inflate(
-            LayoutInflater.from(context)  // ← правильный способ получить inflater
-        )
+        val dialogBinding = DialogVolumeBinding.inflate(LayoutInflater.from(context))
 
         val dialog = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
-            .create()
+            .setTitle("Расчёт объёмного веса")
+            .setPositiveButton("Сохранить") { _, _ ->
+                val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
+                val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 45
+                val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
 
-        val divider = context.getVolWeightDivider()
+                if (length <= 0 || width <= 0 || height <= 0) {
+                    Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
 
-        val watcher = object : android.text.TextWatcher {
-            override fun afterTextChanged(s: android.text.Editable?) {
-                val l = dialogBinding.etLength.text.toString().toDoubleOrNull() ?: 0.0
-                val w = dialogBinding.etWidth.text.toString().toDoubleOrNull() ?: 0.0
-                val h = dialogBinding.etHeight.text.toString().toDoubleOrNull() ?: 0.0
-                val res = (l * w * h) / divider
-                dialogBinding.tvResultPreview.text = "Вес: ${String.format("%.2f", res)} кг"
+                // Рассчитываем объёмный вес (твоя формула)
+                val vWeight = (length * width * height / 5000.0)  // пример, подставь свою формулу
+
+                val result = VolumeCalcResult(
+                    grossWeight = vWeight,
+                    length = length,
+                    width = width,
+                    height = height
+                )
+
+                onResult(result)
+                dialog.dismiss()
             }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        }
-
-        dialogBinding.etLength.addTextChangedListener(watcher)
-        dialogBinding.etWidth.addTextChangedListener(watcher)
-        dialogBinding.etHeight.addTextChangedListener(watcher)
-
-        dialogBinding.btnApplyVolume.setOnClickListener {
-            val resText = dialogBinding.tvResultPreview.text.toString()
-                .replace("Вес: ", "")
-                .replace(" кг", "")
-                .replace(",", ".")
-            onResult(resText)
-            dialog.dismiss()
-        }
+            .setNegativeButton("Отмена") { _, _ -> dialog.dismiss() }
+            .create()
 
         dialog.show()
     }

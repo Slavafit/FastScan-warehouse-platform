@@ -17,13 +17,13 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Кнопка обновить -->
-    <ImageButton
-        android:id="@+id/btnRefresh"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@android:drawable/ic_menu_rotate"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+<!--    <ImageButton-->
+<!--        android:id="@+id/btnRefresh"-->
+<!--        android:layout_width="48dp"-->
+<!--        android:layout_height="48dp"-->
+<!--        android:src="@android:drawable/ic_menu_rotate"-->
+<!--        app:layout_constraintTop_toTopOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent" />-->
 
     <!-- Список коробок -->
     <androidx.recyclerview.widget.RecyclerView

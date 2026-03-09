@@ -1,6 +1,8 @@
 package com.ocr.fastscan
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,17 +29,35 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        AppDependencies.init(this)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        // ПРОВЕРКА НАСТРОЕК (логин, пароль, email)
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val login = prefs.getString("login", "")?.trim() ?: ""
+        val password = prefs.getString("password", "")?.trim() ?: ""
         val email = prefs.getString("user_email", "")?.trim() ?: ""
 
-        // Проверка лицензии асинхронно
+        if (login.isBlank() || password.isBlank() || email.isBlank()) {
+            Toast.makeText(this, "Введите логин, пароль и email в настройках", Toast.LENGTH_LONG).show()
+
+            // Открываем настройки
+            val intent = Intent(this, SettingsActivity::class.java)
+            startActivity(intent)
+
+            // Закрываем MainActivity — после ввода данных приложение перезапустится
+            finish()
+            return
+        }
+
+        // Если всё заполнено — продолжаем как было у тебя
+        AppDependencies.init(this)
+
+        // Твоя проверка лицензии и авто-логин
         lifecycleScope.launch {
             if (AppDependencies.tokenManager.getToken() == null) {
                 AppDependencies.performAutoLogin(this@MainActivity)
             }
+
             val checker = LicenseChecker(email)
             val isValid = checker.isLicenseValid(this@MainActivity)
 
@@ -50,7 +70,7 @@ class MainActivity : AppCompatActivity() {
                 val doc = db.collection("licenses").document(email).get().await()
                 val expirationDate = doc.getTimestamp("expiration_date")?.toDate() ?: return@launch
 
-                val daysLeft = (expirationDate.time - Date().time) / (1000 * 60 * 60 * 24)
+                val daysLeft = ((expirationDate.time - Date().time) / (1000 * 60 * 60 * 24)).toInt()
 
                 val message = when {
                     daysLeft <= 0 -> "Лицензия истекла!"

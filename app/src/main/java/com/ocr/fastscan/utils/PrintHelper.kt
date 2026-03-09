@@ -358,7 +358,7 @@ class PrintHelper(private val context: Context) {
                 "${box.width}×${box.height}×${box.length}",
                 box.gross_weight,
                 box.v_weight,
-                box.orderCount
+                //box.orderCount
             )
             canvas.drawText(line, 40f, y, paint)
             y += 20f
@@ -369,7 +369,7 @@ class PrintHelper(private val context: Context) {
         // Сумма внизу
         val totalGross = boxes.sumOf { it.gross_weight }
         val totalV = boxes.sumOf { it.v_weight }
-        val totalOrders = boxes.sumOf { it.orderCount }
+        //val totalOrders = boxes.sumOf { it.orderCount }
 
         y += 20f
         paint.isFakeBoldText = true
@@ -380,7 +380,7 @@ class PrintHelper(private val context: Context) {
         y += 20f
         canvas.drawText("Объёмный вес: %.2f кг".format(totalV), 300f, y, paint)
         y += 20f
-        canvas.drawText("Всего заказов: $totalOrders", 300f, y, paint)
+        //canvas.drawText("Всего заказов: $totalOrders", 300f, y, paint)
 
         document.finishPage(page)
 

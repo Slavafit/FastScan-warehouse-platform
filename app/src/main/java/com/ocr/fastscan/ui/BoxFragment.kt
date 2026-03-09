@@ -60,9 +60,9 @@ class BoxFragment : Fragment() {
         binding.rvBoxes.adapter = boxesAdapter
 
         // Кнопка обновления
-        binding.btnRefresh.setOnClickListener {
-            loadBoxes(isOpenOnly = isShowingAllBoxes)
-        }
+//        binding.btnRefresh.setOnClickListener {
+//            loadBoxes(isOpenOnly = isShowingAllBoxes)
+//        }
         // Кнопка добавления коробки
         binding.btnAddNewBox.setOnClickListener {
             DialogUtils.showAddNewBoxDialog(
@@ -118,14 +118,14 @@ class BoxFragment : Fragment() {
         }
         isLoading = true
 
-            loadBoxesCallCount++
-            Log.d("BoxFragment", "loadBoxes вызван #$loadBoxesCallCount, isOpenOnly=$isOpenOnly")
-
-            if (loadBoxesCallCount > 10) {
-                Log.e("BoxFragment", "ОБНАРУЖЕНА ПЕТЛЯ! Более 10 вызовов loadBoxes подряд")
-                isLoading = false
-                return
-            }
+            //loadBoxesCallCount++
+//            Log.d("BoxFragment", "loadBoxes вызван #$loadBoxesCallCount, isOpenOnly=$isOpenOnly")
+//
+//            if (loadBoxesCallCount > 10) {
+//                Log.e("BoxFragment", "ОБНАРУЖЕНА ПЕТЛЯ! Более 10 вызовов loadBoxes подряд")
+//                isLoading = false
+//                return
+//            }
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 Log.d("BoxDialog", "Загружаем список коробок")

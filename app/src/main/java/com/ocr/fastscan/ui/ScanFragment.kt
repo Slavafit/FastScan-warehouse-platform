@@ -1,21 +1,13 @@
 package com.ocr.fastscan.ui
 
 import android.app.Activity
-import android.app.Dialog
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -27,20 +19,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import com.ocr.fastscan.SettingsActivity
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.data.SenderManager
-import com.ocr.fastscan.databinding.DialogVolumeBinding
 import com.ocr.fastscan.databinding.FragmentScanBinding
 import com.ocr.fastscan.utils.*
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
 import com.ocr.fastscan.databinding.DialogSearchClientBinding
 
-class ScanFragment : Fragment(), SensorEventListener {
+class ScanFragment : Fragment() {
 
     private var _binding: FragmentScanBinding? = null
     private val binding get() = _binding!!
@@ -53,13 +41,6 @@ class ScanFragment : Fragment(), SensorEventListener {
         }
     }
     private var currentReceiverGuid: String? = null
-    private val handler = Handler(Looper.getMainLooper())
-    private val inactivityRunnable = Runnable { dimScreen() }
-    private val INACTIVITY_TIMEOUT = 60_000L  // 60 секунд
-    private lateinit var sensorManager: SensorManager
-    private var accelerometer: Sensor? = null
-    private var originalBrightness: Float = 1f
-
     private val apiService by lazy { AppDependencies.apiService }
     private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
@@ -71,6 +52,9 @@ class ScanFragment : Fragment(), SensorEventListener {
             context = requireContext()
         )
     }
+    private var currentLength: Int = 0
+    private var currentWidth: Int = 0
+    private var currentHeight: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -87,21 +71,8 @@ class ScanFragment : Fragment(), SensorEventListener {
         // Экран не гаснет
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        // Сохраняем исходную яркость
-        originalBrightness = requireActivity().window.attributes.screenBrightness
 
-        // Настраиваем сенсор движения
-        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-
-        // Слушаем касания по всему экрану
-        binding.root.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN || event.action == MotionEvent.ACTION_MOVE) {
-                resetInactivityTimer()
-            }
-            false
-        }
-// Enter в поле трека → запрос
+        // Enter в поле трека → запрос
         binding.etTracking.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE ||
                 (event?.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)) {
@@ -123,9 +94,6 @@ class ScanFragment : Fragment(), SensorEventListener {
         // Твои настройки (кнопки, слушатели и т.д.)
         setupButtons()
         setupClientCodeInput()
-        lifecycleScope.launch {
-            AppDependencies.performAutoLogin(requireContext())
-        }
     }
 
     private fun setupButtons() {
@@ -143,9 +111,22 @@ class ScanFragment : Fragment(), SensorEventListener {
             ScanUtils.launchCamera(requireContext(), "weight", scanLauncher)
         }
 
+//        binding.btnVolumeCalc.setOnClickListener {
+//            DialogUtils.showVolumeDialog(requireContext()) { weight ->
+//                   binding.etWeight.setText(weight)
+//            }
+//        }
         binding.btnVolumeCalc.setOnClickListener {
-            DialogUtils.showVolumeDialog(requireContext()) { weight ->
-                   binding.etWeight.setText(weight)
+            DialogUtils.showVolumeDialog(requireContext()) { result ->
+                // Получаем объёмный вес и размеры
+                binding.etWeight.setText("%.2f".format(result.grossWeight))
+
+                // Сохраняем размеры (например в переменные фрагмента)
+                currentLength = result.length
+                currentWidth  = result.width
+                currentHeight = result.height
+
+                Log.d("Scan", "Сохранены размеры: ${result.length} × ${result.width} × ${result.height}")
             }
         }
         binding.btnGenerateOnza.setOnClickListener {
@@ -333,7 +314,10 @@ class ScanFragment : Fragment(), SensorEventListener {
             grossWeight = grossWeight,
             recieverGuid = currentReceiverGuid!!,
             userGuid = currentReceiverGuid!!,
-            withBox = if (binding.cbWithBox.isChecked) 1 else 0
+            withBox = if (binding.cbWithBox.isChecked) 1 else 0,
+            length = currentLength,    // ← добавляем
+            width  = currentWidth,
+            height = currentHeight
         )
 
         //Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")
@@ -359,52 +343,6 @@ class ScanFragment : Fragment(), SensorEventListener {
         binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
     }
 
-        // Сбрасываем таймер неактивности
-    private fun resetInactivityTimer() {
-        handler.removeCallbacks(inactivityRunnable)
-        handler.postDelayed(inactivityRunnable, INACTIVITY_TIMEOUT)
-        restoreBrightness()
-    }
-
-    // Тускнеем экран
-    private fun dimScreen() {
-        val params = requireActivity().window.attributes
-        params.screenBrightness = 0.3f
-        requireActivity().window.attributes = params
-    }
-
-    // Возвращаем яркость
-    private fun restoreBrightness() {
-        val params = requireActivity().window.attributes
-        params.screenBrightness = originalBrightness
-        requireActivity().window.attributes = params
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            val x = event.values[0]
-            val y = event.values[1]
-            val z = event.values[2]
-
-            if (Math.abs(x) > 2 || Math.abs(y) > 2 || Math.abs(z) > 2) {
-                resetInactivityTimer()
-            }
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-
-    override fun onResume() {
-        super.onResume()
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
-        resetInactivityTimer()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-        handler.removeCallbacks(inactivityRunnable)
-    }
 
     private fun showSearchClientDialog() {
         val dialogBinding = DialogSearchClientBinding.inflate(layoutInflater)  // ← binding-класс
@@ -518,6 +456,5 @@ class ScanFragment : Fragment(), SensorEventListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        handler.removeCallbacks(inactivityRunnable)
     }
 }

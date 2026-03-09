@@ -28,7 +28,10 @@ data class OrderDetails(
     @SerializedName("client_code") val clientCode: String?,
     @SerializedName("with_box") val withBox: String?, // Приходит "1" или null
     @SerializedName("gross_weight") val grossWeight: Double?,
-    @SerializedName("user_guid") val userGuid: String?
+    @SerializedName("user_guid") val userGuid: String?,
+    @SerializedName("length") val length: Int?,
+    @SerializedName("width") val width: Int?,
+    @SerializedName("height") val height: Int?
 )
 data class ReceiverResponse(
     @SerializedName("full_name") val fullName: String?,
@@ -58,7 +61,10 @@ data class SaveOrderRequest(
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("with_box") val withBox: Any?,
     @SerializedName("reciever_guid") val recieverGuid: String,
-    @SerializedName("user_guid") val userGuid: String
+    @SerializedName("user_guid") val userGuid: String,
+    @SerializedName("length") val length: Int?,
+    @SerializedName("width") val width: Int?,
+    @SerializedName("height") val height: Int?
 )
 
 data class ReceiverItem(

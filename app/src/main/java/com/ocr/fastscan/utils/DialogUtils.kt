@@ -25,31 +25,45 @@ object DialogUtils {
     ) {
         val dialogBinding = DialogVolumeBinding.inflate(LayoutInflater.from(context))
 
-        val dialog = AlertDialog.Builder(context)
+        // Сначала создаём builder
+        val builder = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
             .setTitle("Расчёт объёмного веса")
-            .setPositiveButton("Сохранить") { _, _ ->
-                val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 0
-                val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 0
-                val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 0
 
-                // Рассчитываем объёмный вес (твоя формула)
-                val divider = context.getVolWeightDivider()
-                val vWeight = (length * width * height / divider)
+        // Создаём диалог
+        val dialog = builder.create()
 
-                val result = OrderDimensions(
-                    grossWeight = vWeight,
-                    length = length,
-                    width = width,
-                    height = height
-                )
+        // Теперь устанавливаем кнопки
+        builder.setPositiveButton("Сохранить") { _, _ ->
+            val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 0
+            val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 0
+            val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 0
 
-                onResult(result)
-                dialog.dismiss()
+            if (length <= 0 || width <= 0 || height <= 0) {
+                Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
+                return@setPositiveButton
             }
-            .setNegativeButton("Отмена") { _, _ -> dialog.dismiss() }
-            .create()
 
+            // Рассчитываем объёмный вес
+            val divider = context.getVolWeightDivider()
+            val vWeight = (length * width * height / divider).toDouble()
+
+            val result = OrderDimensions(
+                grossWeight = vWeight,
+                length = length,
+                width = width,
+                height = height
+            )
+
+            onResult(result)
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("Отмена") { _, _ ->
+            dialog.dismiss()
+        }
+
+        // Показываем диалог
         dialog.show()
     }
 

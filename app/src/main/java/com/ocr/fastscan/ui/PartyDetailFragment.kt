@@ -177,7 +177,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                     v_weight = box.v_weight,
                     gross_weight = box.gross_weight
                 )
-                Log.d("AddBox", "Отправка запроса:: ${request}")
+                //Log.d("AddBox", "Отправка запроса:: ${request}")
 
                 val response = apiService.addBoxToPartial(request)
                 if (response.isSuccessful) {
@@ -195,13 +195,13 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                     }
                 } else {
                     val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
-                    Log.e("AddBox", "Ошибка добавления коробки: код ${response.code()}, тело: $errorBody")
+                    //Log.e("AddBox", "Ошибка добавления коробки: код ${response.code()}, тело: $errorBody")
                     Toast.makeText(requireContext(), "Ошибка добавления коробки", Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
-                Log.e("AddBox", "Сетевая ошибка при добавлении коробки", e)
+                //Log.e("AddBox", "Сетевая ошибка при добавлении коробки", e)
 
                 soundManager.playError()
             }

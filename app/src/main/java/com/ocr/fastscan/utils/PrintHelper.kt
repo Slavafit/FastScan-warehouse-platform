@@ -222,7 +222,7 @@ class PrintHelper(private val context: Context) {
         // Вес
         paint.textSize = 16f
         paint.isFakeBoldText = false
-        canvas.drawText("Weight brutto: $weight kg", padding + 40f, y, paint)
+        canvas.drawText("Weight: $weight kg", padding + 40f, y, paint)
         y += 40f
 
         // Размеры
@@ -235,7 +235,7 @@ class PrintHelper(private val context: Context) {
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
         paint.textSize = 12f
         paint.isFakeBoldText = false
-        canvas.drawText("Printed: $dateStr", padding + 30f, y, paint)
+        canvas.drawText("Printed: $dateStr", padding + 40f, y, paint)
     }
 
     private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {

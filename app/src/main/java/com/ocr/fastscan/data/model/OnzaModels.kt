@@ -66,6 +66,13 @@ data class SaveOrderRequest(
     @SerializedName("width") val width: Int?,
     @SerializedName("height") val height: Int?
 )
+//объект только для размеров и веса
+data class OrderDimensions(
+    val length: Int,
+    val width: Int,
+    val height: Int,
+    val grossWeight: Double
+)
 
 data class ReceiverItem(
     @SerializedName("first_name") val firstName: String?,

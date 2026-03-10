@@ -55,6 +55,8 @@ class ScanFragment : Fragment() {
     private var currentLength: Int = 0
     private var currentWidth: Int = 0
     private var currentHeight: Int = 0
+    private var currentOrderDimensions: OrderDimensions? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -119,6 +121,8 @@ class ScanFragment : Fragment() {
         binding.btnVolumeCalc.setOnClickListener {
             DialogUtils.showVolumeDialog(requireContext()) { result ->
                 // Получаем объёмный вес и размеры
+
+                currentOrderDimensions = result
                 binding.etWeight.setText("%.2f".format(result.grossWeight))
 
                 // Сохраняем размеры (например в переменные фрагмента)
@@ -306,6 +310,7 @@ class ScanFragment : Fragment() {
         }
 
         val grossWeight = weightStr.toDoubleOrNull() ?: 0.0
+        val dims = currentOrderDimensions
 
         val req = SaveOrderRequest(
             clientCode = kg,
@@ -315,9 +320,9 @@ class ScanFragment : Fragment() {
             recieverGuid = currentReceiverGuid!!,
             userGuid = currentReceiverGuid!!,
             withBox = if (binding.cbWithBox.isChecked) 1 else 0,
-            length = currentLength,    // ← добавляем
-            width  = currentWidth,
-            height = currentHeight
+            length = dims.length,
+            width  = dims.width,
+            height = dims.height
         )
 
         //Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")

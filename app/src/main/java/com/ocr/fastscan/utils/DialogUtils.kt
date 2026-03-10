@@ -8,7 +8,9 @@ import com.ocr.fastscan.databinding.DialogVolumeBinding
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.ocr.fastscan.data.model.BoxRequest
+import com.ocr.fastscan.data.model.OrderDimensions
 import com.ocr.fastscan.databinding.DialogAddBoxBinding
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -19,7 +21,7 @@ object DialogUtils {
 
     fun showVolumeDialog(
         context: Context,
-        onResult: (VolumeCalcResult) -> Unit
+        onResult: (OrderDimensions) -> Unit
     ) {
         val dialogBinding = DialogVolumeBinding.inflate(LayoutInflater.from(context))
 
@@ -27,19 +29,15 @@ object DialogUtils {
             .setView(dialogBinding.root)
             .setTitle("Расчёт объёмного веса")
             .setPositiveButton("Сохранить") { _, _ ->
-                val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
-                val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 45
-                val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
-
-                if (length <= 0 || width <= 0 || height <= 0) {
-                    Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
+                val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 0
+                val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 0
+                val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 0
 
                 // Рассчитываем объёмный вес (твоя формула)
-                val vWeight = (length * width * height / 5000.0)  // пример, подставь свою формулу
+                val divider = context.getVolWeightDivider()
+                val vWeight = (length * width * height / divider)
 
-                val result = VolumeCalcResult(
+                val result = OrderDimensions(
                     grossWeight = vWeight,
                     length = length,
                     width = width,

@@ -320,9 +320,9 @@ class ScanFragment : Fragment() {
             recieverGuid = currentReceiverGuid!!,
             userGuid = currentReceiverGuid!!,
             withBox = if (binding.cbWithBox.isChecked) 1 else 0,
-            length = dims.length,
-            width  = dims.width,
-            height = dims.height
+            length = currentLength,
+            width  = currentWidth,
+            height = currentHeight
         )
 
         //Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")

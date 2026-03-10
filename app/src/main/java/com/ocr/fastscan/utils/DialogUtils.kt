@@ -8,7 +8,6 @@ import com.ocr.fastscan.databinding.DialogVolumeBinding
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import com.ocr.fastscan.data.model.BoxRequest
 import com.ocr.fastscan.data.model.OrderDimensions
 import com.ocr.fastscan.databinding.DialogAddBoxBinding
@@ -39,11 +38,6 @@ object DialogUtils {
             val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 0
             val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 0
 
-            if (length <= 0 || width <= 0 || height <= 0) {
-                Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
-                return@setPositiveButton
-            }
-
             // Рассчитываем объёмный вес
             val divider = context.getVolWeightDivider()
             val vWeight = (length * width * height / divider).toDouble()
@@ -62,7 +56,6 @@ object DialogUtils {
         builder.setNegativeButton("Отмена") { _, _ ->
             dialog.dismiss()
         }
-
         // Показываем диалог
         dialog.show()
     }

@@ -5,6 +5,8 @@ import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ocr.fastscan.data.model.BoxEntry
 import com.ocr.fastscan.data.model.FirestoreShipment
+import com.ocr.fastscan.data.model.SearchResult
+
 import java.security.Timestamp
 
 class FirebaseManager(requireContext: Context) {
@@ -44,5 +46,29 @@ class FirebaseManager(requireContext: Context) {
                 Log.e("FirebaseManager", "Error saving box entry", e)
                 onFailure(e)
             }
+    }
+
+    fun performGlobalSearch(trackingNumber: String): SearchResult {
+        val db = FirebaseFirestore.getInstance()
+
+        // Запускаем оба запроса параллельно
+        val shipmentTask = db.collection("shipments")
+            .whereEqualTo("trackingNumber", trackingNumber)
+            .limit(1)
+            .get()
+
+        val boxTask = db.collection("box_entries")
+            .whereEqualTo("orderTracking", trackingNumber)
+            .limit(1)
+            .get()
+
+        // Ждем выполнения обоих
+        val shipmentSnap = shipmentTask.await()
+        val boxSnap = boxTask.await()
+
+        val shipment = shipmentSnap.documents.firstOrNull()?.toObject(FirestoreShipment::class.java)
+        val boxEntry = boxSnap.documents.firstOrNull()?.toObject(BoxEntry::class.java)
+
+        return SearchResult(shipment, boxEntry)
     }
 }

@@ -248,3 +248,9 @@ data class PartialCreateRequest(
 data class SendPartialRequest(
     val partial: String  // guid партии
 )
+
+//поиск по треку
+data class SearchResult(
+    val shipment: FirestoreShipment? = null,
+    val boxEntry: BoxEntry? = null
+)

@@ -44,6 +44,10 @@ class ScanFragment : Fragment() {
     private val apiService by lazy { AppDependencies.apiService }
     private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
+
+    //private val performGlobalSearch by lazy { FirebaseManager }
+    lateinit var performGlobalSearch: FirebaseManager
+
     private val printHelper by lazy { PrintHelper(requireContext()) }
     private val senderManager by lazy {
         SenderManager(
@@ -239,6 +243,13 @@ class ScanFragment : Fragment() {
 
                     binding.etClientCode.setText(details.clientCode ?: "")
                     binding.etWeight.setText(details.grossWeight?.toString() ?: "")
+                    //val weightValue = details.grossWeight ?: 0.0
+                    //binding.etWeight.setText(String.format(java.util.Locale.US, "%.2f", weightValue))
+
+                    // РАЗМЕРЫ: заполняем из пришедших данных (если null, ставим пусто или 0)
+                    binding.etLength.setText(details.length?.toString() ?: "")
+                    binding.etWidth.setText(details.width?.toString() ?: "")
+                    binding.etHeight.setText(details.height?.toString() ?: "")
 
                     // Чекбокс — только индикатор
                     binding.cbWithBox.isChecked = when (details.withBox) {
@@ -250,15 +261,16 @@ class ScanFragment : Fragment() {
                     // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
                     // Сохраняем user_guid из ответа трека
                     currentReceiverGuid = details.userGuid
-                    Log.d("GUID_DEBUG", "Получен user_guid: ${currentReceiverGuid}")
+                    //Log.d("GUID_DEBUG", "Получен user_guid: ${currentReceiverGuid}")
                     // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 
                     soundManager.playSuccess()
                 } else {
                     binding.tvClientName.text = "Трек не найден. Сканируйте KG"
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
-                    binding.etClientCode.text.clear()
-                    binding.etWeight.text.clear()
+                    ScanUtils.clearFields(binding)
+                    //binding.etClientCode.text.clear()
+                    //binding.etWeight.text.clear()
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")
@@ -459,6 +471,42 @@ class ScanFragment : Fragment() {
             }
             .setNegativeButton("Отмена", null)
             .show()
+    }
+
+    private fun showSearchDialog() {
+        val editText = EditText(requireContext()).apply {
+            hint = "Введите трек-номер"
+            inputType = InputType.TYPE_CLASS_TEXT
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Поиск информации")
+            .setView(editText)
+            .setPositiveButton("Искать") { _, _ ->
+                val track = editText.text.toString().trim()
+                if (track.isNotEmpty()) {
+                    executeSearch(track)
+                }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+    //функция поиска заказа по треку
+    private fun executeSearch(track: String) {
+        lifecycleScope.launch {
+            try {
+                // Показываем какой-нибудь индикатор загрузки, если нужно
+                val result = performGlobalSearch(track)
+
+                if (result.shipment == null && result.boxEntry == null) {
+                    showInfoDialog("Результат", "Заказ с таким треком не найден ни в одной базе.")
+                } else {
+                    showResultSummary(result)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Ошибка поиска: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

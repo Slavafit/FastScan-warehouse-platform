@@ -82,7 +82,54 @@
             <ImageButton android:id="@+id/btnScanWeight" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
             <Button android:id="@+id/btnVolumeCalc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="V" android:textStyle="bold" />
         </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Размеры (Д х Ш х В), см"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"/>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <EditText
+            android:id="@+id/etLength"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="L"
+            android:focusable="false"
+            android:longClickable="false"
+            android:cursorVisible="false"
+            android:background="@android:drawable/edit_text"
+            android:alpha="0.8" />
+        <EditText
+            android:id="@+id/etWidth"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="W"
+            android:layout_marginHorizontal="4dp"
+            android:focusable="false"
+            android:longClickable="false"
+            android:cursorVisible="false"
+            android:background="@android:drawable/edit_text"
+            android:alpha="0.8" />
+
+        <EditText
+            android:id="@+id/etHeight"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:hint="H"
+            android:focusable="false"
+            android:longClickable="false"
+            android:cursorVisible="false"
+            android:background="@android:drawable/edit_text"
+            android:alpha="0.8" />
+
+    </LinearLayout>
         <Space android:layout_width="match_parent" android:layout_height="32dp" />
 
         <com.google.android.material.button.MaterialButton

@@ -124,13 +124,14 @@ class ScanFragment : Fragment() {
 
                 currentOrderDimensions = result
                 binding.etWeight.setText("%.2f".format(result.grossWeight))
+                //binding.etWeight.setText(String.format(java.util.Locale.US, "%.2f", result.grossWeight))
 
                 // Сохраняем размеры (например в переменные фрагмента)
                 currentLength = result.length
                 currentWidth  = result.width
                 currentHeight = result.height
 
-                Log.d("Scan", "Сохранены размеры: ${result.length} × ${result.width} × ${result.height}")
+                //Log.d("Scan", "Сохранены размеры: ${result.length} × ${result.width} × ${result.height}")
             }
         }
         binding.btnGenerateOnza.setOnClickListener {
@@ -308,8 +309,10 @@ class ScanFragment : Fragment() {
             Toast.makeText(requireContext(), "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
             return
         }
+        // Заменяем запятую на точку, чтобы Double смог это прочитать
+        val normalizedWeight = weightStr.replace(',', '.')
+        val grossWeight = normalizedWeight.toDoubleOrNull() ?: 0.0
 
-        val grossWeight = weightStr.toDoubleOrNull() ?: 0.0
         val dims = currentOrderDimensions
 
         val req = SaveOrderRequest(
@@ -325,7 +328,7 @@ class ScanFragment : Fragment() {
             height = currentHeight
         )
 
-        //Log.d("SaveOrderJSON", "Отправляем: ${Gson().toJson(req)}")
+        //Log.d("SaveOrderJSON", "Отправляем: ${req}")
 
         binding.btnSubmit.isEnabled = false
         binding.btnSubmit.text = "Отправка..."

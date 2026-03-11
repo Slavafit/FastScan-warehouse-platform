@@ -24,41 +24,42 @@ object DialogUtils {
     ) {
         val dialogBinding = DialogVolumeBinding.inflate(LayoutInflater.from(context))
 
-        // Сначала создаём builder
         val builder = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
             .setTitle("Расчёт объёмного веса")
 
-        // Создаём диалог
         val dialog = builder.create()
 
-        // Теперь устанавливаем кнопки
-        builder.setPositiveButton("Сохранить") { _, _ ->
+        // Слушатель для обновления preview в реальном времени
+        val textWatcher = object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                calculateAndShowPreview(dialogBinding)
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
+
+        // Привязываем слушатели к полям
+        dialogBinding.etLength.addTextChangedListener(textWatcher)
+        dialogBinding.etWidth.addTextChangedListener(textWatcher)
+        dialogBinding.etHeight.addTextChangedListener(textWatcher)
+
+        // ЛОГИКА ТВОЕЙ КНОПКИ СОХРАНЕНИЯ (btnApplyVolume)
+        dialogBinding.btnApplyVolume.setOnClickListener {
             val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 0
             val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 0
             val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 0
 
-            // Рассчитываем объёмный вес
-            val divider = context.getVolWeightDivider()
-            val vWeight = (length * width * height / divider).toDouble()
-            val watcher = object : android.text.TextWatcher {
-                override fun afterTextChanged(s: android.text.Editable?) {
-
-                    dialogBinding.tvResultPreview.text = "Вес: ${String.format("%.2f", vWeight)} кг"
-                }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            // Проверка на заполненность
+            if (length <= 0 || width <= 0 || height <= 0) {
+                Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener // Прерываем выполнение, диалог не закрываем
             }
 
-            dialogBinding.etLength.addTextChangedListener(watcher)
-            dialogBinding.etWidth.addTextChangedListener(watcher)
-            dialogBinding.etHeight.addTextChangedListener(watcher)
-
-            dialogBinding.btnApplyVolume.setOnClickListener {
-                val resText = dialogBinding.tvResultPreview.text.toString()
-                    .replace("Вес: ", "")
-                    .replace(" кг", "")
-                    .replace(",", ".")
+            // Финальный расчёт (переводим одно из чисел в Double до деления, чтобы сохранить дроби)
+            val divider = context.getVolWeightDivider()
+            val vWeight = (length.toDouble() * width * height) / divider
 
             val result = OrderDimensions(
                 grossWeight = vWeight,
@@ -66,6 +67,7 @@ object DialogUtils {
                 width = width,
                 height = height
             )
+            Log.d("SaveOrderJSON", "Отправляем: $result")
 
             onResult(result)
             dialog.dismiss()
@@ -77,7 +79,8 @@ object DialogUtils {
         // Показываем диалог
         dialog.show()
     }
-    }
+
+
 
     fun showAddNewBoxDialog(
         lifecycleOwner: LifecycleOwner,
@@ -158,5 +161,20 @@ object DialogUtils {
         val time = SimpleDateFormat("HHmm", Locale.getDefault()).format(Date())
         val random = (0..9999).random().toString().padStart(4, '0')
         return "NBX$date$time$random"
+    }
+}
+// Отдельная функция для расчёта и показа preview
+private fun calculateAndShowPreview(binding: DialogVolumeBinding) {
+    val length = binding.etLength.text.toString().toIntOrNull() ?: 0
+    val width  = binding.etWidth.text.toString().toIntOrNull()  ?: 0
+    val height = binding.etHeight.text.toString().toIntOrNull() ?: 0
+
+    if (length > 0 && width > 0 && height > 0) {
+        val divider = binding.root.context.getVolWeightDivider()
+        val vWeight = (length * width * height / divider)
+        //binding.tvResultPreview.text = String.format(java.util.Locale.US, "Вес: %.2f кг", vWeight)
+        binding.tvResultPreview.text = "Вес: ${String.format("%.2f", vWeight)} кг"
+    } else {
+        binding.tvResultPreview.text = "Вес: 0.00 кг"
     }
 }

@@ -41,6 +41,24 @@ object DialogUtils {
             // Рассчитываем объёмный вес
             val divider = context.getVolWeightDivider()
             val vWeight = (length * width * height / divider).toDouble()
+            val watcher = object : android.text.TextWatcher {
+                override fun afterTextChanged(s: android.text.Editable?) {
+
+                    dialogBinding.tvResultPreview.text = "Вес: ${String.format("%.2f", vWeight)} кг"
+                }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            }
+
+            dialogBinding.etLength.addTextChangedListener(watcher)
+            dialogBinding.etWidth.addTextChangedListener(watcher)
+            dialogBinding.etHeight.addTextChangedListener(watcher)
+
+            dialogBinding.btnApplyVolume.setOnClickListener {
+                val resText = dialogBinding.tvResultPreview.text.toString()
+                    .replace("Вес: ", "")
+                    .replace(" кг", "")
+                    .replace(",", ".")
 
             val result = OrderDimensions(
                 grossWeight = vWeight,
@@ -59,7 +77,7 @@ object DialogUtils {
         // Показываем диалог
         dialog.show()
     }
-
+    }
 
     fun showAddNewBoxDialog(
         lifecycleOwner: LifecycleOwner,

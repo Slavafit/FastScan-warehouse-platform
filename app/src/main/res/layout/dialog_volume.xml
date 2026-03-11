@@ -21,7 +21,7 @@
         android:id="@+id/tvResultPreview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Итого: 0.000 кг"
+        android:text="Итого: 0.00 кг"
         android:gravity="center"
         android:textSize="18sp"
         android:layout_marginTop="16dp"

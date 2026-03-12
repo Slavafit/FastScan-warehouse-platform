@@ -6,8 +6,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.ocr.fastscan.data.model.BoxEntry
 import com.ocr.fastscan.data.model.FirestoreShipment
 import com.ocr.fastscan.data.model.SearchResult
-
+import kotlinx.coroutines.tasks.await
 import java.security.Timestamp
+import com.google.firebase.firestore.toObject
 
 class FirebaseManager(requireContext: Context) {
     private val db = FirebaseFirestore.getInstance()
@@ -47,28 +48,43 @@ class FirebaseManager(requireContext: Context) {
                 onFailure(e)
             }
     }
+//    fun findOrderEverywhere(track: String): SearchResult {
+//        // Запускаем запросы параллельно
+//        val shipmentTask = db.collection("shipments")
+//            .whereEqualTo("trackingNumber", track).limit(1).get()
+//        val boxTask = db.collection("box_entries")
+//            .whereEqualTo("orderTracking", track).limit(1).get()
+//
+//        val shipmentSnap = shipmentTask.await()
+//        val boxSnap = boxTask.await()
+//
+//        return SearchResult(
+//            shipment = shipmentSnap.documents.firstOrNull()?.toObject(FirestoreShipment::class.java),
+//            boxEntry = boxSnap.documents.firstOrNull()?.toObject(BoxEntry::class.java)
+//        )
+//    }
+    suspend fun findOrderEverywhere(track: String): SearchResult {
+        return try {
+            // Выполняем запросы
+            val shipmentSnap = db.collection("shipments")
+                .whereEqualTo("trackingNumber", track)
+                .limit(1)
+                .get()
+                .await() // Теперь заработает
 
-    fun performGlobalSearch(trackingNumber: String): SearchResult {
-        val db = FirebaseFirestore.getInstance()
+            val boxSnap = db.collection("box_entries")
+                .whereEqualTo("orderTracking", track)
+                .limit(1)
+                .get()
+                .await() // Теперь заработает
 
-        // Запускаем оба запроса параллельно
-        val shipmentTask = db.collection("shipments")
-            .whereEqualTo("trackingNumber", trackingNumber)
-            .limit(1)
-            .get()
-
-        val boxTask = db.collection("box_entries")
-            .whereEqualTo("orderTracking", trackingNumber)
-            .limit(1)
-            .get()
-
-        // Ждем выполнения обоих
-        val shipmentSnap = shipmentTask.await()
-        val boxSnap = boxTask.await()
-
-        val shipment = shipmentSnap.documents.firstOrNull()?.toObject(FirestoreShipment::class.java)
-        val boxEntry = boxSnap.documents.firstOrNull()?.toObject(BoxEntry::class.java)
-
-        return SearchResult(shipment, boxEntry)
+            SearchResult(
+                shipment = shipmentSnap.documents.firstOrNull()?.toObject<FirestoreShipment>(),
+                boxEntry = boxSnap.documents.firstOrNull()?.toObject<BoxEntry>()
+            )
+        } catch (e: Exception) {
+            // Если ошибка в запросе, возвращаем пустой результат
+            SearchResult(null, null)
+        }
     }
 }

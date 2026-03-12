@@ -44,6 +44,8 @@ class ScanFragment : Fragment() {
     private val apiService by lazy { AppDependencies.apiService }
     private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
+    private val searchOrder by lazy { SearchOrder(this) }
+
 
     //private val performGlobalSearch by lazy { FirebaseManager }
     lateinit var performGlobalSearch: FirebaseManager
@@ -117,11 +119,6 @@ class ScanFragment : Fragment() {
             ScanUtils.launchCamera(requireContext(), "weight", scanLauncher)
         }
 
-//        binding.btnVolumeCalc.setOnClickListener {
-//            DialogUtils.showVolumeDialog(requireContext()) { weight ->
-//                   binding.etWeight.setText(weight)
-//            }
-//        }
         binding.btnVolumeCalc.setOnClickListener {
             DialogUtils.showVolumeDialog(requireContext()) { result ->
                 // Получаем объёмный вес и размеры
@@ -154,6 +151,11 @@ class ScanFragment : Fragment() {
         }
 
         binding.btnSubmit.setOnClickListener { submitFinalOrder() }
+
+        // Вызываем диалог ввода трека
+        binding.btnGlobalSearch.setOnClickListener {
+            searchOrder.showSearchDialog()
+        }
 
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
@@ -473,41 +475,6 @@ class ScanFragment : Fragment() {
             .show()
     }
 
-    private fun showSearchDialog() {
-        val editText = EditText(requireContext()).apply {
-            hint = "Введите трек-номер"
-            inputType = InputType.TYPE_CLASS_TEXT
-        }
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Поиск информации")
-            .setView(editText)
-            .setPositiveButton("Искать") { _, _ ->
-                val track = editText.text.toString().trim()
-                if (track.isNotEmpty()) {
-                    executeSearch(track)
-                }
-            }
-            .setNegativeButton("Отмена", null)
-            .show()
-    }
-    //функция поиска заказа по треку
-    private fun executeSearch(track: String) {
-        lifecycleScope.launch {
-            try {
-                // Показываем какой-нибудь индикатор загрузки, если нужно
-                val result = performGlobalSearch(track)
-
-                if (result.shipment == null && result.boxEntry == null) {
-                    showInfoDialog("Результат", "Заказ с таким треком не найден ни в одной базе.")
-                } else {
-                    showResultSummary(result)
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Ошибка поиска: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

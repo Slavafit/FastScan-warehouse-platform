@@ -141,6 +141,16 @@
             app:cornerRadius="12dp"
             android:backgroundTint="#2E7D32" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGlobalSearch"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="Найти информацию о заказе"
+            app:icon="@android:drawable/ic_menu_search" />
+
         <Button android:id="@+id/btnLogout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

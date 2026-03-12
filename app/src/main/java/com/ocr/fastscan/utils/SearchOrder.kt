@@ -49,14 +49,37 @@ class SearchOrder(private val fragment: Fragment) {
         }
 
         val sb = StringBuilder()
-        result.shipment?.let {
-            sb.append("📋 РЕГИСТРАЦИЯ:\nКлиент: ${it.clientName}\nКод: ${it.clientCode}\n\n")
-        } ?: sb.append("❌ Нет регистрации\n\n")
+// БЛОК 1: Данные из коллекции shipments (Регистрация)
+        if (result.shipment != null) {
+            sb.append("📋 РЕГИСТРАЦИЯ:\n")
+            sb.append("Клиент: ${result.shipment.clientName} (${result.shipment.clientCode})\n")
+            sb.append("Вес: ${result.shipment.weight} кг\n")
 
-        result.boxEntry?.let {
-            sb.append("📦 В КОРОБКЕ:\nНомер: ${it.boxTracking}\n")
-        } ?: sb.append("⚠️ Не упакован")
+            // Используем твое поле dateString для отображения даты
+            sb.append("Дата рег.: ${result.shipment.dateString}\n\n")
+        } else {
+            sb.append("❌ Нет данных о регистрации\n\n")
+        }
 
+        // БЛОК 2: Данные из коллекции box_entries (Упаковка в коробку)
+        if (result.boxEntry != null) {
+            sb.append("📦 В КОРОБКЕ:\n")
+            sb.append("Номер коробки: ${result.boxEntry.boxTracking}\n")
+
+            // Если при упаковке сохраняется свой вес, можно вывести и его
+            if (result.boxEntry.orderWeight > 0.0) {
+                sb.append("Фактический вес: ${result.boxEntry.orderWeight} кг\n")
+            }
+
+            // Форматируем дату упаковки (если она есть)
+            result.boxEntry.date?.let { timestamp ->
+                val formattedDate = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+                    .format(timestamp.toDate())
+                sb.append("Упаковано: $formattedDate\n")
+            }
+        } else {
+            sb.append("⚠️ Заказ еще не упакован в коробку")
+        }
         showSimpleDialog("Инфо: $track", sb.toString())
     }
 

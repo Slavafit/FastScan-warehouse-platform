@@ -169,12 +169,12 @@ data class OrderInBox(
 
 // Модель для записи в Firebase Boxes
 data class BoxEntry(
-    val orderTracking: String,  // трек заказа
-    val boxTracking: String,  // трек коробки
-    val clientCode: String?,
-    val client: String?,
+    val orderTracking: String = "",  // трек заказа
+    val boxTracking: String = "",  // трек коробки
+    val clientCode: String? = null,
+    val client: String? = null,
     val date: Timestamp = Timestamp.now(),
-    val orderWeight: Double
+    val orderWeight: Double = 0.0
 )
 
 //fragment 3. Cajas

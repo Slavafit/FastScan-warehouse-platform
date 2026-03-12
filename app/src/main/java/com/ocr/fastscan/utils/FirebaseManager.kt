@@ -56,13 +56,13 @@ class FirebaseManager(requireContext: Context) {
                 .whereEqualTo("trackingNumber", track)
                 .limit(1)
                 .get()
-                .await() // Теперь заработает
+                .await()
 
             val boxSnap = db.collection("box_entries")
                 .whereEqualTo("orderTracking", track)
                 .limit(1)
                 .get()
-                .await() // Теперь заработает
+                .await()
 
             SearchResult(
                 shipment = shipmentSnap.documents.firstOrNull()?.toObject<FirestoreShipment>(),
@@ -70,6 +70,7 @@ class FirebaseManager(requireContext: Context) {
             )
         } catch (e: Exception) {
             // Если ошибка в запросе, возвращаем пустой результат
+            Log.e("FirebaseSearch", "Ошибка конвертации: ${e.message}", e)
             SearchResult(null, null)
         }
     }

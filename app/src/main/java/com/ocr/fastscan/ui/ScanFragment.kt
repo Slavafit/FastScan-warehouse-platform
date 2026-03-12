@@ -46,10 +46,6 @@ class ScanFragment : Fragment() {
     private val soundManager by lazy { AppDependencies.soundManager }
     private val searchOrder by lazy { SearchOrder(this) }
 
-
-    //private val performGlobalSearch by lazy { FirebaseManager }
-    lateinit var performGlobalSearch: FirebaseManager
-
     private val printHelper by lazy { PrintHelper(requireContext()) }
     private val senderManager by lazy {
         SenderManager(
@@ -270,9 +266,9 @@ class ScanFragment : Fragment() {
                 } else {
                     binding.tvClientName.text = "Трек не найден. Сканируйте KG"
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
-                    ScanUtils.clearFields(binding)
-                    //binding.etClientCode.text.clear()
-                    //binding.etWeight.text.clear()
+                    //ScanUtils.clearFields(binding)
+                    binding.etClientCode.text.clear()
+                    binding.etWeight.text.clear()
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")

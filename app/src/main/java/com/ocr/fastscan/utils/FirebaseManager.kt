@@ -48,21 +48,7 @@ class FirebaseManager(requireContext: Context) {
                 onFailure(e)
             }
     }
-//    fun findOrderEverywhere(track: String): SearchResult {
-//        // Запускаем запросы параллельно
-//        val shipmentTask = db.collection("shipments")
-//            .whereEqualTo("trackingNumber", track).limit(1).get()
-//        val boxTask = db.collection("box_entries")
-//            .whereEqualTo("orderTracking", track).limit(1).get()
-//
-//        val shipmentSnap = shipmentTask.await()
-//        val boxSnap = boxTask.await()
-//
-//        return SearchResult(
-//            shipment = shipmentSnap.documents.firstOrNull()?.toObject(FirestoreShipment::class.java),
-//            boxEntry = boxSnap.documents.firstOrNull()?.toObject(BoxEntry::class.java)
-//        )
-//    }
+
     suspend fun findOrderEverywhere(track: String): SearchResult {
         return try {
             // Выполняем запросы

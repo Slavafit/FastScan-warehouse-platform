@@ -26,7 +26,7 @@ class BoxFragment : Fragment() {
     private var isLoading = false  // Флаг для предотвращения петли
     private val boxesAdapter = BoxesAdapter { box ->
         val partialName = arguments?.getString("partial_name")
-        Log.d("boxesAdapter", "Перед открытием деталей коробки. partialName = '$partialName'")
+        //Log.d("boxesAdapter", "Перед открытием деталей коробки. partialName = '$partialName'")
         // Клик по коробке — открываем детальный экран
         val detailFragment = BoxDetailFragment.newInstance(
             boxGuid =box.guid ?: "",
@@ -108,7 +108,6 @@ class BoxFragment : Fragment() {
     }
 
     private fun loadBoxes(isOpenOnly: Boolean = true) {
-        var loadBoxesCallCount = 0
         binding.progressBar.visibility = View.VISIBLE
         binding.tvNoBoxes.visibility = View.GONE
 
@@ -118,17 +117,9 @@ class BoxFragment : Fragment() {
         }
         isLoading = true
 
-            //loadBoxesCallCount++
-//            Log.d("BoxFragment", "loadBoxes вызван #$loadBoxesCallCount, isOpenOnly=$isOpenOnly")
-//
-//            if (loadBoxesCallCount > 10) {
-//                Log.e("BoxFragment", "ОБНАРУЖЕНА ПЕТЛЯ! Более 10 вызовов loadBoxes подряд")
-//                isLoading = false
-//                return
-//            }
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                Log.d("BoxDialog", "Загружаем список коробок")
+                //Log.d("BoxDialog", "Загружаем список коробок")
                 if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
                     loadBoxes(isOpenOnly = true)
                 } else {

@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <resources>
+        <string name="app_name">FastScan</string>
+        <string name="open_boxes">Открытые коробки</string>
+        <string name="all_boxes">Все коробки</string>
+        <string name="scan_track">Сканировать трек заказа</string>
+        <string name="save_sizes">Сохранить размеры</string>
+        <string name="print_label">Печать лейбла</string>
+        <!-- все остальные строки -->
+    </resources>
 
     <PreferenceCategory app:title="Настройки сервера">
 

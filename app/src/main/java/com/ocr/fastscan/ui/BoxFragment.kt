@@ -88,6 +88,7 @@ class BoxFragment : Fragment() {
                 }
             )
         }
+
         // Кнопка переключения "Все / Открытые"
         binding.btnShowAll.setOnClickListener {
             isShowingAllBoxes = !isShowingAllBoxes

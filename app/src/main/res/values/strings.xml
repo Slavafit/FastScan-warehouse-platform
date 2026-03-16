@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">FastScan</string>
+<string name="app_name">FastScan</string>
+<string name="open_boxes">Открытые коробки</string>
+<string name="all_boxes">Все коробки</string>
+<string name="scan_track">Сканировать трек заказа</string>
+<string name="save_sizes">Сохранить размеры</string>
+<string name="print_label">Печать лейбла</string>
+<!-- все остальные строки -->
 </resources>

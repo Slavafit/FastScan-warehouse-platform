@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">FastScan</string>
+    <string name="open_boxes">Open boxes</string>
+    <string name="all_boxes">All boxes</string>
+    <string name="scan_track">Scan order track</string>
+    <string name="save_sizes">Save sizes</string>
+    <string name="print_label">Print label</string>
+</resources>

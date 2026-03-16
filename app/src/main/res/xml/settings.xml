@@ -8,7 +8,6 @@
         <string name="scan_track">Сканировать трек заказа</string>
         <string name="save_sizes">Сохранить размеры</string>
         <string name="print_label">Печать лейбла</string>
-        <!-- все остальные строки -->
     </resources>
 
     <PreferenceCategory app:title="Настройки сервера">

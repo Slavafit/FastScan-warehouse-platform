@@ -89,8 +89,8 @@ class BoxDetailFragment : Fragment() {
         partialName = arguments?.getString("partial_name") ?: "KG"  // ← ключевой момент!
 
 
-        Log.d("BoxDetail", "Получено имя партии из аргументов: '$partialName'")
-        Log.d("BoxDetail", "Получено вес из аргументов: '$boxWeight'")
+        //Log.d("BoxDetail", "Получено имя партии из аргументов: '$partialName'")
+        //Log.d("BoxDetail", "Получено вес из аргументов: '$boxWeight'")
 
     }
 

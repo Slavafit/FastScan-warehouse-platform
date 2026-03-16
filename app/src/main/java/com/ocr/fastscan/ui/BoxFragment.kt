@@ -17,7 +17,7 @@ import com.ocr.fastscan.utils.DialogUtils
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
-
+import kotlinx.coroutines.CancellationException
 class BoxFragment : Fragment() {
 
     private var _binding: FragmentBoxBinding? = null
@@ -119,12 +119,12 @@ class BoxFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                //Log.d("BoxDialog", "Загружаем список коробок")
-                if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                    loadBoxes(isOpenOnly = true)
-                } else {
-                    Log.w("BoxDialog", "View уничтожен — пропускаем loadBoxes")
-                }
+//                //Log.d("BoxDialog", "Загружаем список коробок")
+//                if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+//                    loadBoxes(isOpenOnly = true)
+//                } else {
+//                    Log.w("BoxDialog", "View уничтожен — пропускаем loadBoxes")
+//                }
                 val apiService = AppDependencies.apiService
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
                 //Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
@@ -138,12 +138,16 @@ class BoxFragment : Fragment() {
                     if (boxes.isEmpty()) {
                         binding.tvNoBoxes.visibility = View.VISIBLE
                     }
-                    Log.d("BoxFragment", "Загрузка завершена, коробок: ${boxes.size}")
+                    //Log.d("BoxFragment", "Загрузка завершена, коробок: ${boxes.size}")
 
                 } else {
                     //Log.e("BoxFragment", "Ошибка API: ${response.code()} - ${response.message()}")
                     Toast.makeText(requireContext(), "Ошибка загрузки коробок", Toast.LENGTH_SHORT).show()
                 }
+            } catch (e: CancellationException) {
+                // ВАЖНО: Если корутину отменили (например, перешли на другой экран),
+                // просто пробрасываем исключение дальше, не показывая Toast
+                throw e
             } catch (e: Exception) {
                 Log.e("BoxFragment", "Сеть/исключение: ${e.message}", e)
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()

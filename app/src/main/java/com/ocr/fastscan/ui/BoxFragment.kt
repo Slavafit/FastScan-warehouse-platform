@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
@@ -18,6 +17,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+
 class BoxFragment : Fragment() {
 
     private var _binding: FragmentBoxBinding? = null
@@ -64,26 +65,42 @@ class BoxFragment : Fragment() {
 //            loadBoxes(isOpenOnly = isShowingAllBoxes)
 //        }
         // Кнопка добавления коробки
+//        binding.btnAddNewBox.setOnClickListener {
+//            DialogUtils.showAddNewBoxDialog(
+//                lifecycleOwner = viewLifecycleOwner,
+//                context = requireContext(),
+//                onSuccess = { trackingCode ->
+//                    // Успех: обновляем список
+//                    loadBoxes(isOpenOnly = true)
+//                    Toast.makeText(requireContext(), "Коробка $trackingCode успешно создана", Toast.LENGTH_SHORT).show()
+//                },
+//                onError = { errorMsg ->
+//                    // Опционально: обработка ошибки
+//                    Toast.makeText(requireContext(), "Ошибка: $errorMsg", Toast.LENGTH_LONG).show()
+//                }
+//            )
+//        }
         binding.btnAddNewBox.setOnClickListener {
             DialogUtils.showAddNewBoxDialog(
                 lifecycleOwner = viewLifecycleOwner,
                 context = requireContext(),
                 onSuccess = { trackingCode ->
-                    // Успех: обновляем список, переходим в детали
-                    loadBoxes(isOpenOnly = true)
-                    val detailFragment = BoxDetailFragment.newInstance(
-                        "",
-                        "",
-                        trackingCode,
-                        ""
-                        )
-                    parentFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, detailFragment)
-                        .addToBackStack(null)
-                        .commit()
+                    // Запускаем корутину для обновления
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        // 1. Даем серверу 300мс "прийти в себя" после записи
+                        delay(300)
+
+                        // 2. Сбрасываем флаг isLoading, чтобы loadBoxes не проигнорировал вызов
+                        isLoading = false
+
+                        // 3. Загружаем обновленный список
+                        loadBoxes(isOpenOnly = true)
+
+                        // 4. Уведомляем пользователя
+                        Toast.makeText(requireContext(), "Коробка $trackingCode добавлена", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 onError = { errorMsg ->
-                    // Опционально: обработка ошибки
                     Toast.makeText(requireContext(), "Ошибка: $errorMsg", Toast.LENGTH_LONG).show()
                 }
             )
@@ -104,7 +121,6 @@ class BoxFragment : Fragment() {
                     binding.rvBoxes.animate().alpha(1f).setDuration(150).start()
                 }.start()
         }
-
         loadBoxes(isOpenOnly = true)
     }
 
@@ -120,12 +136,7 @@ class BoxFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-//                //Log.d("BoxDialog", "Загружаем список коробок")
-//                if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-//                    loadBoxes(isOpenOnly = true)
-//                } else {
-//                    Log.w("BoxDialog", "View уничтожен — пропускаем loadBoxes")
-//                }
+                //Log.d("BoxDialog", "Загружаем список коробок")
                 val apiService = AppDependencies.apiService
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
                 //Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")

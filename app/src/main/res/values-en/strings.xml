@@ -1,8 +1,26 @@
 <resources>
     <string name="app_name">FastScan</string>
+
+    <string name="server_settings">Server Settings</string>
+    <string name="server_url_title">Server URL</string>
+    <string name="server_url_summary">Default: https://onza-api.ibm.kg</string>
+    <string name="login_title">Login</string>
+    <string name="password_title">Password</string>
+    <string name="vol_weight_title">Vol Weight</string>
+    <string name="vol_weight_summary">По умолчанию: 6000</string>
+    <string name="licence_title">Licence</string>
+    <string name="licence_email_title">Email for licence</string>
+    <string name="licence_email_summary">Enter email, linked with licence</string>
+    <string name="licence_status_title">Licence status</string>
+    <string name="licence_status_summary">Check...</string>
+    <string name="developer_info_title">About developer</string>
+    <string name="developer_title">Viacheslav Fitlin</string>
+    <string name="developer_summary">Telegramm: @Slavafit</string>
+
     <string name="open_boxes">Open boxes</string>
     <string name="all_boxes">All boxes</string>
     <string name="scan_track">Scan order track</string>
     <string name="save_sizes">Save sizes</string>
     <string name="print_label">Print label</string>
+
 </resources>

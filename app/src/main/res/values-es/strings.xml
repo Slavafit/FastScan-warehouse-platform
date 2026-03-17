@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FastScan</string>
+
+    <string name="server_settings">Configuración del servidor</string>
+    <string name="server_url_title">URL del servidor</string>
+    <string name="server_url_summary">Por defecto: https://onza-api.ibm.kg</string>
+    <string name="login_title">Login</string>
+    <string name="password_title">Contraseña</string>
+    <string name="vol_weight_title">Peso volumétrico</string>
+    <string name="vol_weight_summary">Por defecto: 6000</string>
+
+    <string name="licence_title">Licencia</string>
+    <string name="licence_email_title">Email para licencia</string>
+    <string name="licence_email_summary">Introduce el email asociado a la licencia</string>
+    <string name="licence_status_title">Estado de la licencia</string>
+    <string name="licence_status_summary">Comprobando...</string>
+
+    <string name="developer_info_title">Sobre el desarrollador</string>
+    <string name="developer_title">Viacheslav Fitlin</string>
+    <string name="developer_summary">Telegram: @Slavafit</string>
+
+    <string name="open_boxes">Cajas abiertas</string>
+    <string name="all_boxes">Todas las cajas</string>
+    <string name="scan_track">Escanear número de seguimiento del pedido</string>
+    <string name="save_sizes">Guardar tamaños</string>
+    <string name="print_label">Imprimir etiqueta</string>
+</resources>

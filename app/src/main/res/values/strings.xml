@@ -1,9 +1,28 @@
 <resources>
 <string name="app_name">FastScan</string>
-<string name="open_boxes">Открытые коробки</string>
-<string name="all_boxes">Все коробки</string>
-<string name="scan_track">Сканировать трек заказа</string>
-<string name="save_sizes">Сохранить размеры</string>
-<string name="print_label">Печать лейбла</string>
+
+    <string name="server_settings">Настройки сервера</string>
+    <string name="server_url_title">URL сервера</string>
+    <string name="server_url_summary">По умолчанию: https://onza-api.ibm.kg</string>
+    <string name="login_title">Логин</string>
+    <string name="password_title">Пароль</string>
+    <string name="open_boxes">Открытые коробки</string>
+    <string name="all_boxes">Все коробки</string>
+    <string name="scan_track">Сканировать трек заказа</string>
+    <string name="save_sizes">Сохранить размеры</string>
+    <string name="print_label">Печать лейбла</string>
+    <string name="vol_weight_title">Объемный вес</string>
+    <string name="vol_weight_summary">По умолчанию: 6000</string>
+    <string name="licence_title">Лицензия</string>
+    <string name="licence_email_title">Email для лицензии</string>
+    <string name="licence_email_summary">Введите email, привязанный к лицензии</string>
+    <string name="licence_status_title">Статус лицензии</string>
+    <string name="licence_status_summary">Проверка...</string>
+    <string name="developer_info_title">О разработчике</string>
+    <string name="developer_title">Вячеслав Фитлин</string>
+    <string name="developer_summary">Телеграмм: @Slavafit</string>
+
+
+
 <!-- все остальные строки -->
 </resources>

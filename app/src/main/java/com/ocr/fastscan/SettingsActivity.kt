@@ -37,6 +37,23 @@ class SettingsActivity : AppCompatActivity() {
             // Загружаем XML настроек
             setPreferencesFromResource(R.xml.settings, rootKey)
 
+                // ← вот сюда вставляем слушатель
+                val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                prefs.registerOnSharedPreferenceChangeListener { sharedPrefs, key ->
+                    if (key == "language") {
+                        val lang = sharedPrefs.getString("language", "ru") ?: "ru"
+                        val locale = Locale(lang)
+                        Locale.setDefault(locale)
+
+                        val config = resources.configuration
+                        config.setLocale(locale)
+                        resources.updateConfiguration(config, resources.displayMetrics)
+
+                        // Перезапуск активности
+                        requireActivity().recreate()
+                    }
+                }
+
             val volWeightPref = findPreference<EditTextPreference>("vol_weight")
             volWeightPref?.setOnPreferenceChangeListener { _, newValue ->
                 val newDivider = (newValue as? String)?.toDoubleOrNull() ?: 6000.0

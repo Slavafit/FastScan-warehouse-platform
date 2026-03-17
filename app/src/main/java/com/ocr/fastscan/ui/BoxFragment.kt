@@ -55,7 +55,7 @@ class BoxFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        binding.tvTitle.text = "Открытые коробки"  // Использование tvTitle
+        binding.tvTitle.text = "@string/open_boxes"  // Использование tvTitle
 
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvBoxes.adapter = boxesAdapter

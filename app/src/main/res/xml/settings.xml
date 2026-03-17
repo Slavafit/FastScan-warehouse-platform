@@ -1,59 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <resources>
-        <string name="app_name">FastScan</string>
-        <string name="open_boxes">Открытые коробки</string>
-        <string name="all_boxes">Все коробки</string>
-        <string name="scan_track">Сканировать трек заказа</string>
-        <string name="save_sizes">Сохранить размеры</string>
-        <string name="print_label">Печать лейбла</string>
-    </resources>
 
-    <PreferenceCategory app:title="Настройки сервера">
+    <PreferenceCategory app:title="@string/server_settings">
 
         <EditTextPreference
             app:key="api_url"
-            app:title="URL сервера"
+            app:title="@string/server_url_title"
             app:useSimpleSummaryProvider="true"
-            android:summary="По умолчанию:https://onza-api.ibm.kg"/>
+            android:summary="@string/server_url_summary"/>
         <!--app:defaultValue="https://onza-api.ibm.kg" />-->
 
     <EditTextPreference
         app:key="login"
-        app:title="Логин"
+        app:title="@string/login_title"
         app:useSimpleSummaryProvider="true" />
 
     <EditTextPreference
         app:key="password"
-        app:title="Пароль"
+        app:title="@string/password_title"
         app:useSimpleSummaryProvider="true" />
 
     <EditTextPreference
         app:key="vol_weight"
-        app:title="Объемный вес"
-        app:summary="По умолчанию: 6000"
+        app:title="@string/vol_weight_title"
+        app:summary="@string/vol_weight_summary"
         app:useSimpleSummaryProvider="true"
         android:inputType="number"/>
 
 </PreferenceCategory>
-    <PreferenceCategory android:title="Лицензия">
+    <PreferenceCategory android:title="@string/licence_title">
         <EditTextPreference
             android:key="user_email"
-            android:title="Email для лицензии"
-            android:summary="Введите email, привязанный к лицензии"
+            android:title="@string/licence_email_title"
+            android:summary="@string/licence_email_summary"
             android:defaultValue=""
             android:inputType="textEmailAddress" />
         <Preference
             android:key="license_status"
-            android:title="Статус лицензии"
-            android:summary="Проверка..." />
+            android:title="@string/licence_status_title"
+            android:summary="@string/licence_status_summary" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="О разработчике">
+    <PreferenceCategory android:title="@string/developer_info_title">
         <Preference
             android:key="developer_info"
-            android:title="Вячеслав Фитлин"
-            android:summary="Телеграмм: @Slavafit"/>
+            android:title="@string/developer_title"
+            android:summary="@string/developer_summary"/>
     </PreferenceCategory>
 </PreferenceScreen>
 

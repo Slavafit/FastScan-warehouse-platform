@@ -16,7 +16,7 @@
             android:id="@+id/tvBoxNumber"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Номер коробки"
+            android:text="@string/box_number"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -24,7 +24,7 @@
             android:id="@+id/tvGrossWeight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Общий вес: 0.0 кг"
+            android:text="@string/total_weight"
             android:textSize="16sp"
             android:layout_marginTop="8dp" />
 
@@ -40,7 +40,7 @@
             android:id="@+id/tvOrderCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Заказов: 0"
+            android:text="@string/orders"
             android:textSize="16sp"
             android:layout_marginTop="4dp" />
 
@@ -79,7 +79,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Редактирование размеров и веса"
+                android:text="@string/edit_dimensions_and_weight"
                 android:textStyle="bold"
                 android:textSize="18sp" />
 
@@ -96,7 +96,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
-                    android:hint="Дл (см)"
+                    android:hint="@string/length"
                     android:inputType="number"
                     android:textSize="16sp" />
 
@@ -106,7 +106,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
-                    android:hint="Шир (см)"
+                    android:hint="@string/width"
                     android:inputType="number"
                     android:textSize="16sp"
                     android:layout_marginHorizontal="8dp" />
@@ -117,7 +117,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
-                    android:hint="Выс (см)"
+                    android:hint="@string/height"
                     android:inputType="number"
                     android:textSize="16sp" />
             </LinearLayout>
@@ -135,7 +135,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
-                    android:hint="Вес (кг)"
+                    android:hint="@string/weight_format"
                     android:inputType="numberDecimal"
                     android:textSize="16sp" />
 

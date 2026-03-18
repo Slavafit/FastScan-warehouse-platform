@@ -51,7 +51,7 @@ class CameraActivity : AppCompatActivity() {
             else -> {
                 binding.exposureControls.visibility = View.GONE
                 binding.btnFlashToggle.visibility = View.VISIBLE
-                binding.btnFlashToggle.text = "Фонарик ВКЛ"
+                binding.btnFlashToggle.text = getString(R.string.flashlight_on)
             }
         }
         // Обработчики кнопок
@@ -61,7 +61,7 @@ class CameraActivity : AppCompatActivity() {
         binding.btnFlashToggle.setOnClickListener {
             isFlashOn = !isFlashOn
             setFlash(isFlashOn)
-            binding.btnFlashToggle.text = if (isFlashOn) "Фонарик ВЫКЛ" else "Фонарик ВКЛ"
+            binding.btnFlashToggle.text = if (isFlashOn) getString(R.string.flashlight_off) else getString(R.string.flashlight_on)
         }
 
         if (allPermissionsGranted()) {
@@ -122,19 +122,19 @@ class CameraActivity : AppCompatActivity() {
         currentExposureIndex += delta
         currentExposureIndex = currentExposureIndex.coerceIn(-20, 2)
         cameraControl?.setExposureCompensationIndex(currentExposureIndex)
-        Log.d("CAMERA_EXPOSURE", "Новая экспозиция: $currentExposureIndex")
+        //Log.d("CAMERA_EXPOSURE", "Новая экспозиция: $currentExposureIndex")
     }
 
     private fun setFlash(on: Boolean) {
         cameraControl?.enableTorch(on)
-        Log.d("CAMERA_FLASH", "Фонарик: ${if (on) "ВКЛ" else "ВЫКЛ"}")
+        //Log.d("CAMERA_FLASH", "Фонарик: ${if (on) "ВКЛ" else "ВЫКЛ"}")
     }
 
     private fun returnResult(value: String) {
         if (isProcessing) return
         isProcessing = true
 
-        Log.d("DEBUG_SCAN", "Результат найден ($mode): $value")
+        //Log.d("DEBUG_SCAN", "Результат найден ($mode): $value")
 
         val intent = Intent()
         intent.putExtra("scan_result", value)

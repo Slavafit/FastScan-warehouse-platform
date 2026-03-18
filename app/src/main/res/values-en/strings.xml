@@ -23,14 +23,23 @@
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="flashlight">Flashlight ON</string>
+    <string name="flashlight_on">Flashlight ON</string>
+    <string name="flashlight_off">Flashlight OFF</string>
+    <string name="send_order">SEND ORDER</string>
+    <string name="find_order">Find order info</string>
 
 
+
+    <string name="scan">Scan</string>
+    <string name="boxes">Boxes</string>
     <string name="open_boxes">Open boxes</string>
     <string name="all_boxes">All boxes</string>
     <string name="show_all_boxes">Show all boxes</string>
     <string name="no_boxes">There are no open boxes. Create a new one.</string>
     <string name="no_open_parties">There are no open parties</string>
+    <string name="box_number">Box number</string>
+    <string name="finish_party_property">Finish party</string>
+
 
 
 
@@ -42,6 +51,9 @@
     <string name="save">Save</string>
     <string name="apply">APPLY</string>
     <string name="parties">Parties</string>
+    <string name="scan_or_input">Scan or input...</string>
+    <string name="generate_track">GENERATE ONZA</string>
+
 
 
 
@@ -50,13 +62,23 @@
     <string name="client_not_found">Client not found</string>
     <string name="server_error"> Server error</string>
     <string name="net_error">Net error</string>
+    <string name="scan_kg">Scan KG</string>
+
 
     <string name="scan_wait">Waiting scan track...</string>
     <string name="scan_wait_client">Waiting scan client kode...</string>
 
-    <string name="weight_kg">kg</string>
+    <string name="weight_kg">Weight (kg)</string>
     <string name="weight">Weight:</string>
     <string name="weight_format">Weight: %.2f kg</string>
+    <string name="save_box">Save box</string>
+    <string name="client_code">Client code (KG)</string>
+    <string name="search_client">Search by name</string>
+    <string name="dimensions">Dimensions (L x W x H), cm</string>
+
+
+
+
 
     <string name="add_new_box">Add new box</string>
     <string name="new_box_number">A number will be created: ...</string>
@@ -68,6 +90,8 @@
     <string name="width_w">Width W</string>
     <string name="height_h">Height H</string>
     <string name="total_weight">Total: 0.00 kg</string>
+    <string name="tracking_code">Tracking code</string>
+
 
 
 
@@ -76,6 +100,10 @@
     <string name="input_track">Enter the tracking number</string>
     <string name="for_example">For example: 28038252</string>
     <string name="select_box">Select a box to add</string>
+    <string name="orders">Orders: 0</string>
+    <string name="edit_dimensions_and_weight">Editing dimensions and weight</string>
+
+
 
 
 

@@ -94,7 +94,7 @@ class BoxFragment : Fragment() {
         // Кнопка переключения "Все / Открытые"
         binding.btnShowAll.setOnClickListener {
             isShowingAllBoxes = !isShowingAllBoxes
-            binding.btnShowAll.text = if (isShowingAllBoxes) getString(R.string.open_boxes) else "Показать все"
+            binding.btnShowAll.text = if (isShowingAllBoxes) getString(R.string.open_boxes) else getString(R.string.all_boxes)
             binding.tvTitle.text = if (isShowingAllBoxes) getString(R.string.all_boxes) else getString(R.string.open_boxes)
 
             // Анимация обновления списка
@@ -114,7 +114,7 @@ class BoxFragment : Fragment() {
         binding.tvNoBoxes.visibility = View.GONE
 
         if (isLoading) {
-            Log.w("BoxFragment", "Уже загружается — пропускаем вызов loadBoxes")
+            //Log.w("BoxFragment", "Уже загружается — пропускаем вызов loadBoxes")
             return
         }
         isLoading = true
@@ -156,7 +156,7 @@ class BoxFragment : Fragment() {
                 // просто пробрасываем исключение дальше, не показывая Toast
                 throw e
             } catch (e: Exception) {
-                Log.e("BoxFragment", "Сеть/исключение: ${e.message}", e)
+                //Log.e("BoxFragment", "Сеть/исключение: ${e.message}", e)
                 Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE

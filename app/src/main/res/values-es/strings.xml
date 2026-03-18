@@ -20,21 +20,25 @@
     <string name="licence_status_title">Estado de la licencia</string>
     <string name="licence_status_summary">Comprobando...</string>
 
-    <string name="developer_info_title">Sobre el desarrollador</string>
+    <string name="developer_info_title">Acerca del desarrollador</string>
     <string name="developer_title">Viacheslav Fitlin</string>
     <string name="developer_summary">Telegram: @Slavafit</string>
 
 
     <string name="ok">Aceptar</string>
     <string name="cancel">Cancelar</string>
-    <string name="flashlight">Literna</string>
+    <string name="flashlight_on">Literna on</string>
+    <string name="flashlight_off">Literna off</string>
 
-
+    <string name="scan">Escanear</string>
+    <string name="boxes">Cajas</string>
     <string name="open_boxes">Cajas abiertas</string>
     <string name="all_boxes">Todas las cajas</string>
     <string name="show_all_boxes">Mostrar todas las cajas</string>
     <string name="no_boxes">No hay cajas. Crea una nueva.</string>
     <string name="no_open_parties">No hay lote de cajas abiertas.</string>
+    <string name="box_number">Número de caja</string>
+    <string name="finish_party_property">Completar un lote de cajas</string>
 
 
 
@@ -45,9 +49,13 @@
     <string name="back">Atras</string>
     <string name="save">Guardar</string>
     <string name="apply">APRENDER</string>
+    <string name="send_order">ENVIAR PEDIDO</string>
+    <string name="scan_wait">Esperando de escaneo...</string>
+    <string name="scan_wait_client">Esperando de escaneo cliente...</string>
     <string name="parties">Partes</string>
-
-
+    <string name="scan_or_input">Escanear o ingresar...</string>
+    <string name="generate_track">GENERAR ONZA</string>
+    <string name="find_order">Buscar información del pedido</string>
 
 
     <string name="name_not_specified">Nombre no especificado</string>
@@ -55,15 +63,21 @@
     <string name="client_not_found">Cliente no encontrado</string>
     <string name="server_error">Error de servedor</string>
     <string name="net_error">Error de red</string>
+    <string name="scan_kg">Escanear KG</string>
 
-    <string name="scan_wait">Esperando de escaneo...</string>
-    <string name="scan_wait_client">Esperando de escaneo cliente...</string>
 
-    <string name="weight_kg">kg</string>
+
+    <string name="weight_kg">Peso (kg)</string>
     <string name="weight">Peso:</string>
     <string name="weight_format">Peso: %.2f kg</string>
+    <string name="save_box">Guardar caja</string>
+    <string name="client_code">Código del cliente (KG)</string>
+    <string name="search_client">Buscar por nombre</string>
+    <string name="dimensions">Dimensiones (L x W x H), cm</string>
 
-    <string name="add_new_box">Nueva caja</string>
+
+
+    <string name="add_new_box">Agregar nueva caja</string>
     <string name="new_box_number">Se creará un número: ...</string>
     <string name="length">Longitud (cm)</string>
     <string name="width">Ancho (cm)</string>
@@ -73,6 +87,7 @@
     <string name="width_w">Ancho</string>
     <string name="height_h">Altura</string>
     <string name="total_weight">Total: 0.00 kg</string>
+    <string name="tracking_code">Código de seguimiento</string>
 
 
 
@@ -82,7 +97,8 @@
     <string name="input_track">Introduzca el número de seguimiento</string>
     <string name="for_example">Por ejemplo: 28038252</string>
     <string name="select_box">Seleccione una caja para agregar</string>
-
+    <string name="orders">Pedidos: 0</string>
+    <string name="edit_dimensions_and_weight">Editar dimensiones y peso</string>
 
 
 

@@ -30,7 +30,7 @@
                 app:tint="#444444" />
         </RelativeLayout>
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Трек-код" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tracking_code" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
             <EditText android:id="@+id/etTracking"
                 android:imeOptions="actionDone"
@@ -38,23 +38,23 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:hint="Скан или ввод..." />
+                android:hint="@string/scan_or_input" />
             <ImageButton android:id="@+id/btnScanTrack" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
             <ImageButton android:id="@+id/btnPrint" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_save" android:visibility="gone" />
         </LinearLayout>
 
-        <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="ГЕНЕРИРОВАТЬ ONZA" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
+        <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/generate_track" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
         <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
         <TextView android:id="@+id/tvClientName" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="Ожидание сканирования..." android:textColor="#666666" android:textSize="18sp" android:textStyle="bold" android:gravity="center" />
+            android:text="@string/scan_wait" android:textColor="#666666" android:textSize="18sp" android:textStyle="bold" android:gravity="center" />
 
-        <CheckBox android:id="@+id/cbWithBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Наличие коробки (with_box)" android:layout_gravity="center_horizontal"/>
+        <CheckBox android:id="@+id/cbWithBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/save_box" android:layout_gravity="center_horizontal"/>
 
         <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Код клиента (KG)" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/client_code" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
             <EditText android:id="@+id/etClientCode"
                 android:inputType="textCapCharacters"
@@ -71,21 +71,21 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@android:drawable/ic_menu_search"
-                android:contentDescription="Поиск по имени" />
+                android:contentDescription="@string/search_client" />
         </LinearLayout>
 
         <Space android:layout_width="match_parent" android:layout_height="16dp" />
 
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Вес (кг)" android:textStyle="bold" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/weight_kg" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/etWeight" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="0.00" android:inputType="numberDecimal" />
+            <EditText android:id="@+id/etWeight" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:hint="0,00" android:inputType="numberDecimal" />
             <ImageButton android:id="@+id/btnScanWeight" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
             <Button android:id="@+id/btnVolumeCalc" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="V" android:textStyle="bold" />
         </LinearLayout>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Размеры (Д х Ш х В), см"
+        android:text="@string/dimensions"
         android:textStyle="bold"
         android:layout_marginTop="8dp"/>
 
@@ -136,7 +136,7 @@
             android:id="@+id/btnSubmit"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:text="ОТПРАВИТЬ ЗАКАЗ"
+            android:text="@string/send_order"
             android:textSize="18sp"
             app:cornerRadius="12dp"
             android:backgroundTint="#2E7D32" />
@@ -148,7 +148,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp"
-            android:text="Найти информацию о заказе"
+            android:text="@string/find_order"
             app:icon="@android:drawable/ic_menu_search" />
 
         <Button android:id="@+id/btnLogout"

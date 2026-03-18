@@ -24,42 +24,57 @@
     <string name="developer_title">Вячеслав Фитлин</string>
     <string name="developer_summary">Telegramm: @Slavafit</string>
 
+    <string name="scan">Скан</string>
+    <string name="boxes">Коробки</string>
     <string name="open_boxes">Открытые коробки</string>
     <string name="all_boxes">Все коробки</string>
     <string name="show_all_boxes">Показать все</string>
     <string name="no_boxes">Нет открытых коробок. Создайте новую.</string>
     <string name="parties">Партии</string>
     <string name="no_open_parties">Нет открытых партий</string>
-
+    <string name="box_number">Номер коробки</string>
+    <string name="finish_party_property">Завершить партию</string>
 
 
 
     <string name="scan_track">Сканировать трек заказа</string>
     <string name="save_sizes">Сохранить размеры</string>
     <string name="print_label">Печать лейбла</string>
+    <string name="scan_or_input">Скан или ввод...</string>
+    <string name="generate_track">ГЕНЕРИРОВАТЬ ONZA</string>
+
 
     <string name="refresh">Обновить</string>
     <string name="back">Hазад</string>
     <string name="save">Сохранить</string>
     <string name="ok">OK</string>
     <string name="cancel">Отмена</string>
-    <string name="flashlight">Фонарик ВКЛ</string>
+    <string name="flashlight_on">Фонарик ВКЛ</string>
+    <string name="flashlight_off">Фонарик ВЫКЛ</string>
     <string name="apply">ПРИМЕНИТЬ</string>
+    <string name="send_order">ОТПРАВИТЬ ЗАКАЗ</string>
+    <string name="find_order">Найти информацию о заказе</string>
 
 
-
-
+//tost
     <string name="name_not_specified">Имя не указано</string>
     <string name="track_not_found">Трек не найден. Сканируйте KG</string>
     <string name="client_not_found">Клиент не найден</string>
     <string name="server_error"> Ошибка сервера</string>
     <string name="net_error">Ошибка сети</string>
+    <string name="scan_kg">Сканирование KG</string>
 
     <string name="scan_wait">Ожидание сканирования...</string>
     <string name="scan_wait_client">Сканирование кода клиента...</string>
-    <string name="weight_kg">кг</string>
+    <string name="weight_kg">Вес (кг)</string>
     <string name="weight">Bec:</string>
     <string name="weight_format">Вес: %.2f кг</string>
+    <string name="save_box">Сохранить коробку</string>
+    <string name="client_code">Код клиента (KG)</string>
+    <string name="search_client">Поиск по имени</string>
+    <string name="dimensions">Размеры (Д х Ш х В), см</string>
+
+
 
     <string name="add_new_box">Добавить новую коробку</string>
     <string name="new_box_number">Будет создан номер: ...</string>
@@ -71,7 +86,7 @@
     <string name="width_w">Ширина W</string>
     <string name="height_h">Высота H</string>
     <string name="total_weight">Итого: 0.00 кг</string>
-
+    <string name="tracking_code">Трек-код</string>
 
 
 
@@ -80,6 +95,12 @@
     <string name="input_track">Введите трек-номер</string>
     <string name="for_example">Например: 28038252</string>
     <string name="select_box">Выберите коробку для добавления</string>
+    <string name="orders">Заказов: 0</string>
+    <string name="edit_dimensions_and_weight">Редактирование размеров и веса</string>
+
+
+
+
 
 
 

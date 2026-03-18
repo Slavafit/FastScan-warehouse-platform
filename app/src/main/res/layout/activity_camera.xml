@@ -51,7 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="80dp"
-        android:text="@string/flashlight"
+        android:text="@string/flashlight_on"
         android:visibility="gone" />
 
 </FrameLayout>

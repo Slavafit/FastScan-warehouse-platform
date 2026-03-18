@@ -37,11 +37,12 @@ class SettingsActivity : AppCompatActivity() {
             // Загружаем XML настроек
             setPreferencesFromResource(R.xml.settings, rootKey)
 
-                // ← вот сюда вставляем слушатель
+                // слушатель изменения языка
                 val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
                 prefs.registerOnSharedPreferenceChangeListener { sharedPrefs, key ->
                     if (key == "language") {
                         val lang = sharedPrefs.getString("language", "ru") ?: "ru"
+                        // Меняем язык
                         val locale = Locale(lang)
                         Locale.setDefault(locale)
 

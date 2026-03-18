@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
+    <PreferenceCategory app:title="@string/language_settings">
+        <ListPreference
+            android:key="language"
+            android:title="@string/language"
+            android:summary="@string/language_summary"
+            android:entries="@array/language_entries"
+            android:entryValues="@array/language_values"
+            android:defaultValue="ru"
+            android:negativeButtonText="@string/cancel"
+            android:positiveButtonText="@string/ok" />
+    </PreferenceCategory>
     <PreferenceCategory app:title="@string/server_settings">
 
         <EditTextPreference
@@ -11,24 +21,25 @@
             android:summary="@string/server_url_summary"/>
         <!--app:defaultValue="https://onza-api.ibm.kg" />-->
 
-    <EditTextPreference
-        app:key="login"
-        app:title="@string/login_title"
-        app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="login"
+            app:title="@string/login_title"
+            app:useSimpleSummaryProvider="true" />
 
-    <EditTextPreference
-        app:key="password"
-        app:title="@string/password_title"
-        app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="password"
+            app:title="@string/password_title"
+            app:useSimpleSummaryProvider="true" />
 
-    <EditTextPreference
-        app:key="vol_weight"
-        app:title="@string/vol_weight_title"
-        app:summary="@string/vol_weight_summary"
-        app:useSimpleSummaryProvider="true"
-        android:inputType="number"/>
+        <EditTextPreference
+            app:key="vol_weight"
+            app:title="@string/vol_weight_title"
+            app:summary="@string/vol_weight_summary"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="number"/>
 
-</PreferenceCategory>
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/licence_title">
         <EditTextPreference
             android:key="user_email"

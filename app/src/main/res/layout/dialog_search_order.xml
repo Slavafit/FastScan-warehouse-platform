@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Введите трек-номер"
+        android:text="@string/input_track"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp"/>
@@ -17,7 +17,7 @@
         android:id="@+id/etSearchTrack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Например: 28038252"
+        android:hint="@string/for_example"
         android:background="@android:drawable/edit_text"
         android:padding="12dp"
         android:inputType="textCapCharacters" />

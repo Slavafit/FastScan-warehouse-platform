@@ -8,6 +8,7 @@ import com.ocr.fastscan.CameraActivity
 import com.ocr.fastscan.databinding.FragmentScanBinding
 import android.view.View
 import androidx.core.content.ContextCompat
+import com.ocr.fastscan.R
 
 object ScanUtils {
 
@@ -22,13 +23,22 @@ object ScanUtils {
     }
 
     fun clearFields(binding: FragmentScanBinding) {
+        //binding.etTracking.text.clear()
+        binding.etClientCode.text.clear()
+        binding.etWeight.text.clear()
+        binding.etLength.text.clear()
+        binding.etWidth.text.clear()
+        binding.etHeight.text.clear()
+        binding.tvClientName.text = "Сканирование кода клиента..." //getString(R.string.scan_wait_client)
+    }
+    fun clearFieldsAll(binding: FragmentScanBinding) {
         binding.etTracking.text.clear()
         binding.etClientCode.text.clear()
         binding.etWeight.text.clear()
         binding.etLength.text.clear()
         binding.etWidth.text.clear()
         binding.etHeight.text.clear()
-        binding.tvClientName.text = "Ожидание сканирования..."
+        binding.tvClientName.text = "Ожидание сканирования..."  //getString(R.string.scan_wait)
         binding.tvClientName.setTextColor(ContextCompat.getColor(binding.root.context, android.R.color.black))
         binding.cbWithBox.isChecked = false
         binding.btnPrint.visibility = View.GONE

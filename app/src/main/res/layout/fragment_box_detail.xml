@@ -50,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Сканировать трек заказа" />
+            android:text="@string/scan_track" />
 
         <!-- Прогресс-бар -->
         <ProgressBar
@@ -144,7 +144,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:text="Сохранить"
+                    android:text="@string/save"
                     android:backgroundTint="#2E7D32"
                     android:textColor="#FFFFFF" />
             </LinearLayout>
@@ -156,21 +156,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Печать лейбла" />
+            android:text="@string/print_label" />
 
         <Button
             android:id="@+id/btnRefresh"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Обновить" />
+            android:text="@string/refresh" />
 
         <Button
             android:id="@+id/btnBack"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Назад" />
+            android:text="@string/back" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

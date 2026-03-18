@@ -55,7 +55,7 @@ class BoxFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
 
-        binding.tvTitle.text = "@string/open_boxes"  // Использование tvTitle
+        binding.tvTitle.text = getString(R.string.open_boxes)   // Использование tvTitle
 
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvBoxes.adapter = boxesAdapter
@@ -65,21 +65,6 @@ class BoxFragment : Fragment() {
 //            loadBoxes(isOpenOnly = isShowingAllBoxes)
 //        }
         // Кнопка добавления коробки
-//        binding.btnAddNewBox.setOnClickListener {
-//            DialogUtils.showAddNewBoxDialog(
-//                lifecycleOwner = viewLifecycleOwner,
-//                context = requireContext(),
-//                onSuccess = { trackingCode ->
-//                    // Успех: обновляем список
-//                    loadBoxes(isOpenOnly = true)
-//                    Toast.makeText(requireContext(), "Коробка $trackingCode успешно создана", Toast.LENGTH_SHORT).show()
-//                },
-//                onError = { errorMsg ->
-//                    // Опционально: обработка ошибки
-//                    Toast.makeText(requireContext(), "Ошибка: $errorMsg", Toast.LENGTH_LONG).show()
-//                }
-//            )
-//        }
         binding.btnAddNewBox.setOnClickListener {
             DialogUtils.showAddNewBoxDialog(
                 lifecycleOwner = viewLifecycleOwner,
@@ -109,8 +94,8 @@ class BoxFragment : Fragment() {
         // Кнопка переключения "Все / Открытые"
         binding.btnShowAll.setOnClickListener {
             isShowingAllBoxes = !isShowingAllBoxes
-            binding.btnShowAll.text = if (isShowingAllBoxes) "Показать открытые" else "Показать все"
-            binding.tvTitle.text = if (isShowingAllBoxes) "Все коробки" else "Открытые коробки"
+            binding.btnShowAll.text = if (isShowingAllBoxes) getString(R.string.open_boxes) else "Показать все"
+            binding.tvTitle.text = if (isShowingAllBoxes) getString(R.string.all_boxes) else getString(R.string.open_boxes)
 
             // Анимация обновления списка
             binding.rvBoxes.animate()
@@ -147,6 +132,16 @@ class BoxFragment : Fragment() {
                         )
                     }
                     boxesAdapter.submitList(boxes)
+                    // ОБНОВЛЯЕМ ЗАГОЛОВОК С КОЛИЧЕСТВОМ ===
+                    val count = boxes.size
+                    // Берем базовую строку (Открытые или Все) и добавляем (Количество)
+                    val baseText = if (isOpenOnly) {
+                        getString(R.string.open_boxes)
+                    } else {
+                        getString(R.string.all_boxes) // Замени на getString(R.string.all_boxes), если есть в strings.xml
+                    }
+                    binding.tvTitle.text = "$baseText ($count)"
+                    // ===================================================
                     if (boxes.isEmpty()) {
                         binding.tvNoBoxes.visibility = View.VISIBLE
                     }

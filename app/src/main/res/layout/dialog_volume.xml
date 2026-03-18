@@ -8,20 +8,35 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="значения в см"
+        android:text="@string/values_cm"
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp"/>
 
-    <EditText android:id="@+id/etLength" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Длина (L)" android:inputType="numberDecimal" />
-    <EditText android:id="@+id/etWidth" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Ширина (W)" android:inputType="numberDecimal" />
-    <EditText android:id="@+id/etHeight" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Высота (H)" android:inputType="numberDecimal" />
+    <EditText
+        android:id="@+id/etLength"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/length_l"
+        android:inputType="numberDecimal" />
+    <EditText
+        android:id="@+id/etWidth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/width_w"
+        android:inputType="numberDecimal" />
+    <EditText
+        android:id="@+id/etHeight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/height_h"
+        android:inputType="numberDecimal" />
 
     <TextView
         android:id="@+id/tvResultPreview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Итого: 0.00 кг"
+        android:text="@string/total_weight"
         android:gravity="center"
         android:textSize="18sp"
         android:layout_marginTop="16dp"
@@ -31,6 +46,6 @@
         android:id="@+id/btnApplyVolume"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ПРИМЕНИТЬ"
+        android:text="@string/apply"
         android:layout_marginTop="16dp" />
 </LinearLayout>

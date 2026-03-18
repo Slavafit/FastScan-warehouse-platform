@@ -9,15 +9,30 @@
         android:id="@+id/tvTrackingCode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Будет создан номер: ..."
+        android:text="@string/new_box_number"
         android:textStyle="bold"
         android:textSize="16sp"
         android:layout_marginBottom="16dp" />
 
-    <EditText android:id="@+id/etLength" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Длина (см)" android:inputType="number" />
+    <EditText
+        android:id="@+id/etLength"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/length"
+        android:inputType="number" />
 
-    <EditText android:id="@+id/etWidth" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Ширина (см)" android:inputType="number" />
+    <EditText
+        android:id="@+id/etWidth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/width"
+        android:inputType="number" />
 
-    <EditText android:id="@+id/etHeight" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="Высота (см)" android:inputType="number" />
+    <EditText
+        android:id="@+id/etHeight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/height"
+        android:inputType="number" />
 
 </LinearLayout>

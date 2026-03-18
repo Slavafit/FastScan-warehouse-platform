@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">FastScan</string>
+    <string name="app_name">FastScan Pro</string>
 
     <string name="server_settings">Server Settings</string>
     <string name="server_url_title">Server URL</string>
@@ -17,10 +17,75 @@
     <string name="developer_title">Viacheslav Fitlin</string>
     <string name="developer_summary">Telegramm: @Slavafit</string>
 
+    <string name="language_settings">App language</string>
+    <string name="language">Language</string>
+    <string name="language_summary">Select language</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="flashlight">Flashlight ON</string>
+
+
     <string name="open_boxes">Open boxes</string>
     <string name="all_boxes">All boxes</string>
+    <string name="show_all_boxes">Show all boxes</string>
+    <string name="no_boxes">There are no open boxes. Create a new one.</string>
+    <string name="no_open_parties">There are no open parties</string>
+
+
+
     <string name="scan_track">Scan order track</string>
     <string name="save_sizes">Save sizes</string>
     <string name="print_label">Print label</string>
+    <string name="refresh">Refresh</string>
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="apply">APPLY</string>
+    <string name="parties">Parties</string>
+
+
+
+    <string name="name_not_specified">Name not specified</string>
+    <string name="track_not_found">Track not found. Please scan KG</string>
+    <string name="client_not_found">Client not found</string>
+    <string name="server_error"> Server error</string>
+    <string name="net_error">Net error</string>
+
+    <string name="scan_wait">Waiting scan track...</string>
+    <string name="scan_wait_client">Waiting scan client kode...</string>
+
+    <string name="weight_kg">kg</string>
+    <string name="weight">Weight:</string>
+    <string name="weight_format">Weight: %.2f kg</string>
+
+    <string name="add_new_box">Add new box</string>
+    <string name="new_box_number">A number will be created: ...</string>
+    <string name="length">Length (cm)</string>
+    <string name="width">Width (см)</string>
+    <string name="height">Height (см)</string>
+    <string name="values_cm">values in cm</string>
+    <string name="length_l">Length L</string>
+    <string name="width_w">Width W</string>
+    <string name="height_h">Height H</string>
+    <string name="total_weight">Total: 0.00 kg</string>
+
+
+
+    <string name="first_name">First name</string>
+    <string name="last_name">Last name</string>
+    <string name="input_track">Enter the tracking number</string>
+    <string name="for_example">For example: 28038252</string>
+    <string name="select_box">Select a box to add</string>
+
+
+
+
+
+
+
+
+
+
+
 
 </resources>

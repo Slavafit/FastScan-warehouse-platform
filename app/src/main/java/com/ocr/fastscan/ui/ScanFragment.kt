@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.ocr.fastscan.R
 import com.ocr.fastscan.SettingsActivity
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.data.SenderManager
@@ -45,7 +46,6 @@ class ScanFragment : Fragment() {
     private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
     private val searchOrder by lazy { SearchOrder(this) }
-
     private val printHelper by lazy { PrintHelper(requireContext()) }
     private val senderManager by lazy {
         SenderManager(
@@ -58,7 +58,6 @@ class ScanFragment : Fragment() {
     private var currentWidth: Int = 0
     private var currentHeight: Int = 0
     private var currentOrderDimensions: OrderDimensions? = null
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -74,7 +73,6 @@ class ScanFragment : Fragment() {
 
         // Экран не гаснет
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
 
         // Enter в поле трека → запрос
         binding.etTracking.setOnEditorActionListener { _, actionId, event ->
@@ -95,7 +93,7 @@ class ScanFragment : Fragment() {
                 false
             }
         }
-        // Твои настройки (кнопки, слушатели и т.д.)
+        // настройки (кнопки, слушатели и т.д.)
         setupButtons()
         setupClientCodeInput()
     }
@@ -156,7 +154,7 @@ class ScanFragment : Fragment() {
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
             Toast.makeText(requireContext(), "Токены очищены", Toast.LENGTH_SHORT).show()
-            ScanUtils.clearFields(binding)
+            ScanUtils.clearFieldsAll(binding)
         }
         binding.btnSearchClient.setOnClickListener {
             showSearchClientDialog()
@@ -236,7 +234,7 @@ class ScanFragment : Fragment() {
                 if (response.isSuccessful && !response.body().isNullOrEmpty()) {
                     val details = response.body()!![0]
 
-                    binding.tvClientName.text = details.clientName ?: "Имя не указано"
+                    binding.tvClientName.text = details.clientName ?: getString(R.string.name_not_specified)
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
 
                     binding.etClientCode.setText(details.clientCode ?: "")
@@ -264,11 +262,11 @@ class ScanFragment : Fragment() {
 
                     soundManager.playSuccess()
                 } else {
-                    binding.tvClientName.text = "Трек не найден. Сканируйте KG"
+                    binding.tvClientName.text = getString(R.string.track_not_found)
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
-                    //ScanUtils.clearFields(binding)
-                    binding.etClientCode.text.clear()
-                    binding.etWeight.text.clear()
+                    ScanUtils.clearFields(binding)
+                    //binding.etClientCode.text.clear()
+                    //binding.etWeight.text.clear()
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")
@@ -286,24 +284,24 @@ class ScanFragment : Fragment() {
                     val receivers = response.body()!!
                     if (receivers.isNotEmpty()) {
                         val first = receivers[0]
-                        val fullName = first.fullName?.trim() ?: "Имя не указано"
+                        val fullName = first.fullName?.trim() ?: getString(R.string.name_not_specified)
                         currentReceiverGuid = first.recieverGuid
 
                         binding.tvClientName.text = fullName
                         binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
                         soundManager.playSuccess()
                     } else {
-                        binding.tvClientName.text = "Клиент не найден"
+                        binding.tvClientName.text = getString(R.string.client_not_found)
                         binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
                         soundManager.playError()
                     }
                 } else {
-                    binding.tvClientName.text = "Ошибка сервера"
+                    binding.tvClientName.text = getString(R.string.server_error)
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
                 }
             } catch (e: Exception) {
                 Log.e("FetchKG", "Исключение: ${e.message}", e)
-                binding.tvClientName.text = "Сеть ошибка"
+                binding.tvClientName.text = getString(R.string.net_error)
                 binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
             }
         }
@@ -347,7 +345,7 @@ class ScanFragment : Fragment() {
             onSuccess = {
                 soundManager.playSuccess()
                 Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
-                ScanUtils.clearFields(binding)
+                ScanUtils.clearFieldsAll(binding)
                 currentReceiverGuid = null
             },
             onError = { error ->

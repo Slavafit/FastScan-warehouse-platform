@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.databinding.DialogCreatePartyBinding
 import kotlinx.coroutines.launch
 import com.ocr.fastscan.data.model.*
+import kotlinx.coroutines.delay
+import kotlin.coroutines.cancellation.CancellationException
 
 class PartyFragment : Fragment() {
 
@@ -78,7 +80,11 @@ class PartyFragment : Fragment() {
                     binding.tvNoParties.text = "Ошибка загрузки"
                     binding.tvNoParties.visibility = View.VISIBLE
                 }
+            } catch (e: CancellationException) {
+                // Игнорируем отмену корутины
+                throw e
             } catch (e: Exception) {
+                Log.e("CreateParty", "Ошибка сети", e)
                 binding.tvNoParties.text = "Сеть ошибка"
                 binding.tvNoParties.visibility = View.VISIBLE
             } finally {
@@ -97,27 +103,36 @@ class PartyFragment : Fragment() {
 
         AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
-            .setTitle("Новая партия")
+            //.setTitle("Новая партия")
             .setPositiveButton("Создать") { _, _ ->
-                val name = dialogBinding.etPartialName.text.toString().trim()
-                if (name.isEmpty()) {
+                val inputName = dialogBinding.etPartialName.text.toString().trim()
+                if (inputName.isEmpty()) {
                     Toast.makeText(requireContext(), "Введите название", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
+                }
+                // Формируем финальное имя: если цифры 123, станет KG123
+                val finalName = if (inputName.startsWith("KG ", ignoreCase = true)) {
+                    inputName.uppercase()
+                } else {
+                    "KG $inputName"
                 }
 
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
-                        val request = PartialCreateRequest(generatedCode, name)
-                        val response = apiService.createPartial(request)
-                        //Log.d("CreateParty", "Отправляем: ${response}")
-                        Log.d("CreateParty", "Получаем: ${request}")
+                        val request = PartialCreateRequest(generatedCode, finalName)
+                        Log.d("CreateParty", "Отправляем: $request")
 
-                        if (response.isSuccessful && response.body()?.success == true) {
+                        val response = apiService.createPartial(request)
+                        Log.d("CreateParty", "Код сервера: ${response.code()}")
+                        Log.d("CreateParty", "Тело ответа: ${response.body()}")
+
+                        if (response.isSuccessful) {    // Проверка по коду 200 OK, игнорируя опечатку "seccess")))
                             Toast.makeText(requireContext(), "Партия создана", Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
+                            delay(300)  // Ждем, пока база на сервере обновится
                             loadParties()
                         } else {
-                            Toast.makeText(requireContext(), "Ошибка создания", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Ошибка создания код ${response.code()}", Toast.LENGTH_SHORT).show()
                             soundManager.playError()
                         }
                     } catch (e: Exception) {

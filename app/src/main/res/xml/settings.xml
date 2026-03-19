@@ -5,12 +5,13 @@
         <ListPreference
             android:key="language"
             android:title="@string/language"
-            android:summary="@string/language_summary"
             android:entries="@array/language_entries"
             android:entryValues="@array/language_values"
             android:defaultValue="ru"
             android:negativeButtonText="@string/cancel"
             android:positiveButtonText="@string/ok" />
+        <!--android:summary="@string/language_summary"-->
+
     </PreferenceCategory>
     <PreferenceCategory app:title="@string/server_settings">
 

@@ -307,22 +307,81 @@ class ScanFragment : Fragment() {
         }
     }
 
+//    // ==================== ФИНАЛЬНАЯ ОТПРАВКА ====================
+//    private fun submitFinalOrder() {
+//        val track = binding.etTracking.text.toString().trim()
+//        val kg = binding.etClientCode.text.toString().trim().uppercase()
+//        val weightStr = binding.etWeight.text.toString().trim()
+//
+//        // Базовая проверка полей
+//        if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
+//            Toast.makeText(requireContext(), "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
+//            return
+//        }
+//        // Заменяем запятую на точку, чтобы Double смог это прочитать
+//        val normalizedWeight = weightStr.replace(',', '.')
+//        val grossWeight = normalizedWeight.toDoubleOrNull() ?: 0.0
+//
+//        val dims = currentOrderDimensions
+//
+//        val req = SaveOrderRequest(
+//            clientCode = kg,
+//            clientName = binding.tvClientName.text.toString(),
+//            trackingNumber = track,
+//            grossWeight = grossWeight,
+//            recieverGuid = currentReceiverGuid!!,
+//            userGuid = currentReceiverGuid!!,
+//            withBox = if (binding.cbWithBox.isChecked) 1 else 0,
+//            length = currentLength,
+//            width  = currentWidth,
+//            height = currentHeight
+//        )
+//
+//        //Log.d("SaveOrderJSON", "Отправляем: ${req}")
+//
+//        binding.btnSubmit.isEnabled = false
+//        binding.btnSubmit.text = "Отправка..."
+//
+//        senderManager.submitOrder(req,
+//            onSuccess = {
+//                soundManager.playSuccess()
+//                Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
+//                ScanUtils.clearFieldsAll(binding)
+//                currentReceiverGuid = null
+//            },
+//            onError = { error ->
+//                soundManager.playError()
+//                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+//            }
+//        )
+//
+//        // Восстановление кнопки (можно вынести в finally внутри submitOrder)
+//        binding.btnSubmit.isEnabled = true
+//        binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
+//    }
+
     // ==================== ФИНАЛЬНАЯ ОТПРАВКА ====================
     private fun submitFinalOrder() {
         val track = binding.etTracking.text.toString().trim()
         val kg = binding.etClientCode.text.toString().trim().uppercase()
         val weightStr = binding.etWeight.text.toString().trim()
 
+        // 1. Базовая проверка полей
         if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
             Toast.makeText(requireContext(), "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
             return
         }
-        // Заменяем запятую на точку, чтобы Double смог это прочитать
+
+        // 2. Подготовка данных веса
         val normalizedWeight = weightStr.replace(',', '.')
         val grossWeight = normalizedWeight.toDoubleOrNull() ?: 0.0
 
-        val dims = currentOrderDimensions
+        if (grossWeight <= 0.0) {
+            Toast.makeText(requireContext(), "Введите корректный вес", Toast.LENGTH_SHORT).show()
+            return
+        }
 
+        // 3. Создаем объект запроса
         val req = SaveOrderRequest(
             clientCode = kg,
             clientName = binding.tvClientName.text.toString(),
@@ -336,8 +395,29 @@ class ScanFragment : Fragment() {
             height = currentHeight
         )
 
-        //Log.d("SaveOrderJSON", "Отправляем: ${req}")
+        // 4. Проверка лимита веса (8 кг)
+        if (grossWeight > 8.0) {
+            soundManager.playError() // Звук предупреждения
+            AlertDialog.Builder(requireContext())
+                .setTitle("⚠️ Проверьте вес")
+                .setMessage("Введенный вес $grossWeight кг превышает 8 кг.\nВы уверены, что всё верно?")
+                .setCancelable(false)
+                .setPositiveButton("Да, отправить") { _, _ ->
+                    executeSubmit(req)
+                }
+                .setNegativeButton("Нет, изменить") { _, _ ->
+                    binding.etWeight.text?.clear()
+                    binding.etWeight.requestFocus()
+                }
+                .show()
+        } else {
+            // Если вес в пределах нормы — отправляем сразу
+            executeSubmit(req)
+        }
+    }
 
+    // Вспомогательная функция для выполнения самой сетевой отправки
+    private fun executeSubmit(req: SaveOrderRequest) {
         binding.btnSubmit.isEnabled = false
         binding.btnSubmit.text = "Отправка..."
 
@@ -347,19 +427,21 @@ class ScanFragment : Fragment() {
                 Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
                 ScanUtils.clearFieldsAll(binding)
                 currentReceiverGuid = null
+
+                // Восстанавливаем кнопку
+                binding.btnSubmit.isEnabled = true
+                binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
             },
             onError = { error ->
                 soundManager.playError()
                 Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
+
+                // Восстанавливаем кнопку
+                binding.btnSubmit.isEnabled = true
+                binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
             }
         )
-
-        // Восстановление кнопки (можно вынести в finally внутри submitOrder)
-        binding.btnSubmit.isEnabled = true
-        binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
     }
-
-
     private fun showSearchClientDialog() {
         val dialogBinding = DialogSearchClientBinding.inflate(layoutInflater)  // ← binding-класс
 

@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class SearchOrder(private val fragment: Fragment) {
 
-    private val firebaseManager = AppDependencies.firebaseManager
+    private val firebaseManager by lazy { AppDependencies.firebaseManager }
     private val context = fragment.requireContext()
     fun showSearchDialog() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_search_order, null)

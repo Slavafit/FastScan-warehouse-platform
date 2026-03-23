@@ -16,6 +16,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private val apiService by lazy { AppDependencies.apiService }
+private val soundManager by lazy { AppDependencies.soundManager }
 object DialogUtils {
 
     fun showVolumeDialog(
@@ -130,22 +132,22 @@ object DialogUtils {
                             length = length,
                             vWeight = (length * width * height) / context.getVolWeightDivider(),
                         )
-                        val response = AppDependencies.apiService.createOrUpdateBox(request)
+                        val response = apiService.createOrUpdateBox(request)
 
                         if (response.isSuccessful && response.body()?.success == true) {
                             Toast.makeText(context, "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
-                            AppDependencies.soundManager.playSuccess()
+                            soundManager.playSuccess()
                             onSuccess(generatedTrackingCode)  // ← передаём код коробки в колбэк
                             dialog.dismiss()
                         } else {
                             val errorMsg = response.body()?.message ?: "Ошибка создания"
                             Toast.makeText(context, "Ошибка создания: $errorMsg", Toast.LENGTH_LONG).show()
-                            AppDependencies.soundManager.playError()
+                            soundManager.playError()
                             onError(errorMsg)
                         }
                     } catch (e: Exception) {
                         Toast.makeText(context, "Сеть/ошибка: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                        AppDependencies.soundManager.playError()
+                        soundManager.playError()
                         onError(e.localizedMessage ?: "Неизвестная ошибка")
                     }
                 }

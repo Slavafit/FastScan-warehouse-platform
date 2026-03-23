@@ -28,9 +28,9 @@ class BoxDetailFragment : Fragment() {
     private var _binding: FragmentBoxDetailBinding? = null
     private val binding get() = _binding!!
 
-    private val apiService = AppDependencies.apiService
-    private val firebaseManager = AppDependencies.firebaseManager
-    private val soundManager = AppDependencies.soundManager
+    private val apiService by lazy { AppDependencies.apiService }
+    private val firebaseManager by lazy { AppDependencies.firebaseManager }
+    private val soundManager by lazy { AppDependencies.soundManager }
 
     private var boxGuid: String = ""
     private var boxСodeid: String = ""

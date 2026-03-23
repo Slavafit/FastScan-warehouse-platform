@@ -19,21 +19,20 @@ import kotlinx.coroutines.launch
 import com.ocr.fastscan.utils.PrintHelper
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class PartyDetailFragment : Fragment() {
 
     private var _binding: FragmentPartyDetailBinding? = null
     private val binding get() = _binding!!
 
-    private val apiService = AppDependencies.apiService
-    private val soundManager = AppDependencies.soundManager
-
+    private val apiService by lazy { AppDependencies.apiService }
+    private val soundManager by lazy { AppDependencies.soundManager }
     private var partialGuid: String = ""
-
     private var partialCodeid: String = ""
-
     private var partialCode: String = ""
     private var partialName: String = ""   // заполняй в onViewCreated или newInstance
+    private var isFinishing = false
 
 private val boxesAdapter = BoxesInPartialAdapter { box ->
     Log.d("PartyDetail", "Открываем детали коробки, передаём partialName: '$partialName'")  // ← лог для проверки
@@ -210,67 +209,125 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
             }
         }
     }
-//    private fun removeBoxFromParty(boxGuid: String) {
-//        viewLifecycleOwner.lifecycleScope.launch {
-//            try {
-//                // Пока заглушка — замени на реальный запрос, когда дашь путь
-//                // Пример для DELETE /api/order/partial-box?guid=boxGuid&partial=partialGuid
-//                val response = apiService.removeBoxFromPartial(boxGuid, partialGuid)
-//
-//                if (response.isSuccessful) {
-//                    Toast.makeText(requireContext(), "Коробка удалена из партии", Toast.LENGTH_SHORT).show()
-//                    soundManager.playSuccess()
-//                    loadBoxDetails()  // обновляем список коробок
-//                } else {
-//                    Toast.makeText(requireContext(), "Ошибка удаления коробки", Toast.LENGTH_SHORT).show()
-//                    soundManager.playError()
-//                }
-//            } catch (e: Exception) {
-//                Log.e("PartyDetail", "Ошибка удаления коробки", e)
-//                Toast.makeText(requireContext(), "Сеть/ошибка удаления: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-//                soundManager.playError()
-//            }
-//        }
-//    }
-private fun finishParty() {
-    AlertDialog.Builder(requireContext())
-        .setTitle("Завершить партию?")
-        .setMessage("Завершить партию $partialCode?")
-        .setPositiveButton("Завершить") { _, _ ->
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    val request = SendPartialRequest(partial = partialGuid)
-                    val response = apiService.sendPartial(request)
-                    if (response.isSuccessful) {
-                        Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
-                        soundManager.playSuccess()
+    //    private fun removeBoxFromParty(boxGuid: String) {
+    //        viewLifecycleOwner.lifecycleScope.launch {
+    //            try {
+    //                // Пока заглушка — замени на реальный запрос, когда дашь путь
+    //                // Пример для DELETE /api/order/partial-box?guid=boxGuid&partial=partialGuid
+    //                val response = apiService.removeBoxFromPartial(boxGuid, partialGuid)
+    //
+    //                if (response.isSuccessful) {
+    //                    Toast.makeText(requireContext(), "Коробка удалена из партии", Toast.LENGTH_SHORT).show()
+    //                    soundManager.playSuccess()
+    //                    loadBoxDetails()  // обновляем список коробок
+    //                } else {
+    //                    Toast.makeText(requireContext(), "Ошибка удаления коробки", Toast.LENGTH_SHORT).show()
+    //                    soundManager.playError()
+    //                }
+    //            } catch (e: Exception) {
+    //                Log.e("PartyDetail", "Ошибка удаления коробки", e)
+    //                Toast.makeText(requireContext(), "Сеть/ошибка удаления: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+    //                soundManager.playError()
+    //            }
+    //        }
+    //    }
+    //private fun finishParty() {
+    //    AlertDialog.Builder(requireContext())
+    //        .setTitle("Завершить партию?")
+    //        .setMessage("Завершить партию $partialCode?")
+    //        .setPositiveButton("Завершить") { _, _ ->
+    //            viewLifecycleOwner.lifecycleScope.launch {
+    //                try {
+    //                    val request = SendPartialRequest(partial = partialGuid)
+    //                    val response = apiService.sendPartial(request)
+    //                    if (response.isSuccessful) {
+    //                        Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
+    //                        soundManager.playSuccess()
+    //
+    //                        // Печать документа
+    //                        val printHelper = PrintHelper(requireContext())
+    //                        partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
+    //                        printHelper.printParty(
+    //                            partialCode = partialCode,
+    //                            partialName = partialName,  //переменная с именем партии (KG 87 и т.д.
+    //                            warehouseName = "Spain",    // или откуда берёшь
+    //                            dateCreated = SimpleDateFormat("dd.MM.yyyy").format(Date()), // или откуда берёшь
+    //                            boxes = boxesAdapter.currentList
+    //                        )
+    //
+    //                        // Возврат в список
+    //                        parentFragmentManager.popBackStack()
+    //                    } else {
+    //                        Toast.makeText(requireContext(), "Ошибка завершения", Toast.LENGTH_SHORT).show()
+    //                        soundManager.playError()
+    //                    }
+    //                } catch (e: Exception) {
+    //                    Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+    //                    soundManager.playError()
+    //                }
+    //            }
+    //        }
+    //        .setNegativeButton("Отмена", null)
+    //        .show()
+    //}
+    private fun finishParty() {
+        if (isFinishing) return // Защита от дребезга (двойного клика)
 
-                        // Печать документа
-                        val printHelper = PrintHelper(requireContext())
-                        partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
-                        printHelper.printParty(
-                            partialCode = partialCode,
-                            partialName = partialName,  //переменная с именем партии (KG 87 и т.д.
-                            warehouseName = "Spain",    // или откуда берёшь
-                            dateCreated = SimpleDateFormat("dd.MM.yyyy").format(Date()), // или откуда берёшь
-                            boxes = boxesAdapter.currentList
-                        )
+        AlertDialog.Builder(requireContext())
+            .setTitle("Завершить партию?")
+            .setMessage("Завершить партию $partialCode?")
+            .setCancelable(false) // Чтобы пользователь не закрыл диалог в момент запроса
+            .setPositiveButton("Завершить") { dialog, _ ->
 
-                        // Возврат в список
-                        parentFragmentManager.popBackStack()
-                    } else {
-                        Toast.makeText(requireContext(), "Ошибка завершения", Toast.LENGTH_SHORT).show()
+                viewLifecycleOwner.lifecycleScope.launch {
+                    try {
+                        isFinishing = true
+                        binding.progressBar.visibility = View.VISIBLE // Показываем загрузку
+
+                        val request = SendPartialRequest(partial = partialGuid)
+                        val response = apiService.sendPartial(request)
+
+                        if (response.isSuccessful) {
+                            Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
+                            soundManager.playSuccess()
+
+                            // 1. Сначала готовим данные для печати
+                            val currentBoxes = boxesAdapter.currentList.toList() // Копируем список
+                            val titleName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
+
+                            // 2. Вызываем печать (PrintHelper должен быть асинхронным внутри)
+                            val printHelper = PrintHelper(requireContext())
+                            printHelper.printParty(
+                                partialCode = partialCode,
+                                partialName = titleName,
+                                warehouseName = "Spain",
+                                dateCreated = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date()),
+                                boxes = currentBoxes
+                            )
+
+                            // 3. Возвращаемся назад.
+                            // Используем Dispatchers.Main для уверенности и небольшую задержку,
+                            // чтобы Toast успел показаться
+                            parentFragmentManager.popBackStack()
+
+                        } else {
+                            isFinishing = false
+                            binding.progressBar.visibility = View.GONE
+                            Toast.makeText(requireContext(), "Ошибка: ${response.code()}", Toast.LENGTH_SHORT).show()
+                            soundManager.playError()
+                        }
+                    } catch (e: Exception) {
+                        isFinishing = false
+                        binding.progressBar.visibility = View.GONE
+                        Log.e("FinishParty", "Ошибка сети", e)
+                        Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
                         soundManager.playError()
                     }
-                } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
-                    soundManager.playError()
                 }
             }
-        }
-        .setNegativeButton("Отмена", null)
-        .show()
-}
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

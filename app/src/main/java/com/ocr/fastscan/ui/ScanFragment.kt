@@ -59,6 +59,8 @@ class ScanFragment : Fragment() {
     private var currentHeight: Int = 0
     private var currentOrderDimensions: OrderDimensions? = null
 
+    private var cachedReceivers: List<ReceiverItem>? = null  // ← кэш
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -385,54 +387,45 @@ class ScanFragment : Fragment() {
             Toast.makeText(requireContext(), "Введите минимум 3 символа", Toast.LENGTH_SHORT).show()
             return
         }
+
         val progress = ProgressDialog(requireContext()).apply {
             setMessage("Загрузка клиентов...")
             setCancelable(true)
-            //setOnCancelListener { /* можно отменить запрос, если нужно */ }
         }
         progress.show()
+
         lifecycleScope.launch {
-            binding.btnSearchClient.isEnabled = false  // отключаем кнопку, пока идёт
+            binding.btnSearchClient.isEnabled = false
+
             try {
-                val response = apiService.getAllReceivers()
-                if (!response.isSuccessful) {
-                    val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
-                    Toast.makeText(requireContext(), "Ошибка сервера ${response.code()}", Toast.LENGTH_LONG).show()
-                    return@launch
+                val receivers = getCachedOrLoadReceivers()  // ← новая функция
+
+                // Поиск без учёта регистра, частичное совпадение
+                val filtered = receivers.filter {
+                    (first.isEmpty() || it.firstName?.contains(first, ignoreCase = true) == true) &&
+                            (last.isEmpty() || it.lastName?.contains(last, ignoreCase = true) == true)
                 }
-                if (response.isSuccessful && response.body() != null) {
-                    val receivers = response.body()!!  // List<ReceiverItem>
 
-                    // Поиск без учёта регистра, частичное совпадение
-                    val filtered = receivers.filter {
-                        (first.isEmpty() || it.firstName?.contains(first, ignoreCase = true) == true) &&
-                                (last.isEmpty() || it.lastName?.contains(last, ignoreCase = true) == true)
+                when {
+                    filtered.isEmpty() -> {
+                        Toast.makeText(requireContext(), "Клиент не найден", Toast.LENGTH_SHORT).show()
+                        soundManager.playError()
                     }
+                    filtered.size == 1 -> {
+                        val match = filtered[0]
+                        val code = match.clientCode ?: ""
+                        binding.etClientCode.setText(code)
+                        binding.etClientCode.requestFocus()
+                        binding.etClientCode.setSelection(code.length)
+                        binding.etClientCode.onEditorAction(EditorInfo.IME_ACTION_DONE)
 
-                    when {
-                        filtered.isEmpty() -> {
-                            Toast.makeText(requireContext(), "Клиент не найден", Toast.LENGTH_SHORT).show()
-                            soundManager.playError()
-                        }
-                        filtered.size == 1 -> {
-                            val match = filtered[0]
-                            val code = match.clientCode ?: ""
-                            binding.etClientCode.setText(code)
-                            binding.etClientCode.requestFocus()
-                            binding.etClientCode.setSelection(code.length)
-                            // Вызываем действие Done
-                            binding.etClientCode.onEditorAction(EditorInfo.IME_ACTION_DONE)
-                            val name = "${match.firstName ?: ""} ${match.lastName ?: ""}".trim()
-                            Toast.makeText(requireContext(), "Найден: $name ($code)", Toast.LENGTH_SHORT).show()
-                            soundManager.playSuccess()
-                        }
-                        else -> {
-                            // Несколько совпадений — показываем список
-                            showMultipleResultsDialog(filtered)
-                        }
+                        val name = "${match.firstName ?: ""} ${match.lastName ?: ""}".trim()
+                        Toast.makeText(requireContext(), "Найден: $name ($code)", Toast.LENGTH_SHORT).show()
+                        soundManager.playSuccess()
                     }
-                } else {
-                    Toast.makeText(requireContext(), "Ошибка сервера", Toast.LENGTH_SHORT).show()
+                    else -> {
+                        showMultipleResultsDialog(filtered)
+                    }
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Сеть ошибка search", Toast.LENGTH_SHORT).show()
@@ -443,6 +436,32 @@ class ScanFragment : Fragment() {
             }
         }
     }
+
+    /**
+     * Загружает список клиентов один раз и кэширует.
+     * При повторных вызовах возвращает кэш.
+     */
+    private suspend fun getCachedOrLoadReceivers(): List<ReceiverItem> {
+        // Если кэш уже есть — сразу возвращаем
+        cachedReceivers?.let {
+            Log.d("SearchClient", "Используем кэш: ${it.size} клиентов")
+            return it
+        }
+
+        // Загружаем с сервера
+        //Log.d("SearchClient", "Загружаем клиентов с сервера...")
+        val response = apiService.getAllReceivers()
+
+        if (response.isSuccessful) {
+            val list = response.body() ?: emptyList()
+            cachedReceivers = list
+            //Log.d("SearchClient", "Кэшировано ${list.size} клиентов")
+            return list
+        } else {
+            throw Exception("Ошибка сервера: ${response.code()}")
+        }
+    }
+
     private fun showMultipleResultsDialog(results: List<ReceiverItem>) {
         val items = results.mapIndexed { index, item ->
             val name = "${item.firstName ?: ""} ${item.lastName ?: ""}".trim()

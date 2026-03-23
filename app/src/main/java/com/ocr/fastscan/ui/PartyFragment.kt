@@ -27,8 +27,8 @@ class PartyFragment : Fragment() {
     private var _binding: FragmentPartyBinding? = null
     private val binding get() = _binding!!
 
-    private val apiService = AppDependencies.apiService
-    private val soundManager = AppDependencies.soundManager
+    private val apiService by lazy { AppDependencies.apiService }
+    private val soundManager by lazy { AppDependencies.soundManager }
 
     private val partiesAdapter = PartiesAdapter { partial ->
         val detailFragment = PartyDetailFragment.newInstance(

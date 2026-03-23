@@ -49,9 +49,6 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Если всё заполнено — продолжаем как было у тебя
-        AppDependencies.init(this)
-
         // Твоя проверка лицензии и авто-логин
         lifecycleScope.launch {
             if (AppDependencies.tokenManager.getToken() == null) {

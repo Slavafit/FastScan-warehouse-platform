@@ -20,7 +20,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 
 class BoxFragment : Fragment() {
-
+    private val apiService by lazy { AppDependencies.apiService }
     private var _binding: FragmentBoxBinding? = null
     private val binding get() = _binding!!
     private var isShowingAllBoxes = false  // флаг для "Показать все"
@@ -122,7 +122,6 @@ class BoxFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 //Log.d("BoxDialog", "Загружаем список коробок")
-                val apiService = AppDependencies.apiService
                 val response = apiService.getBoxes(status = if (isOpenOnly) 0 else null)
                 //Log.d("BoxFragment", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body() != null) {

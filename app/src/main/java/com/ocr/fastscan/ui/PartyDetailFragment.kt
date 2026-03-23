@@ -26,13 +26,10 @@ class PartyDetailFragment : Fragment() {
     private var _binding: FragmentPartyDetailBinding? = null
     private val binding get() = _binding!!
 
-    private val apiService = AppDependencies.apiService
-    private val soundManager = AppDependencies.soundManager
-
+    private val apiService by lazy { AppDependencies.apiService }
+    private val soundManager by lazy { AppDependencies.soundManager }
     private var partialGuid: String = ""
-
     private var partialCodeid: String = ""
-
     private var partialCode: String = ""
     private var partialName: String = ""   // заполняй в onViewCreated или newInstance
     private var isFinishing = false

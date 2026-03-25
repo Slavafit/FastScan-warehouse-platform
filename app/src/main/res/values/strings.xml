@@ -101,6 +101,11 @@
     <string name="orders">Заказов: 0</string>
     <string name="edit_dimensions_and_weight">Редактирование размеров и веса</string>
 
+    <!-- Диалог превышения веса -->
+    <string name="weight_limit_title">⚠️ Проверьте вес</string>
+    <string name="weight_limit_message">Введенный вес %.2f кг превышает 8 кг.\nВы уверены, что всё верно?</string>
+    <string name="weight_limit_positive">Да, отправить</string>
+    <string name="weight_limit_negative">Нет, изменить</string>
 
 
 

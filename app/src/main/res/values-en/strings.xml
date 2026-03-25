@@ -80,9 +80,6 @@
     <string name="dimensions">Dimensions (L x W x H), cm</string>
 
 
-
-
-
     <string name="add_new_box">Add new box</string>
     <string name="new_box_number">A number will be created: ...</string>
     <string name="length">Length (cm)</string>
@@ -96,8 +93,6 @@
     <string name="tracking_code">Tracking code</string>
 
 
-
-
     <string name="first_name">First name</string>
     <string name="last_name">Last name</string>
     <string name="input_track">Enter the tracking number</string>
@@ -105,6 +100,12 @@
     <string name="select_box">Select a box to add</string>
     <string name="orders">Orders: 0</string>
     <string name="edit_dimensions_and_weight">Editing dimensions and weight</string>
+
+    <!-- Диалог превышения веса -->
+    <string name="weight_limit_title">⚠️ Check weight</string>
+    <string name="weight_limit_message">The entered weight %1$.2f kg exceeds 8 kg.\nAre you sure this is correct?</string>
+    <string name="weight_limit_positive">Yes, send</string>
+    <string name="weight_limit_negative">No, change</string>
 
 
 

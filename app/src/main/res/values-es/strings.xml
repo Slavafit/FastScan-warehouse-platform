@@ -78,8 +78,6 @@
     <string name="search_client">Buscar por nombre</string>
     <string name="dimensions">Dimensiones (L x W x H), cm</string>
 
-
-
     <string name="add_new_box">Agregar nueva caja</string>
     <string name="new_box_number">Se creará un número: ...</string>
     <string name="length">Longitud (cm)</string>
@@ -93,8 +91,6 @@
     <string name="tracking_code">Código de seguimiento</string>
 
 
-
-
     <string name="first_name">Nombre</string>
     <string name="last_name">Apellido</string>
     <string name="input_track">Introduzca el número de seguimiento</string>
@@ -103,7 +99,10 @@
     <string name="orders">Pedidos: 0</string>
     <string name="edit_dimensions_and_weight">Editar dimensiones y peso</string>
 
-
+    <string name="weight_limit_title">⚠️ Comprobar peso</string>
+    <string name="weight_limit_message">El peso introducido %1$.2f kg supera los 8 kg.\n¿Está seguro de que esto es correcto?</string>
+    <string name="weight_limit_positive">Sí, enviar</string>
+    <string name="weight_limit_negative">No, cambiar</string>
 
 
 

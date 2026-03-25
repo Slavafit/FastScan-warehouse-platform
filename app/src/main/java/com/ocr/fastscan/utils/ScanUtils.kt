@@ -1,6 +1,5 @@
 package com.ocr.fastscan.utils
 
-
 import android.content.Context
 import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher

@@ -28,6 +28,7 @@ import com.ocr.fastscan.utils.*
 import kotlinx.coroutines.launch
 
 import com.ocr.fastscan.databinding.DialogSearchClientBinding
+import com.ocr.fastscan.databinding.DialogWeightLimitBinding
 
 class ScanFragment : Fragment() {
 
@@ -311,65 +312,12 @@ class ScanFragment : Fragment() {
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
                 }
             } catch (e: Exception) {
-                Log.e("FetchKG", "Исключение: ${e.message}", e)
+                //Log.e("FetchKG", "Исключение: ${e.message}", e)
                 binding.tvClientName.text = getString(R.string.net_error)
                 binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
             }
         }
     }
-
-//    // ==================== ФИНАЛЬНАЯ ОТПРАВКА ====================
-//    private fun submitFinalOrder() {
-//        val track = binding.etTracking.text.toString().trim()
-//        val kg = binding.etClientCode.text.toString().trim().uppercase()
-//        val weightStr = binding.etWeight.text.toString().trim()
-//
-//        // Базовая проверка полей
-//        if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
-//            Toast.makeText(requireContext(), "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
-//            return
-//        }
-//        // Заменяем запятую на точку, чтобы Double смог это прочитать
-//        val normalizedWeight = weightStr.replace(',', '.')
-//        val grossWeight = normalizedWeight.toDoubleOrNull() ?: 0.0
-//
-//        val dims = currentOrderDimensions
-//
-//        val req = SaveOrderRequest(
-//            clientCode = kg,
-//            clientName = binding.tvClientName.text.toString(),
-//            trackingNumber = track,
-//            grossWeight = grossWeight,
-//            recieverGuid = currentReceiverGuid!!,
-//            userGuid = currentReceiverGuid!!,
-//            withBox = if (binding.cbWithBox.isChecked) 1 else 0,
-//            length = currentLength,
-//            width  = currentWidth,
-//            height = currentHeight
-//        )
-//
-//        //Log.d("SaveOrderJSON", "Отправляем: ${req}")
-//
-//        binding.btnSubmit.isEnabled = false
-//        binding.btnSubmit.text = "Отправка..."
-//
-//        senderManager.submitOrder(req,
-//            onSuccess = {
-//                soundManager.playSuccess()
-//                Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
-//                ScanUtils.clearFieldsAll(binding)
-//                currentReceiverGuid = null
-//            },
-//            onError = { error ->
-//                soundManager.playError()
-//                Toast.makeText(requireContext(), error, Toast.LENGTH_LONG).show()
-//            }
-//        )
-//
-//        // Восстановление кнопки (можно вынести в finally внутри submitOrder)
-//        binding.btnSubmit.isEnabled = true
-//        binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
-//    }
 
     // ==================== ФИНАЛЬНАЯ ОТПРАВКА ====================
     private fun submitFinalOrder() {
@@ -409,14 +357,15 @@ class ScanFragment : Fragment() {
         // 4. Проверка лимита веса (8 кг)
         if (grossWeight > 8.0) {
             soundManager.playError() // Звук предупреждения
+
             AlertDialog.Builder(requireContext())
-                .setTitle("⚠️ Проверьте вес")
-                .setMessage("Введенный вес $grossWeight кг превышает 8 кг.\nВы уверены, что всё верно?")
+                .setTitle(R.string.weight_limit_title)
+                .setMessage(getString(R.string.weight_limit_message, grossWeight))   // %1$.2f заменится на вес
                 .setCancelable(false)
-                .setPositiveButton("Да, отправить") { _, _ ->
+                .setPositiveButton(R.string.weight_limit_positive) { _, _ ->
                     executeSubmit(req)
                 }
-                .setNegativeButton("Нет, изменить") { _, _ ->
+                .setNegativeButton(R.string.weight_limit_negative) { _, _ ->
                     binding.etWeight.text?.clear()
                     binding.etWeight.requestFocus()
                 }

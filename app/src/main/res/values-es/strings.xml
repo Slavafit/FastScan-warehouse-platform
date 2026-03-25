@@ -56,14 +56,26 @@
     <string name="scan_or_input">Escanear o ingresar...</string>
     <string name="generate_track">GENERAR ONZA</string>
     <string name="find_order">Buscar información del pedido</string>
+    <string name="sending">Enviando...</string>
 
-
+    //tost
     <string name="name_not_specified">Nombre no especificado</string>
     <string name="track_not_found">Track no encontrada. Por favor, escanee KG</string>
+    <string name="found">Encontrado: %1$s (%2$s)</string>
     <string name="client_not_found">Cliente no encontrado</string>
     <string name="server_error">Error de servedor</string>
     <string name="net_error">Error de red</string>
     <string name="scan_kg">Escanear KG</string>
+    <string name="order_saved">PEDIDO GUARDADO!</string>
+    <string name="token_cleared">Tokens limpiados</string>
+    <string name="input_4_numbers">Ingrese al menos 4 dígitos después de KG</string>
+    <string name="input_all_fields">Rellene todos los campos y código del cliente</string>
+    <string name="input_weight"> Ingrese el peso correcto</string>
+    <string name="input_length">Ingrese las dimensiones correctas</string>
+    <string name="input_name_surname">Ingrese nombre y apellido</string>
+    <string name="input_3_chars">Ingrese al menos 3 caracteres</string>
+    <string name="no_code">Sin código</string>
+    <string name="selected">Seleccionado: %1$s</string>
 
 
 
@@ -90,9 +102,17 @@
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Código de seguimiento</string>
 
-
+    <!-- Client search dialog-->
     <string name="first_name">Nombre</string>
     <string name="last_name">Apellido</string>
+    <string name="search_client_title">Buscar por nombre y apellido</string>
+    <string name="search">Buscar</string>
+    <string name="loading_clients">Cargando clientes...</string>
+    <string name="no_client_found">Cliente no encontrado</string>
+    <string name="clients_found">Clientes encontrados</string>
+
+
+    <!-- Track search dialog-->
     <string name="input_track">Introduzca el número de seguimiento</string>
     <string name="for_example">Por ejemplo: 28038252</string>
     <string name="select_box">Seleccione una caja para agregar</string>

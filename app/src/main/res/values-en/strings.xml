@@ -27,8 +27,7 @@
     <string name="flashlight_off">Flashlight OFF</string>
     <string name="send_order">SEND ORDER</string>
     <string name="find_order">Find order info</string>
-
-
+    <string name="sending">Sending...</string>
 
     <string name="scan">Scan</string>
     <string name="boxes">Boxes</string>
@@ -39,8 +38,6 @@
     <string name="no_open_parties">There are no open parties</string>
     <string name="box_number">Box number</string>
     <string name="finish_party_property">Finish party</string>
-
-
 
 
     <string name="scan_track">Scan order track</string>
@@ -54,20 +51,29 @@
     <string name="scan_or_input">Scan or input...</string>
     <string name="generate_track">GENERATE ONZA</string>
 
-
-
-
+//tost
     <string name="name_not_specified">Name not specified</string>
     <string name="track_not_found">Track not found. Please scan KG</string>
+    <string name="found">Found: %1$s (%2$s)</string>
     <string name="client_not_found">Client not found</string>
     <string name="server_error"> Server error</string>
     <string name="net_error">Net error</string>
     <string name="scan_kg">Scan KG</string>
+    <string name="order_saved">ORDER SAVED!</string>
+    <string name="token_cleared">Tokens cleared</string>
+    <string name="input_4_numbers">Enter at least 4 digits after KG</string>
+    <string name="input_all_fields">Fill all fields and client code</string>
+    <string name="input_weight"> Enter correct weight</string>
+    <string name="input_length">Enter correct dimensions</string>
+    <string name="input_name_surname">Enter name and surname</string>
+    <string name="input_3_chars">Enter at least 3 characters</string>
+    <string name="no_code">No code</string>
+    <string name="selected">Selected: %1$s</string>
+
 
 
     <string name="scan_wait">Waiting scan track...</string>
     <string name="scan_wait_client">Waiting scan client kode...</string>
-
     <string name="weight_kg">Weight (kg)</string>
     <string name="weight">Weight:</string>
     <string name="weight_format">Weight: %.2f kg</string>
@@ -92,14 +98,23 @@
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Tracking code</string>
 
-
+    <!-- Client search dialog-->
     <string name="first_name">First name</string>
     <string name="last_name">Last name</string>
+    <string name="search_client_title">Search by name and surname</string>
+    <string name="search">Search</string>
+    <string name="loading_clients">Loading clients...</string>
+    <string name="no_client_found">Client not found</string>
+    <string name="clients_found">Multiple clients found</string>
+
+
+    <!-- Track search dialog-->
     <string name="input_track">Enter the tracking number</string>
     <string name="for_example">For example: 28038252</string>
     <string name="select_box">Select a box to add</string>
     <string name="orders">Orders: 0</string>
     <string name="edit_dimensions_and_weight">Editing dimensions and weight</string>
+
 
     <!-- Диалог превышения веса -->
     <string name="weight_limit_title">⚠️ Check weight</string>

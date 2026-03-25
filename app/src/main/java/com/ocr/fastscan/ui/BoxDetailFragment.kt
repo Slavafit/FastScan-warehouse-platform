@@ -120,7 +120,7 @@ class BoxDetailFragment : Fragment() {
             }
 
             // Обновляем UI
-            binding.tvGrossWeight.text = "Вес: %.2f кг".format(newWeight)
+            binding.tvGrossWeight.text = "Вес: %,2f кг".format(newWeight)
 
         }
 

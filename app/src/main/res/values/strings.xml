@@ -54,15 +54,31 @@
     <string name="apply">ПРИМЕНИТЬ</string>
     <string name="send_order">ОТПРАВИТЬ ЗАКАЗ</string>
     <string name="find_order">Найти информацию о заказе</string>
+    <string name="sending">Отправка...</string>
+
 
 
 //tost
     <string name="name_not_specified">Имя не указано</string>
     <string name="track_not_found">Трек не найден. Сканируйте KG</string>
     <string name="client_not_found">Клиент не найден</string>
+    <string name="found">Найден: %1$s (%2$s)</string>
     <string name="server_error"> Ошибка сервера</string>
     <string name="net_error">Ошибка сети</string>
     <string name="scan_kg">Сканирование KG</string>
+    <string name="order_saved">ЗАКАЗ УСПЕШНО СОХРАНЕН!</string>
+    <string name="token_cleared">Токены очищены</string>
+    <string name="input_4_numbers">Введите минимум 4 цифры после KG</string>
+    <string name="input_all_fields">Заполните все поля и код клиента</string>
+    <string name="input_weight"> Введите корректный вес</string>
+    <string name="input_length">Введите корректные размеры</string>
+    <string name="input_name_surname">Введите имя и фамилию</string>
+    <string name="input_3_chars">Введите минимум 3 символа</string>
+    <string name="no_code">Нет кода</string>
+    <string name="selected">Выбран: %1$s</string>
+
+
+
 
     <string name="scan_wait">Ожидание сканирования...</string>
     <string name="scan_wait_client">Сканирование кода клиента...</string>
@@ -91,10 +107,17 @@
     <string name="total_weight">Итого: 0.00 кг</string>
     <string name="tracking_code">Трек-код</string>
 
-
-
+    <!-- Диалог поиска клиента -->
     <string name="first_name">Имя</string>
     <string name="last_name">Фамилия</string>
+    <string name="search_client_title">Поиск по имени и фамилии</string>
+    <string name="search">Поиск</string>
+    <string name="loading_clients">Загрузка клиентов...</string>
+    <string name="no_client_found">Клиент не найден</string>
+    <string name="clients_found">Найдено несколько клиентов</string>
+
+
+    <!-- Диалог поиска трека -->
     <string name="input_track">Введите трек-номер</string>
     <string name="for_example">Например: 28038252</string>
     <string name="select_box">Выберите коробку для добавления</string>
@@ -106,6 +129,7 @@
     <string name="weight_limit_message">Введенный вес %.2f кг превышает 8 кг.\nВы уверены, что всё верно?</string>
     <string name="weight_limit_positive">Да, отправить</string>
     <string name="weight_limit_negative">Нет, изменить</string>
+
 
 
 

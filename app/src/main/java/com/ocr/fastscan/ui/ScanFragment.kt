@@ -121,7 +121,7 @@ class ScanFragment : Fragment() {
                 // Получаем объёмный вес и размеры
 
                 currentOrderDimensions = result
-                binding.etWeight.setText("%.2f".format(result.grossWeight))
+                binding.etWeight.setText("%,2f".format(result.grossWeight))
                 //binding.etWeight.setText(String.format(java.util.Locale.US, "%.2f", result.grossWeight))
 
                 // Сохраняем размеры (например в переменные фрагмента)
@@ -156,7 +156,7 @@ class ScanFragment : Fragment() {
 
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
-            Toast.makeText(requireContext(), "Токены очищены", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.token_cleared), Toast.LENGTH_SHORT).show()
             ScanUtils.clearFieldsAll(binding)
         }
         binding.btnSearchClient.setOnClickListener {
@@ -203,7 +203,7 @@ class ScanFragment : Fragment() {
                     imm.hideSoftInputFromWindow(binding.etClientCode.windowToken, 0)
                     true
                 } else {
-                    Toast.makeText(requireContext(), "Введите минимум 4 цифры после KG", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.input_4_numbers), Toast.LENGTH_SHORT).show()
                     false
                 }
             } else false
@@ -268,8 +268,6 @@ class ScanFragment : Fragment() {
                     binding.tvClientName.text = getString(R.string.track_not_found)
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
                     ScanUtils.clearFields(binding)
-                    //binding.etClientCode.text.clear()
-                    //binding.etWeight.text.clear()
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")
@@ -327,7 +325,7 @@ class ScanFragment : Fragment() {
 
         // 1. Базовая проверка полей
         if (track.isEmpty() || !kg.startsWith("KG") || weightStr.isEmpty() || currentReceiverGuid == null) {
-            Toast.makeText(requireContext(), "Заполните все поля и код клиента", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.input_all_fields), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -336,7 +334,7 @@ class ScanFragment : Fragment() {
         val grossWeight = normalizedWeight.toDoubleOrNull() ?: 0.0
 
         if (grossWeight <= 0.0) {
-            Toast.makeText(requireContext(), "Введите корректный вес", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.input_weight), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -379,18 +377,18 @@ class ScanFragment : Fragment() {
     // Вспомогательная функция для выполнения самой сетевой отправки
     private fun executeSubmit(req: SaveOrderRequest) {
         binding.btnSubmit.isEnabled = false
-        binding.btnSubmit.text = "Отправка..."
+        binding.btnSubmit.text = getString(R.string.sending)
 
         senderManager.submitOrder(req,
             onSuccess = {
                 soundManager.playSuccess()
-                Toast.makeText(requireContext(), "ЗАКАЗ УСПЕШНО СОХРАНЕН!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.order_saved), Toast.LENGTH_SHORT).show()
                 ScanUtils.clearFieldsAll(binding)
                 currentReceiverGuid = null
 
                 // Восстанавливаем кнопку
                 binding.btnSubmit.isEnabled = true
-                binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
+                binding.btnSubmit.text = getString(R.string.send_order)
             },
             onError = { error ->
                 soundManager.playError()
@@ -398,7 +396,7 @@ class ScanFragment : Fragment() {
 
                 // Восстанавливаем кнопку
                 binding.btnSubmit.isEnabled = true
-                binding.btnSubmit.text = "ОТПРАВИТЬ ЗАКАЗ"
+                binding.btnSubmit.text = getString(R.string.send_order)
             }
         )
     }
@@ -406,30 +404,31 @@ class ScanFragment : Fragment() {
         val dialogBinding = DialogSearchClientBinding.inflate(layoutInflater)  // ← binding-класс
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Поиск по имени и фамилии")
+            .setTitle(R.string.search_client_title)
+            .setCancelable(false)
             .setView(dialogBinding.root)
-            .setPositiveButton("Поиск") { _, _ ->
+            .setPositiveButton(R.string.search) { _, _ ->
                 val first = dialogBinding.etFirstName.text.toString().trim()
                 val last = dialogBinding.etLastName.text.toString().trim()
                 if (first.isNotEmpty() || last.isNotEmpty()) {
                     searchClientByName(first, last)
                 } else {
-                    Toast.makeText(requireContext(), "Введите имя или фамилию", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.input_name_surname), Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
     private fun searchClientByName(first: String, last: String) {
         val searchText = (first + last).trim()
         if (searchText.length < 3) {
-            Toast.makeText(requireContext(), "Введите минимум 3 символа", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.input_3_chars), Toast.LENGTH_SHORT).show()
             return
         }
 
         val progress = ProgressDialog(requireContext()).apply {
-            setMessage("Загрузка клиентов...")
+            setMessage(getString(R.string.loading_clients))
             setCancelable(true)
         }
         progress.show()
@@ -448,7 +447,7 @@ class ScanFragment : Fragment() {
 
                 when {
                     filtered.isEmpty() -> {
-                        Toast.makeText(requireContext(), "Клиент не найден", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.no_client_found), Toast.LENGTH_SHORT).show()
                         soundManager.playError()
                     }
                     filtered.size == 1 -> {
@@ -460,7 +459,11 @@ class ScanFragment : Fragment() {
                         binding.etClientCode.onEditorAction(EditorInfo.IME_ACTION_DONE)
 
                         val name = "${match.firstName ?: ""} ${match.lastName ?: ""}".trim()
-                        Toast.makeText(requireContext(), "Найден: $name ($code)", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            getString(R.string.found, name, code), //%1$s (%2$s)
+                            Toast.LENGTH_SHORT)
+                            .show()
                         soundManager.playSuccess()
                     }
                     else -> {
@@ -468,8 +471,12 @@ class ScanFragment : Fragment() {
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка search", Toast.LENGTH_SHORT).show()
-                Log.e("SearchClient", e.message, e)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.net_error),
+                    Toast.LENGTH_SHORT)
+                    .show()
+                //Log.e("SearchClient", e.message, e)
             } finally {
                 progress.dismiss()
                 binding.btnSearchClient.isEnabled = true
@@ -484,11 +491,10 @@ class ScanFragment : Fragment() {
     private suspend fun getCachedOrLoadReceivers(): List<ReceiverItem> {
         // Если кэш уже есть — сразу возвращаем
         cachedReceivers?.let {
-            Log.d("SearchClient", "Используем кэш: ${it.size} клиентов")
+            //Log.d("SearchClient", "Используем кэш: ${it.size} клиентов")
             return it
         }
 
-        // Загружаем с сервера
         //Log.d("SearchClient", "Загружаем клиентов с сервера...")
         val response = apiService.getAllReceivers()
 
@@ -505,12 +511,12 @@ class ScanFragment : Fragment() {
     private fun showMultipleResultsDialog(results: List<ReceiverItem>) {
         val items = results.mapIndexed { index, item ->
             val name = "${item.firstName ?: ""} ${item.lastName ?: ""}".trim()
-            val code = item.clientCode ?: "Нет кода"
+            val code = item.clientCode ?: getString(R.string.no_code)
             "$name ($code)"
         }.toTypedArray()
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Найдено несколько клиентов")
+            .setTitle(R.string.clients_found)
             .setItems(items) { _, which ->
                 val selected = results[which]
                 val client = selected.clientCode ?: ""
@@ -521,10 +527,13 @@ class ScanFragment : Fragment() {
                 // Вызываем действие Done
                 binding.etClientCode.onEditorAction(EditorInfo.IME_ACTION_DONE)
                 val name = "${selected.firstName ?: ""} ${selected.lastName ?: ""}".trim()
-                Toast.makeText(requireContext(), "Выбран: $name", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    getString(R.string.selected, name),
+                        Toast.LENGTH_SHORT)
+                        .show()
                 soundManager.playSuccess()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 

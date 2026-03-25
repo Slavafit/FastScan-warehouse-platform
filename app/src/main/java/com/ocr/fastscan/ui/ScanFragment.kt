@@ -291,6 +291,15 @@ class ScanFragment : Fragment() {
 
                         binding.tvClientName.text = fullName
                         binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+
+                        // === Индикаторы коробок ===
+                        binding.cbShoesBox.isChecked = first.shoesBox == 1
+                        binding.cbBagBox.isChecked = first.bagBox == 1
+
+                        // Если значение null — делаем чекбокс неактивным (серый)
+                        binding.cbShoesBox.isEnabled = first.shoesBox != null
+                        binding.cbBagBox.isEnabled = first.bagBox != null
+
                         soundManager.playSuccess()
                     } else {
                         binding.tvClientName.text = getString(R.string.client_not_found)

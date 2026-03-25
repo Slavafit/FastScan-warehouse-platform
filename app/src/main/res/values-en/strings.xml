@@ -71,7 +71,10 @@
     <string name="weight_kg">Weight (kg)</string>
     <string name="weight">Weight:</string>
     <string name="weight_format">Weight: %.2f kg</string>
-    <string name="save_box">Save box</string>
+    <string name="box_info">Save box</string>
+    <string name="save_box">Package</string>
+    <string name="shoe_box">Shoes</string>
+    <string name="bag_box">Bag</string>
     <string name="client_code">Client code (KG)</string>
     <string name="search_client">Search by name</string>
     <string name="dimensions">Dimensions (L x W x H), cm</string>

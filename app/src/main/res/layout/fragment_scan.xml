@@ -9,7 +9,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -45,14 +45,44 @@
 
         <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/generate_track" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
-        <Space android:layout_width="match_parent" android:layout_height="16dp" />
+        <Space android:layout_width="match_parent" android:layout_height="12dp" />
 
         <TextView android:id="@+id/tvClientName" android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="@string/scan_wait" android:textColor="#666666" android:textSize="18sp" android:textStyle="bold" android:gravity="center" />
 
-        <CheckBox android:id="@+id/cbWithBox" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/save_box" android:layout_gravity="center_horizontal"/>
+    <!-- Блок с чекбоксами на одной линии -->
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/box_info" android:textStyle="bold" android:gravity="center" android:layout_marginTop="4dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <Space android:layout_width="match_parent" android:layout_height="16dp" />
+        <CheckBox
+            android:id="@+id/cbWithBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save_box"
+            android:enabled="false" />
+
+        <CheckBox
+            android:id="@+id/cbShoesBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/shoe_box"
+            android:layout_marginStart="24dp"
+            android:enabled="false" />
+
+        <CheckBox
+            android:id="@+id/cbBagBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bag_box"
+            android:layout_marginStart="24dp"
+            android:enabled="false" />
+
+    </LinearLayout>
+        <Space android:layout_width="match_parent" android:layout_height="10dp" />
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/client_code" android:textStyle="bold" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">

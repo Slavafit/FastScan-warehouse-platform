@@ -41,6 +41,8 @@ object ScanUtils {
         binding.tvClientName.text = "Ожидание сканирования..."  //getString(R.string.scan_wait)
         binding.tvClientName.setTextColor(ContextCompat.getColor(binding.root.context, android.R.color.black))
         binding.cbWithBox.isChecked = false
+        binding.cbShoesBox.isChecked = false
+        binding.cbBagBox.isChecked = false
         binding.btnPrint.visibility = View.GONE
     }
  // Если есть другие общие функции — добавляй сюда

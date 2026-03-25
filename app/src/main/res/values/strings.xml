@@ -69,7 +69,10 @@
     <string name="weight_kg">Вес (кг)</string>
     <string name="weight">Bec:</string>
     <string name="weight_format">Вес: %.2f кг</string>
-    <string name="save_box">Сохранить коробку</string>
+    <string name="box_info">Сохранить коробку</string>
+    <string name="save_box">Упаковка</string>
+    <string name="shoe_box">Обувь</string>
+    <string name="bag_box">Сумка</string>
     <string name="client_code">Код клиента (KG)</string>
     <string name="search_client">Поиск по имени</string>
     <string name="dimensions">Размеры (Д х Ш х В), см</string>

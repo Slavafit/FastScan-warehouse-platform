@@ -70,7 +70,10 @@
     <string name="weight_kg">Peso (kg)</string>
     <string name="weight">Peso:</string>
     <string name="weight_format">Peso: %.2f kg</string>
-    <string name="save_box">Guardar caja</string>
+    <string name="box_info">Guardar caja</string>
+    <string name="save_box">Paquete</string>
+    <string name="shoe_box">Zapatos</string>
+    <string name="bag_box">Bolso</string>
     <string name="client_code">Código del cliente (KG)</string>
     <string name="search_client">Buscar por nombre</string>
     <string name="dimensions">Dimensiones (L x W x H), cm</string>

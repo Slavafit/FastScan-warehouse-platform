@@ -35,7 +35,9 @@ data class OrderDetails(
 )
 data class ReceiverResponse(
     @SerializedName("full_name") val fullName: String?,
-    @SerializedName("guid")  val recieverGuid: String?
+    @SerializedName("guid")  val recieverGuid: String?,
+    @SerializedName("package_shoes")  val shoesBox: Int?,
+    @SerializedName("bag_package")  val bagBox: Int?
 )
 
 // Ответ при сохранении
@@ -73,7 +75,7 @@ data class OrderDimensions(
     val height: Int,
     val grossWeight: Double
 )
-
+//поиск клиента по имени
 data class ReceiverItem(
     @SerializedName("first_name") val firstName: String?,
     @SerializedName("last_name") val lastName: String?,

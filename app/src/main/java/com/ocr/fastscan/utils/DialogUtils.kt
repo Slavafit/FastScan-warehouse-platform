@@ -8,6 +8,7 @@ import com.ocr.fastscan.databinding.DialogVolumeBinding
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.BoxRequest
 import com.ocr.fastscan.data.model.OrderDimensions
 import com.ocr.fastscan.databinding.DialogAddBoxBinding
@@ -28,7 +29,7 @@ object DialogUtils {
 
         val builder = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
-            .setTitle("Расчёт объёмного веса")
+            .setTitle((R.string.calc_v_weight))
 
         val dialog = builder.create()
 
@@ -55,10 +56,13 @@ object DialogUtils {
 
             // Проверка на заполненность
             if (length <= 0 || width <= 0 || height <= 0) {
-                Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    (R.string.dimensions_more_0),
+                    Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener // Прерываем выполнение, диалог не закрываем
             }
-
             // Финальный расчёт (переводим одно из чисел в Double до деления, чтобы сохранить дроби)
             val divider = context.getVolWeightDivider()
             val vWeight = (length.toDouble() * width * height) / divider
@@ -69,13 +73,13 @@ object DialogUtils {
                 width = width,
                 height = height
             )
-            Log.d("SaveOrderJSON", "Отправляем: $result")
+            //Log.d("SaveOrderJSON", "Отправляем: $result")
 
             onResult(result)
             dialog.dismiss()
         }
 
-        builder.setNegativeButton("Отмена") { _, _ ->
+        builder.setNegativeButton(R.string.cancel) { _, _ ->
             dialog.dismiss()
         }
         // Показываем диалог
@@ -91,17 +95,21 @@ object DialogUtils {
         onError: (String) -> Unit = {}  // колбэк ошибки — опционально
     ) {
         val dialogBinding = DialogAddBoxBinding.inflate(LayoutInflater.from(context))
-        Log.d("DialogUtils", "Dialog binding создан")
+        //Log.d("DialogUtils", "Dialog binding создан")
 
         val generatedTrackingCode = generateTrackingCode()
-        dialogBinding.tvTrackingCode.text = "Будет создан номер: $generatedTrackingCode"
-        Log.d("DialogUtils", "Сгенерирован tracking_code: $generatedTrackingCode")
+        dialogBinding.tvTrackingCode.text = context.getString(
+            R.string.new_box,
+            generatedTrackingCode
+        )
+
+        //Log.d("DialogUtils", "Сгенерирован tracking_code: $generatedTrackingCode")
 
         val dialog = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
-            .setTitle("Новая коробка")
-            .setPositiveButton("Создать", null)
-            .setNegativeButton("Отмена", null)
+            .setTitle(R.string.new_box)
+            .setPositiveButton(R.string.create, null)
+            .setNegativeButton(R.string.cancel, null)
             .create()
 
         dialogBinding.etLength.setText("70")
@@ -116,7 +124,7 @@ object DialogUtils {
                 val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
 
                 if (length <= 0 || width <= 0 || height <= 0) {
-                    Toast.makeText(context, "Размеры должны быть больше 0", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, (R.string.dimensions_more_0), Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
 
@@ -135,13 +143,24 @@ object DialogUtils {
                         val response = apiService.createOrUpdateBox(request)
 
                         if (response.isSuccessful && response.body()?.success == true) {
-                            Toast.makeText(context, "Коробка создана: $generatedTrackingCode", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,
+                                context.getString(
+                                R.string.box_created,
+                                generatedTrackingCode),
+                                Toast.LENGTH_SHORT)
+                                .show()
                             soundManager.playSuccess()
                             onSuccess(generatedTrackingCode)  // ← передаём код коробки в колбэк
                             dialog.dismiss()
                         } else {
                             val errorMsg = response.body()?.message ?: "Ошибка создания"
-                            Toast.makeText(context, "Ошибка создания: $errorMsg", Toast.LENGTH_LONG).show()
+
+                            Toast.makeText(context,
+                                context.getString(
+                                R.string.error_create,
+                                errorMsg),
+                                Toast.LENGTH_LONG)
+                                .show()
                             soundManager.playError()
                             onError(errorMsg)
                         }

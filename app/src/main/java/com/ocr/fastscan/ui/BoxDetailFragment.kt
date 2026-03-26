@@ -526,12 +526,12 @@ private fun printLabel() {
                     val response = apiService.getOpenPartials()
                     if (response.isSuccessful) {
                         val parties = response.body() ?: emptyList()
-                        Log.d("BoxDetail", "Получено ${parties.size} партий: $parties")
+                        //Log.d("BoxDetail", "Получено ${parties.size} партий: $parties")
                         if (parties.isNotEmpty()) {
                             partialName = parties.first().partial_name.trim()
-                            Log.d("BoxDetail", "Взято первое имя партии: '$partialName'")
+                            //Log.d("BoxDetail", "Взято первое имя партии: '$partialName'")
                         } else {
-                        Log.e("BoxDetail", "Ошибка API: ${response.code()} ")
+                        //Log.e("BoxDetail", "Ошибка API: ${response.code()} ")
                         Toast.makeText(requireContext(), "Ошибка загрузки заказов", Toast.LENGTH_SHORT).show()
                         }
                     }

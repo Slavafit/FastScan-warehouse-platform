@@ -157,7 +157,7 @@ class ScanFragment : Fragment() {
         binding.btnLogout.setOnClickListener {
             tokenManager.clear()
             Toast.makeText(requireContext(), getString(R.string.token_cleared), Toast.LENGTH_SHORT).show()
-            ScanUtils.clearFieldsAll(binding)
+            ScanUtils.clearFieldsAll(binding,requireContext())
         }
         binding.btnSearchClient.setOnClickListener {
             showSearchClientDialog()
@@ -267,7 +267,7 @@ class ScanFragment : Fragment() {
                 } else {
                     binding.tvClientName.text = getString(R.string.track_not_found)
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
-                    ScanUtils.clearFields(binding)
+                    ScanUtils.clearFields(binding, requireContext())
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")
@@ -383,7 +383,7 @@ class ScanFragment : Fragment() {
             onSuccess = {
                 soundManager.playSuccess()
                 Toast.makeText(requireContext(), getString(R.string.order_saved), Toast.LENGTH_SHORT).show()
-                ScanUtils.clearFieldsAll(binding)
+                ScanUtils.clearFieldsAll(binding, requireContext())
                 currentReceiverGuid = null
 
                 // Восстанавливаем кнопку

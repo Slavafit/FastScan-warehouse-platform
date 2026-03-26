@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.BoxItem
 import com.ocr.fastscan.databinding.ItemBoxBinding
 
@@ -15,13 +16,17 @@ class BoxesAdapter(
     class ViewHolder(private val binding: ItemBoxBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(box: BoxItem, onClick: (BoxItem) -> Unit) {
             binding.tvTrackingCode.text = box.trackingCode
-            binding.tvGrossWeight.text = "Вес: ${box.grossWeight} кг"
-            binding.tvVWeight.text = "Объёмный вес: ${box.vWeight} кг"
-            binding.tvSizes.text = "Размеры: ${box.length} x ${box.width} x ${box.height}"
-            binding.tvOrderCount.text = "Заказов: ${box.orderCount}"
+            binding.tvGrossWeight.text = getString(R.string.weight, box.grossWeight?: 0.0)
+            binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0)
+            binding.tvSizes.text = getString(R.string.sizes, box.length?: 0.0, box.width?: 0.0, box.height?: 0.0)
+            binding.tvOrderCount.text = getString(R.string.orders_count, box.orderCount?: 0.0)
             binding.tvDate.text = box.dateCreated
 
             binding.root.setOnClickListener { onClick(box) }
+        }
+        // Важно: добавляем функцию getString в ViewHolder
+        private fun getString(resId: Int, vararg formatArgs: Any): String {
+            return itemView.context.getString(resId, *formatArgs)
         }
     }
 

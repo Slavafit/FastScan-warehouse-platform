@@ -346,14 +346,14 @@ class PrintHelper(private val context: Context) {
 
         // Заголовок таблицы
         paint.isFakeBoldText = true
-        canvas.drawText("Трек                Размеры         Вес      Объёмный    Заказов", 40f, y, paint)
+        canvas.drawText("Трек                Размеры         Вес      Объёмный", 40f, y, paint)
         y += 20f
         paint.isFakeBoldText = false
 
         // Строки таблицы
         for (box in boxes) {
             val line = String.format(
-                "%-20s %-15s %-8.1f кг  %-10.2f кг  %d",
+                "%-20s %-15s %-8.1f кг  %-10.2f кг",
                 box.tracking_code.take(20),
                 "${box.width}×${box.height}×${box.length}",
                 box.gross_weight,

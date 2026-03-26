@@ -21,23 +21,23 @@ object ScanUtils {
         launcher.launch(intent)
     }
 
-    fun clearFields(binding: FragmentScanBinding) {
+    fun clearFields(binding: FragmentScanBinding, context: Context) {
         //binding.etTracking.text.clear()
         binding.etClientCode.text.clear()
         binding.etWeight.text.clear()
         binding.etLength.text.clear()
         binding.etWidth.text.clear()
         binding.etHeight.text.clear()
-        binding.tvClientName.text = "Сканирование кода клиента..." //getString(R.string.scan_wait_client)
+        binding.tvClientName.text = context.getString(R.string.scan_wait_client)
     }
-    fun clearFieldsAll(binding: FragmentScanBinding) {
+    fun clearFieldsAll(binding: FragmentScanBinding, context: Context,) {
         binding.etTracking.text.clear()
         binding.etClientCode.text.clear()
         binding.etWeight.text.clear()
         binding.etLength.text.clear()
         binding.etWidth.text.clear()
         binding.etHeight.text.clear()
-        binding.tvClientName.text = "Ожидание сканирования..."  //getString(R.string.scan_wait)
+        binding.tvClientName.text = context.getString(R.string.scan_wait)
         binding.tvClientName.setTextColor(ContextCompat.getColor(binding.root.context, android.R.color.black))
         binding.cbWithBox.isChecked = false
         binding.cbShoesBox.isChecked = false

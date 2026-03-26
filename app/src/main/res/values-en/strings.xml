@@ -31,6 +31,7 @@
 
     <string name="scan">Scan</string>
     <string name="boxes">Boxes</string>
+    <string name="new_box">New box %s</string>
     <string name="open_boxes">Open boxes</string>
     <string name="all_boxes">All boxes</string>
     <string name="show_all_boxes">Show all boxes</string>
@@ -38,6 +39,9 @@
     <string name="no_open_parties">There are no open parties</string>
     <string name="box_number">Box number</string>
     <string name="finish_party_property">Finish party</string>
+    <string name="create">Create</string>
+    <string name="box_created">Box created %s</string>
+
 
 
     <string name="scan_track">Scan order track</string>
@@ -69,6 +73,9 @@
     <string name="input_3_chars">Enter at least 3 characters</string>
     <string name="no_code">No code</string>
     <string name="selected">Selected: %1$s</string>
+    <string name="scan_error_result">Result scan error</string>
+    <string name="error_create">Error create %s</string>
+
 
 
 
@@ -84,6 +91,15 @@
     <string name="client_code">Client code (KG)</string>
     <string name="search_client">Search by name</string>
     <string name="dimensions">Dimensions (L x W x H), cm</string>
+    <string name="volume_weight">Volume weight: %.2f kg</string>
+    <string name="sizes">Sizes: %1$d × %2$d × %3$d</string>
+    <string name="orders_count">Orders: %d</string>
+    <string name="date_created">Created: %s</string>
+    <string name="box">Box: %s</string>
+    <string name="calc_v_weight">Calculation of volumetric weight</string>
+    <string name="dimensions_more_0">Dimensions must be greater than 0</string>
+
+
 
 
     <string name="add_new_box">Add new box</string>
@@ -97,6 +113,12 @@
     <string name="height_h">Height H</string>
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Tracking code</string>
+
+    <string name="new_party">Creation of a new party</string>
+    <string name="input_party">Party name KG (numbers only)</string>
+
+
+
 
     <!-- Client search dialog-->
     <string name="first_name">First name</string>

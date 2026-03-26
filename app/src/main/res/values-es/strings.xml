@@ -32,6 +32,7 @@
 
     <string name="scan">Escanear</string>
     <string name="boxes">Cajas</string>
+    <string name="new_box">Caja nueva %s</string>
     <string name="open_boxes">Cajas abiertas</string>
     <string name="all_boxes">Todas las cajas</string>
     <string name="show_all_boxes">Mostrar todas las cajas</string>
@@ -39,6 +40,8 @@
     <string name="no_open_parties">No hay lote de cajas abiertas.</string>
     <string name="box_number">Número de caja</string>
     <string name="finish_party_property">Completar un lote de cajas</string>
+    <string name="create">Crear</string>
+    <string name="box_created">Caja creada %s</string>
 
 
 
@@ -76,6 +79,8 @@
     <string name="input_3_chars">Ingrese al menos 3 caracteres</string>
     <string name="no_code">Sin código</string>
     <string name="selected">Seleccionado: %1$s</string>
+    <string name="scan_error_result">Resultado de escaneo no válido</string>
+    <string name="error_create">Error al crear %s</string>
 
 
 
@@ -89,6 +94,15 @@
     <string name="client_code">Código del cliente (KG)</string>
     <string name="search_client">Buscar por nombre</string>
     <string name="dimensions">Dimensiones (L x W x H), cm</string>
+    <string name="volume_weight">Peso volumétrico: %.2f kg</string>
+    <string name="sizes">Dimensiones: %1$d × %2$d × %3$d</string>
+    <string name="orders_count">Órdenes: %d</string>
+    <string name="date_created">Creado: %s</string>
+    <string name="box">Caja: %s</string>
+    <string name="calc_v_weight">Cálculo del peso volumétrico</string>
+    <string name="dimensions_more_0">Las dimensiones deben ser mayores que 0</string>
+
+
 
     <string name="add_new_box">Agregar nueva caja</string>
     <string name="new_box_number">Se creará un número: ...</string>
@@ -101,6 +115,11 @@
     <string name="height_h">Altura</string>
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Código de seguimiento</string>
+
+    <string name="new_party">Creación de un nuevo partido</string>
+    <string name="input_party">Nombre del partido: KG (solo números)</string>
+
+
 
     <!-- Client search dialog-->
     <string name="first_name">Nombre</string>

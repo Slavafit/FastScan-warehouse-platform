@@ -25,6 +25,9 @@
     <string name="cancel">Cancel</string>
     <string name="flashlight_on">Flashlight ON</string>
     <string name="flashlight_off">Flashlight OFF</string>
+    <string name="scan_mode">MODE: Scan...</string>
+    <string name="darker">Darker (-)</string>
+    <string name="lighter">Lighter (+)</string>
     <string name="send_order">SEND ORDER</string>
     <string name="find_order">Find order info</string>
     <string name="sending">Sending...</string>
@@ -61,7 +64,7 @@
     <string name="found">Found: %1$s (%2$s)</string>
     <string name="client_not_found">Client not found</string>
     <string name="server_error"> Server error</string>
-    <string name="net_error">Net error</string>
+    <string name="net_error">Net error %s</string>
     <string name="scan_kg">Scan KG</string>
     <string name="order_saved">ORDER SAVED!</string>
     <string name="token_cleared">Tokens cleared</string>
@@ -75,6 +78,8 @@
     <string name="selected">Selected: %1$s</string>
     <string name="scan_error_result">Result scan error</string>
     <string name="error_create">Error create %s</string>
+    <string name="unknown_error">Unknown error %s</string>
+
 
 
 
@@ -116,6 +121,12 @@
 
     <string name="new_party">Creation of a new party</string>
     <string name="input_party">Party name KG (numbers only)</string>
+    <string name="track_code">Track code %s</string>
+    <string name="party_name">Party code %s</string>
+    <string name="country">Country</string>
+    <string name="boxes_count">Box count %s</string>
+
+
 
 
 
@@ -143,14 +154,6 @@
     <string name="weight_limit_message">The entered weight %1$.2f kg exceeds 8 kg.\nAre you sure this is correct?</string>
     <string name="weight_limit_positive">Yes, send</string>
     <string name="weight_limit_negative">No, change</string>
-
-
-
-
-
-
-
-
 
 
 

@@ -39,7 +39,7 @@
             android:id="@+id/tvOrderCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Заказов: 25" />
+            android:text="Заказов: %d" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

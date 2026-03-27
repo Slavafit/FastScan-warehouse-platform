@@ -16,7 +16,7 @@ class BoxesAdapter(
     class ViewHolder(private val binding: ItemBoxBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(box: BoxItem, onClick: (BoxItem) -> Unit) {
             binding.tvTrackingCode.text = box.trackingCode
-            binding.tvGrossWeight.text = getString(R.string.weight, box.grossWeight?: 0.0)
+            binding.tvGrossWeight.text = getString(R.string.weight_format, box.grossWeight?: 0.0)
             binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0)
             binding.tvSizes.text = getString(R.string.sizes, box.length?: 0.0, box.width?: 0.0, box.height?: 0.0)
             binding.tvOrderCount.text = getString(R.string.orders_count, box.orderCount?: 0.0)

@@ -17,7 +17,7 @@
         android:textColor="#FFFFFF"
         android:background="#80000000"
         android:padding="8dp"
-        android:text="РЕЖИМ: Сканирование..." />
+        android:text="@string/scan_mode" />
 
     <!-- Кнопки экспозиции (только для weight) -->
     <LinearLayout
@@ -34,13 +34,13 @@
             android:id="@+id/btnDarker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Темнее (-)" />
+            android:text="@string/darker" />
 
         <Button
             android:id="@+id/btnBrighter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ярче (+)"
+            android:text="@string/lighter"
             android:layout_marginStart="16dp" />
     </LinearLayout>
 

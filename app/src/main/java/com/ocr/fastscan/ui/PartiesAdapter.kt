@@ -26,6 +26,14 @@ class PartiesAdapter(
 
     inner class PartyViewHolder(private val binding: ItemPartyBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(party: Partial) {
+            val context = binding.root.context
+
+            // Исправляем getString и путь к ресурсам (R.string вместо R.getString)
+//            binding.tvPartialCode.text = context.getString(R.string.track_code, party.partial_code)
+//            binding.tvPartialName.text = context.getString(R.string.party_name, party.partial_name)
+//            binding.tvWarehouse.text = context.getString(R.string.country, party.warehouse_name)
+//            binding.tvBoxCount.text = context.getString(R.string.boxes_count, party.boxCount)
+
             binding.tvPartialCode.text = "Трек: ${party.partial_code}"
             binding.tvPartialName.text = "Код: ${party.partial_name}"
             binding.tvWarehouse.text = "Страна: ${party.warehouse_name}"

@@ -29,7 +29,9 @@
     <string name="cancel">Cancelar</string>
     <string name="flashlight_on">Literna on</string>
     <string name="flashlight_off">Literna off</string>
-
+    <string name="scan_mode">Modo de escaneo...</string>
+    <string name="darker">Más oscuro (-)</string>
+    <string name="lighter">Más claro (+)</string>
     <string name="scan">Escanear</string>
     <string name="boxes">Cajas</string>
     <string name="new_box">Caja nueva %s</string>
@@ -67,7 +69,7 @@
     <string name="found">Encontrado: %1$s (%2$s)</string>
     <string name="client_not_found">Cliente no encontrado</string>
     <string name="server_error">Error de servedor</string>
-    <string name="net_error">Error de red</string>
+    <string name="net_error">Error de red %s</string>
     <string name="scan_kg">Escanear KG</string>
     <string name="order_saved">PEDIDO GUARDADO!</string>
     <string name="token_cleared">Tokens limpiados</string>
@@ -81,6 +83,8 @@
     <string name="selected">Seleccionado: %1$s</string>
     <string name="scan_error_result">Resultado de escaneo no válido</string>
     <string name="error_create">Error al crear %s</string>
+    <string name="unknown_error">Error desconocido %s</string>
+
 
 
 
@@ -118,6 +122,11 @@
 
     <string name="new_party">Creación de un nuevo partido</string>
     <string name="input_party">Nombre del partido: KG (solo números)</string>
+    <string name="track_code">Código de seguimiento %s</string>
+    <string name="party_name">Código de despachos %s</string>
+    <string name="country">Pais</string>
+    <string name="boxes_count">Número de cajas %s</string>
+
 
 
 

@@ -66,9 +66,11 @@ object DialogUtils {
             // Финальный расчёт (переводим одно из чисел в Double до деления, чтобы сохранить дроби)
             val divider = context.getVolWeightDivider()
             val vWeight = (length.toDouble() * width * height) / divider
+            // Форматируем до 2 знаков после запятой
+            val vWeightFormatted = String.format(Locale.US,"%.2f", vWeight).toDouble()
 
             val result = OrderDimensions(
-                grossWeight = vWeight,
+                grossWeight = vWeightFormatted,
                 length = length,
                 width = width,
                 height = height
@@ -107,7 +109,7 @@ object DialogUtils {
 
         val dialog = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
-            .setTitle(R.string.new_box)
+            .setTitle(R.string.add_new_box)
             .setPositiveButton(R.string.create, null)
             .setNegativeButton(R.string.cancel, null)
             .create()
@@ -153,7 +155,7 @@ object DialogUtils {
                             onSuccess(generatedTrackingCode)  // ← передаём код коробки в колбэк
                             dialog.dismiss()
                         } else {
-                            val errorMsg = response.body()?.message ?: "Ошибка создания"
+                            val errorMsg = response.body()?.message ?: context.getString(R.string.error_create)
 
                             Toast.makeText(context,
                                 context.getString(
@@ -165,9 +167,16 @@ object DialogUtils {
                             onError(errorMsg)
                         }
                     } catch (e: Exception) {
-                        Toast.makeText(context, "Сеть/ошибка: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                        val errorMsg = e.localizedMessage
+                        Toast.makeText(
+                            context,
+                            context.getString(
+                                R.string.net_error,
+                                errorMsg),
+                            Toast.LENGTH_LONG)
+                            .show()
                         soundManager.playError()
-                        onError(e.localizedMessage ?: "Неизвестная ошибка")
+                        onError(e.localizedMessage ?: context.getString(R.string.unknown_error))
                     }
                 }
             }
@@ -194,8 +203,9 @@ private fun calculateAndShowPreview(binding: DialogVolumeBinding) {
         val divider = binding.root.context.getVolWeightDivider()
         val vWeight = (length * width * height / divider)
         //binding.tvResultPreview.text = String.format(java.util.Locale.US, "Вес: %.2f кг", vWeight)
-        binding.tvResultPreview.text = "Вес: ${String.format("%.2f", vWeight)} кг"
+
+        binding.tvResultPreview.text = binding.root.context.getString(R.string.weight_format, vWeight)
     } else {
-        binding.tvResultPreview.text = "Вес: 0.00 кг"
+        binding.tvResultPreview.text = binding.root.context.getString(R.string.weight_kg)
     }
 }

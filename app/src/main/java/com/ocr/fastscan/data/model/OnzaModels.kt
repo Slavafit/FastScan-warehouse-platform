@@ -256,3 +256,9 @@ data class SearchResult(
     val shipment: FirestoreShipment? = null,
     val boxEntry: BoxEntry? = null
 )
+//модель ответа сервера весв
+data class WeightResponse(
+    val weight: Double,
+    val raw: String = "",
+    val unit: String = "kg"
+)

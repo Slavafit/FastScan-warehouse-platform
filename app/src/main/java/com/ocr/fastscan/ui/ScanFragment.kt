@@ -19,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.SettingsActivity
 import com.ocr.fastscan.data.model.*
@@ -26,6 +27,11 @@ import com.ocr.fastscan.data.SenderManager
 import com.ocr.fastscan.databinding.FragmentScanBinding
 import com.ocr.fastscan.utils.*
 import kotlinx.coroutines.launch
+import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 import com.ocr.fastscan.databinding.DialogSearchClientBinding
 import com.ocr.fastscan.databinding.DialogWeightLimitBinding
@@ -113,7 +119,8 @@ class ScanFragment : Fragment() {
             ScanUtils.launchCamera(requireContext(), "kg", scanLauncher)
         }
         binding.btnScanWeight.setOnClickListener {
-            ScanUtils.launchCamera(requireContext(), "weight", scanLauncher)
+            //ScanUtils.launchCamera(requireContext(), "weight", scanLauncher)
+            fetchWeightFromServer()
         }
 
         binding.btnVolumeCalc.setOnClickListener {
@@ -536,8 +543,38 @@ class ScanFragment : Fragment() {
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
+    // ==================== ПОЛУЧЕНИЕ ВЕСА С СЕРВЕРА ====================
+    private fun fetchWeightFromServer() {
+        binding.btnScanWeight.isEnabled = false
 
+        lifecycleScope.launch {
+            try {
+                // Важно: весь сетевой запрос должен быть в IO потоке
+                val weightStr = withContext(Dispatchers.IO) {
+                    WeightServerHelper.getWeight(requireContext())
+                }
 
+                if (weightStr != null) {
+                    binding.etWeight.setText(weightStr)
+                    binding.etWeight.requestFocus()
+                    binding.etWeight.selectAll()
+
+                    Toast.makeText(requireContext(), "Вес получен: $weightStr кг", Toast.LENGTH_SHORT).show()
+                    soundManager.playSuccess()
+                } else {
+                    Toast.makeText(requireContext(), "Не удалось получить вес с сервера", Toast.LENGTH_SHORT).show()
+                    soundManager.playError()
+                }
+
+            } catch (e: Exception) {
+                Log.e("WeightServer", "Ошибка при получении веса", e)
+                Toast.makeText(requireContext(), "Ошибка подключения к серверу", Toast.LENGTH_LONG).show()
+                soundManager.playError()
+            } finally {
+                binding.btnScanWeight.isEnabled = true
+            }
+        }
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

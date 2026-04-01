@@ -39,6 +39,14 @@
             app:useSimpleSummaryProvider="true"
             android:inputType="number"/>
 
+        <EditTextPreference
+            app:key="weight_server_url"
+            app:title="@string/server_weight_address"
+            app:summary="@string/server_weight_address_summary"
+            app:defaultValue="http://192.168.1.169"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="textUri"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/licence_title">

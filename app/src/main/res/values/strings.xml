@@ -13,6 +13,9 @@
 
     <string name="vol_weight_title">Коэффициент объемного веса</string>
     <string name="vol_weight_summary">По умолчанию: 6000</string>
+    <string name="server_weight_address">Адрес сервера весов</string>
+    <string name="server_weight_address_summary">Например: http://192.168.1.169</string>
+
 
     <string name="licence_title">Лицензия</string>
     <string name="licence_email_title">Email для лицензии</string>

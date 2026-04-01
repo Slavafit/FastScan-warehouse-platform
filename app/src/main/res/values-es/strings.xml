@@ -13,6 +13,8 @@
     <string name="password_title">Contraseña</string>
     <string name="vol_weight_title">Peso volumétrico</string>
     <string name="vol_weight_summary">Por defecto: 6000</string>
+    <string name="server_weight_address">Dirección de peso del servidor</string>
+    <string name="server_weight_address_summary">Por ejemplo: http://192.168.1.169</string>
 
     <string name="licence_title">Licencia</string>
     <string name="licence_email_title">Email para licencia</string>

@@ -361,7 +361,7 @@ class ScanFragment : Fragment() {
 
         // 4. Проверка лимита веса (8 кг)
         if (grossWeight > 8.0) {
-            soundManager.playError() // Звук предупреждения
+            soundManager.playWarning() // Звук предупреждения
 
             AlertDialog.Builder(requireContext())
                 .setTitle(R.string.weight_limit_title)
@@ -388,7 +388,7 @@ class ScanFragment : Fragment() {
 
         senderManager.submitOrder(req,
             onSuccess = {
-                soundManager.playSuccess()
+                soundManager.playSent()
                 Toast.makeText(requireContext(), getString(R.string.order_saved), Toast.LENGTH_SHORT).show()
                 ScanUtils.clearFieldsAll(binding, requireContext())
                 currentReceiverGuid = null
@@ -455,7 +455,7 @@ class ScanFragment : Fragment() {
                 when {
                     filtered.isEmpty() -> {
                         Toast.makeText(requireContext(), getString(R.string.no_client_found), Toast.LENGTH_SHORT).show()
-                        soundManager.playError()
+                        soundManager.playWarning()
                     }
                     filtered.size == 1 -> {
                         val match = filtered[0]

@@ -9,6 +9,7 @@ import com.ocr.fastscan.api.OnzaApiService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 object AppDependencies {
@@ -29,37 +30,44 @@ object AppDependencies {
     }
 
     // Вызов этой функции из Activity или Fragment
+    // ====================== АВТО-ЛОГИН ======================
     fun performAutoLogin(context: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val loginVal = prefs.getString("login", "") ?: ""
-        val passVal = prefs.getString("password", "") ?: ""
+        val loginVal = prefs.getString("login", "")?.trim() ?: ""
+        val passVal = prefs.getString("password", "")?.trim() ?: ""
 
         if (loginVal.isEmpty() || passVal.isEmpty()) {
-            Toast.makeText(context, "Логин или пароль пустые", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Логин или пароль не заполнены", Toast.LENGTH_LONG).show()
             return
         }
 
-        scope.launch {
+        // Запускаем корутину
+        CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = apiService.login(mapOf("login" to loginVal, "password" to passVal))
-                if (response.isSuccessful) {
-                    val authData = response.body()
-                    if (authData?.accessToken != null) {
-                        tokenManager.saveTokens(
-                            authData.accessToken,
-                            authData.refreshToken ?: ""
-                        )
-                        // Показываем Toast в UI-потоке
-                        (context as? android.app.Activity)?.runOnUiThread {
-                            Toast.makeText(context, "Успешный вход!", Toast.LENGTH_SHORT).show()
+
+                withContext(Dispatchers.Main) {   // Переключаемся обратно на главный поток для UI
+                    if (response.isSuccessful) {
+                        val authData = response.body()
+                        if (authData?.accessToken != null) {
+                            tokenManager.saveTokens(
+                                authData.accessToken,
+                                authData.refreshToken ?: ""
+                            )
+                            Toast.makeText(context, "✅ Успешный вход!", Toast.LENGTH_SHORT).show()
+                            //Log.d("Auth", "Авто-логин успешен. Токен сохранён.")
+                        } else {
+                            Toast.makeText(context, "Ошибка: токен не получен", Toast.LENGTH_SHORT).show()
                         }
-                        Log.d("Auth", "Успешный вход! Токен сохранен.")
+                    } else {
+                        Toast.makeText(context, "Ошибка входа: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        Log.e("Auth", "Неуспешный ответ сервера: ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
-                Log.e("Auth", "Ошибка сети при логине: ${e.message}", e)
-                (context as? android.app.Activity)?.runOnUiThread {
-                    Toast.makeText(context, "Ошибка входа: ${e.message}", Toast.LENGTH_SHORT).show()
+                withContext(Dispatchers.Main) {
+                    Log.e("Auth", "Ошибка при авто-логине", e)
+                    Toast.makeText(context, "Ошибка сети при входе", Toast.LENGTH_LONG).show()
                 }
             }
         }

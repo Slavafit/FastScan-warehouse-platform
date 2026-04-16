@@ -347,7 +347,7 @@ private fun printLabel() {
             width = width.toString(),
             height = height.toString()
             )
-        soundManager.playSuccess()
+        soundManager.playPrint()
         Toast.makeText(requireContext(), "Этикетка отправлена на печать", Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
         Log.e("printHelper", "Ошибка печати этикетки", e)

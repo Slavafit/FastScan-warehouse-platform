@@ -37,7 +37,8 @@ class MainActivity : AppCompatActivity() {
         val password = prefs.getString("password", "")?.trim() ?: ""
         val email = prefs.getString("user_email", "")?.trim() ?: ""
 
-        if (login.isBlank() || password.isBlank() || email.isBlank()) {
+        if (
+            login.isBlank() || password.isBlank() || email.isBlank()) {
             Toast.makeText(this, "Введите логин, пароль и email в настройках", Toast.LENGTH_LONG).show()
 
             // Открываем настройки
@@ -51,10 +52,25 @@ class MainActivity : AppCompatActivity() {
 
         // Твоя проверка лицензии и авто-логин
         lifecycleScope.launch {
-            if (AppDependencies.tokenManager.getToken() == null) {
+            val token = AppDependencies.tokenManager.getToken()
+            if (token.isNullOrEmpty()) {
+                //Log.d("Auth", "Токен отсутствует → выполняем авто-логин")
+                AppDependencies.performAutoLogin(this@MainActivity)
+            } else {
+                Log.d("Auth", "Токен найден. Проверяем его валидность...")
+
+                // Пока просто логируем. Позже можно добавить проверку токена на сервере
+                // AppDependencies.checkTokenValidity(this@MainActivity)
+
+                // Временное решение для отладки — можно раскомментировать, чтобы каждый раз логиниться:
+                AppDependencies.tokenManager.clear()           // ← очищает токен
                 AppDependencies.performAutoLogin(this@MainActivity)
             }
-
+            if (AppDependencies.tokenManager.getToken() == null) {
+                AppDependencies.performAutoLogin(this@MainActivity)
+            } else {
+                Log.d("Auth", "Токен уже есть, пропускаем авто-логин")
+            }
             val checker = LicenseChecker(email)
             val isValid = checker.isLicenseValid(this@MainActivity)
 

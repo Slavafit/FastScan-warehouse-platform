@@ -42,10 +42,16 @@
     <string name="show_all_boxes">Mostrar todas las cajas</string>
     <string name="no_boxes">No hay cajas. Crea una nueva.</string>
     <string name="no_open_parties">No hay lote de cajas abiertas.</string>
-    <string name="box_number">Número de caja</string>
+<!--    <string name="box_number">Número de caja</string>-->
+    <string name="box_track">Número de caja</string>
     <string name="finish_party_property">Completar un lote de cajas</string>
     <string name="create">Crear</string>
     <string name="box_created">Caja creada %s</string>
+    <string name="login_succes">✅ Inicio de sesión exitoso</string>
+    <string name="login_not_filled">El nombre de usuario o la contraseña no se han introducido.</string>
+    <string name="token_error">Error: No se recibió el token</string>
+
+
 
 
 
@@ -70,10 +76,12 @@
     <string name="track_not_found">Track no encontrada. Por favor, escanee KG</string>
     <string name="found">Encontrado: %1$s (%2$s)</string>
     <string name="client_not_found">Cliente no encontrado</string>
-    <string name="server_error">Error de servedor</string>
-    <string name="net_error">Error de red %s</string>
+    <string name="server_error">Error de servedor %1$d</string>
+    <string name="server_res_unknown">Unknown server response</string>
+    <string name="net_error">Error de red %1$d</string>
     <string name="scan_kg">Escanear KG</string>
     <string name="order_saved">PEDIDO GUARDADO!</string>
+    <string name="order_added">Pedido agregado!</string>
     <string name="token_cleared">Tokens limpiados</string>
     <string name="input_4_numbers">Ingrese al menos 4 dígitos después de KG</string>
     <string name="input_all_fields">Rellene todos los campos y código del cliente</string>
@@ -84,15 +92,27 @@
     <string name="no_code">Sin código</string>
     <string name="selected">Seleccionado: %1$s</string>
     <string name="scan_error_result">Resultado de escaneo no válido</string>
-    <string name="error_create">Error al crear %s</string>
-    <string name="unknown_error">Error desconocido %s</string>
+    <string name="error_create">⚠️ Error al crear %s</string>
+    <string name="unknown_error">⚠️ Error desconocido %s</string>
+    <string name="error_load">⚠️ Error de carga</string>
+    <string name="error_load_detal">⚠️ Error al cargar las piezas</string>
+    <string name="error_load_orders">⚠️ Error al cargar los pedidos</string>
+    <string name="all_values_positive">Todos los valores deben ser positivos.</string>
+    <string name="weight_saved">Las dimensiones y el peso se conservan</string>
+    <string name="error_saving_dim">⚠️ Dimensiones de guardado de errores</string>
+    <string name="error_deleting">⚠️ Error al eliminar</string>
+    <string name="incorrect_weight">⚠️ Peso incorrecto para la impresión</string>
+    <string name="sent_for_printing">La etiqueta se ha enviado a imprimir.</string>
+    <string name="error_printing">Impresión de error: %1$s</string>
+    <string name="no_GUID">El pedido no tiene GUID</string>
+    <string name="error_firebase">No se pudo guardar en Firebase: %1$s</string>
 
 
 
 
     <string name="weight_kg">Peso (kg)</string>
     <string name="weight">Peso:</string>
-    <string name="weight_format">Peso: %.2f kg</string>
+    <string name="weight_format">📦 Peso: %.2f kg</string>
     <string name="box_info">Guardar caja</string>
     <string name="save_box">Paquete</string>
     <string name="shoe_box">Zapatos</string>
@@ -101,8 +121,8 @@
     <string name="search_client">Buscar por nombre</string>
     <string name="dimensions">Dimensiones (L x W x H), cm</string>
     <string name="volume_weight">Peso volumétrico: %.2f kg</string>
-    <string name="sizes">Dimensiones: %1$d × %2$d × %3$d</string>
-    <string name="orders_count">Órdenes: %d</string>
+    <string name="sizes">Dimensiones: %1$d × %2$d × %3$d cm</string>
+    <string name="orders_count">Órdenes: %d un.</string>
     <string name="date_created">Creado: %s</string>
     <string name="box">Caja: %s</string>
     <string name="calc_v_weight">Cálculo del peso volumétrico</string>
@@ -121,13 +141,27 @@
     <string name="height_h">Altura</string>
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Código de seguimiento</string>
+    <string name="order_deleted">Pedido eliminado</string>
+    <string name="search_error">Error de búsqueda: %1$d</string>
+    <string name="order_not_found">Pedido no encontrado</string>
+    <string name="weight_total">Weight total: %1$.2f kg</string>
 
+
+
+
+    <!--   fragment of the party -->
     <string name="new_party">Creación de un nuevo partido</string>
     <string name="input_party">Nombre del partido: KG (solo números)</string>
-    <string name="track_code">Código de seguimiento %s</string>
-    <string name="party_name">Código de despachos %s</string>
-    <string name="country">Pais</string>
-    <string name="boxes_count">Número de cajas %s</string>
+    <string name="track_code">Código de seguimiento: %1$s</string>
+    <string name="party_name">Código de despachos: %1$s</string>
+    <string name="country">Pais: %1$s</string>
+    <string name="boxes_count">Número de cajas: %1d</string>
+    <string name="input_party_name">Ingrese el nombre de la parte</string>
+    <string name="party_created">El partido fue creado</string>
+    <string name="error_code">Error al crear el código %d</string>
+    <string name="date">Date: %1$s</string>
+    <string name="no_date">No date</string>
+
 
 
 
@@ -154,12 +188,28 @@
     <string name="weight_limit_positive">Sí, enviar</string>
     <string name="weight_limit_negative">No, cambiar</string>
 
+    <!-- Global Search Dialog -->
+    <string name="title_find">Búsqueda global</string>
+    <string name="find">Buscar</string>
+    <string name="finding">Buscando %s... </string>
+    <string name="error">Error: %s</string>
+    <string name="empty">Vacío,</string>
+    <string name="no_founded">número de segmento %s no encontrado</string>
 
+    <string name="dialog_title_info">Información de la pista %1$s</string>
+    <string name="registration_title">📋 REGISTRO</string>
+    <string name="client">Cliente</string>
+    <string name="reg_date">Fecha de inscripción.: %1$s</string>
+    <string name="no_registration">❌ No hay datos de registro disponibles</string>
 
+    <string name="in_box_title">📦 EN LA CAJA</string>
+    <string name="box_number">Número de caja: %1$s</string>
+    <string name="actual_weight">Peso real: %1$.2f кг</string>
+    <string name="packed_date">Lleno: %1$s</string>
+    <string name="not_packed_yet">⚠️ El pedido aún no ha sido empaquetado en una caja..</string>
 
-
-
-
+    <string name="not_found">Número de seguimiento %1$s no se encontró</string>
+    <string name="weight_kg2">"Вес: %1$.2f "</string>
 
 
 </resources>

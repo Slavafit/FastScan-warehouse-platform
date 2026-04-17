@@ -14,7 +14,7 @@
     <string name="vol_weight_title">Коэффициент объемного веса</string>
     <string name="vol_weight_summary">По умолчанию: 6000</string>
     <string name="server_weight_address">Адрес сервера весов</string>
-    <string name="server_weight_address_summary">Например: http://192.168.1.169</string>
+    <string name="server_weight_address_summary">Например: http://192.168.1.50</string>
 
 
     <string name="licence_title">Лицензия</string>
@@ -32,11 +32,13 @@
 
     <string name="parties">Партии</string>
     <string name="no_open_parties">Нет открытых партий</string>
-    <string name="box_number">Номер коробки</string>
+    <string name="box_track">Номер коробки %s</string>
     <string name="finish_party_property">Завершить партию</string>
     <string name="create">Создать</string>
     <string name="box_created">Коробка создана %s</string>
-
+    <string name="login_succes">✅ Успешный вход</string>
+    <string name="login_not_filled">Логин или пароль не заполнены</string>
+    <string name="token_error">Ошибка: токен не получен</string>
 
 
 
@@ -70,22 +72,36 @@
     <string name="track_not_found">Трек не найден. Сканируйте KG</string>
     <string name="client_not_found">Клиент не найден</string>
     <string name="found">Найден: %1$s (%2$s)</string>
-    <string name="server_error"> Ошибка сервера</string>
-    <string name="net_error">Ошибка сети %s</string>
+    <string name="server_error">Ошибка сервера %1$d</string>
+    <string name="server_res_unknown">Неизвестный ответ сервера</string>
+    <string name="net_error">Ошибка сети %1$x</string>
     <string name="scan_kg">Сканирование KG</string>
     <string name="order_saved">ЗАКАЗ УСПЕШНО СОХРАНЕН!</string>
+    <string name="order_added">ЗАКАЗ ДОБАВЛЕН!</string>
     <string name="token_cleared">Токены очищены</string>
     <string name="input_4_numbers">Введите минимум 4 цифры после KG</string>
     <string name="input_all_fields">Заполните все поля и код клиента</string>
     <string name="input_weight"> Введите корректный вес</string>
-    <string name="input_length">Введите корректные размеры</string>
+    <string name="input_length">Введите корректные размscan_error_resultеры</string>
     <string name="input_name_surname">Введите имя и фамилию</string>
     <string name="input_3_chars">Введите минимум 3 символа</string>
     <string name="no_code">Нет кода</string>
     <string name="selected">Выбран: %1$s</string>
     <string name="scan_error_result">Неверный результат сканирования</string>
-    <string name="error_create">Ошибка создания %s</string>
-    <string name="unknown_error">Неизвестная ошибка %s</string>
+    <string name="error_create">⚠️ Ошибка создания %s</string>
+    <string name="unknown_error">⚠️ Неизвестная ошибка %s</string>
+    <string name="error_load">⚠️ Ошибка загрузки</string>
+    <string name="error_load_detal">⚠️ Ошибка загрузки деталей</string>
+    <string name="error_load_orders">⚠️ Ошибка загрузки заказов</string>
+    <string name="all_values_positive">Все значения должны быть положительными</string>
+    <string name="weight_saved">Размеры и вес сохранены</string>
+    <string name="error_saving_dim">⚠️ Ошибка сохранения размеров</string>
+    <string name="error_deleting">⚠️ Ошибка удаления</string>
+    <string name="incorrect_weight">⚠️ Некорректный вес для печати</string>
+    <string name="sent_for_printing">Этикетка отправлена на печать</string>
+    <string name="error_printing">Ошибка печати: %1$s</string>
+    <string name="no_GUID">У заказа нет GUID</string>
+    <string name="error_firebase">Не удалось сохранить в Firebase: %1$s</string>
 
 
 
@@ -95,7 +111,7 @@
     <string name="scan_wait_client">Сканирование кода клиента...</string>
     <string name="weight_kg">Вес (кг)</string>
     <string name="weight">Bec:</string>
-    <string name="weight_format">Вес: %.2f кг</string>
+    <string name="weight_format">📦 Вес: %1$.2f кг</string>
     <string name="box_info">Сохранить коробку</string>
     <string name="save_box">Упаковка</string>
     <string name="shoe_box">Обувь</string>
@@ -104,8 +120,8 @@
     <string name="search_client">Поиск по имени</string>
     <string name="dimensions">Размеры (Д х Ш х В), см</string>
     <string name="volume_weight">Объёмный вес: %.2f кг</string>
-    <string name="sizes">Размеры: %1$d × %2$d × %3$d</string>
-    <string name="orders_count">Заказов: %d</string>
+    <string name="sizes">Размеры: %1$d × %2$d × %3$d см</string>
+    <string name="orders_count">Заказов: %d шт.</string>
     <string name="date_created">Создано: %s</string>
     <string name="box">Коробка: %s</string>
     <string name="calc_v_weight">Расчёт объёмного веса</string>
@@ -132,18 +148,25 @@
     <string name="height_h">Высота H</string>
     <string name="total_weight">Итого: 0.00 кг</string>
     <string name="tracking_code">Трек-код</string>
+    <string name="order_deleted">Заказ удалён</string>
+    <string name="search_error">Ошибка поиска: %1$d</string>
+    <string name="order_not_found">Заказ не найден</string>
+    <string name="weight_total">Общий вес: %1$.2f кг</string>
+
+
 
     <!-- фрагмент партии -->
-
     <string name="new_party">Создание новой партии</string>
     <string name="input_party">Название партии KG(только цифры)</string>
-    <string name="track_code">Трек-код %s</string>
-    <string name="party_name">Код партии %s</string>
-    <string name="country">Страна</string>
-    <string name="boxes_count">Коробок %d</string>
-
-
-
+    <string name="track_code">Трек-код: %1$s</string>
+    <string name="party_name">Код партии: %1$s</string>
+    <string name="country">Страна: %1$s</string>
+    <string name="boxes_count">Коробок: %1d</string>
+    <string name="input_party_name">Введите название партии</string>
+    <string name="party_created">Партия создана</string>
+    <string name="error_code">Ошибка создания код %d</string>
+    <string name="date">Дата: %1$s</string>
+    <string name="no_date">Нет даты</string>
 
 
 
@@ -169,10 +192,29 @@
     <string name="weight_limit_positive">Да, отправить</string>
     <string name="weight_limit_negative">Нет, изменить</string>
 
+    <!-- Диалог Глобального поиска -->
 
+    <string name="title_find">Глобальный поиск</string>
+    <string name="find">Найти</string>
+    <string name="finding">Ищем %s... </string>
+    <string name="error">Ошибка: %s</string>
+    <string name="empty">Пусто,</string>
+    <string name="no_founded">Трек %s не найден</string>
 
+    <string name="dialog_title_info">Инфо по треку %1$s</string>
+    <string name="registration_title">📋 РЕГИСТРАЦИЯ</string>
+    <string name="client">Клиент</string>
+    <string name="reg_date">Дата рег.: %1$s</string>
+    <string name="no_registration">❌ Нет данных о регистрации</string>
 
+    <string name="in_box_title">📦 В КОРОБКЕ</string>
+    <string name="box_number">Номер коробки: %1$s</string>
+    <string name="actual_weight">Фактический вес: %1$.2f кг</string>
+    <string name="packed_date">Упаковано: %1$s</string>
+    <string name="not_packed_yet">⚠️ Заказ еще не упакован в коробку</string>
 
+    <string name="not_found">Трек %1$s не найден</string>
+    <string name="weight_kg2">"Вес: %1$.2f "</string>
 
 
 </resources>

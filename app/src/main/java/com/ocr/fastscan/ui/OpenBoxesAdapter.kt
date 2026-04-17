@@ -2,6 +2,7 @@ package com.ocr.fastscan.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.ocr.fastscan.R
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -22,11 +23,15 @@ class OpenBoxesAdapter(
     }
 //диалог добавления коробки
     inner class ViewHolder(private val binding: ItemOpenBoxBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        private val context = binding.root.context
         fun bind(box: BoxInPartial) {
-            binding.tvTrackingCode.text = "Трек: ${box.tracking_code}"
-            binding.tvDimensions.text = "Размеры: ${box.width} × ${box.height} × ${box.length} см"
-            binding.tvGrossWeight.text = "Вес: ${box.gross_weight} кг"
-            binding.tvVWeight.text = "Объёмный вес: ${box.v_weight} кг"
+            binding.tvTrackingCode.text = context.getString(
+                R.string.track_code, box.tracking_code)
+            binding.tvDimensions.text = context.getString(
+                R.string.sizes, box.width, box.height, box.length)
+            binding.tvGrossWeight.text = context.getString(R.string.weight_format, box.gross_weight)
+            binding.tvVWeight.text = context.getString(R.string.volume_weight, box.v_weight)
             //binding.tvOrderCount.text = "Заказов: ${box.orderCount}"
 
             binding.root.setOnClickListener {

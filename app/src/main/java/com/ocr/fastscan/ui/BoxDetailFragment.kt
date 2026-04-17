@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
+import com.ocr.fastscan.R
 import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.ScanUtils
 import com.ocr.fastscan.utils.getVolWeightDivider
@@ -54,7 +55,7 @@ class BoxDetailFragment : Fragment() {
             if (mode == "barcode" && value.isNotEmpty()) {
                 addOrderByTrack(value)
             } else {
-                Toast.makeText(requireContext(), "Неверный результат сканирования", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.scan_error_result, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -65,7 +66,7 @@ class BoxDetailFragment : Fragment() {
             boxСodeid: String,
             boxTracking: String,
             boxWeight: String,
-            partialName: String = "test"
+            partialName: String = "España"
         ):
                 BoxDetailFragment {
             val fragment = BoxDetailFragment()
@@ -115,13 +116,15 @@ class BoxDetailFragment : Fragment() {
             val newWeight = newWeightStr.toDoubleOrNull()
 
             if (newWeight == null || newWeight <= 0) {
-                Toast.makeText(requireContext(), "Введите корректный вес", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    R.string.input_weight,
+                    Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
             // Обновляем UI
-            binding.tvGrossWeight.text = "Вес: %,2f кг".format(newWeight)
-
+            binding.tvGrossWeight.text = getString(R.string.weight_format, newWeight)
         }
 
         binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
@@ -172,17 +175,32 @@ class BoxDetailFragment : Fragment() {
                     // Считаем суммарный вес
                     val totalGrossWeight = orders.sumOf { it.grossWeight?.toDouble() ?: 0.0 }
                     // обновляем UI
-                    binding.tvGrossWeight.text = "Общий вес: %.2f кг".format(totalGrossWeight)
-                    binding.tvOrderCount.text = "Заказов: ${orders.size}"
+                    binding.tvGrossWeight.text = getString(
+                        R.string.weight_total,
+                        totalGrossWeight
+                    )
+                    binding.tvOrderCount.text = getString(
+                        R.string.orders_count,
+                        orders.size
+                    )
 
                     // Пересчитываем v_weight (если размеры уже загружены или дефолтные)
-                    binding.tvVWeight.text = "Объёмный вес: %.2f кг".format(calculateVWeight())
+                    binding.tvVWeight.text = getString(
+                        R.string.volume_weight,
+                        calculateVWeight()
+                    )
 
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка загрузки деталей коробки", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(),
+                        R.string.error_load_detal,
+                        Toast.LENGTH_SHORT)
+                        .show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    R.string.net_error,
+                    Toast.LENGTH_SHORT)
+                    .show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
@@ -209,7 +227,7 @@ class BoxDetailFragment : Fragment() {
         val weight = weightStr.toDoubleOrNull() ?: 0.0
         // Валидация
         if (length <= 0 || width <= 0 || height <= 0 ) {
-            Toast.makeText(requireContext(), "Все значения должны быть положительными",
+            Toast.makeText(requireContext(), R.string.all_values_positive,
                 Toast.LENGTH_SHORT).show()
             return
         }
@@ -225,12 +243,12 @@ class BoxDetailFragment : Fragment() {
                     weight = weight,
                     vWeight = calculateVWeight(),
                     )
-                Log.d("BoxDetail", "Отправляем обновление: $request")
+                //Log.d("BoxDetail", "Отправляем обновление: $request")
                 val response = apiService.createOrUpdateBox(request)
-                Log.d("BoxDetail", "response: $response")
+                //Log.d("BoxDetail", "response: $response")
 
                 if (response.isSuccessful && response.body()?.success == true) {
-                    Toast.makeText(requireContext(), "Размеры и вес сохранены", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.weight_saved, Toast.LENGTH_SHORT).show()
                     // Обновляем локальную модель (если она есть)
                     currentBox = currentBox?.copy(
                         width = width,
@@ -241,14 +259,14 @@ class BoxDetailFragment : Fragment() {
                     )
 
 
-                    binding.tvGrossWeight.text = "Вес: %.2f кг".format(weight)
+                    binding.tvGrossWeight.text = getString(R.string.weight_format)
 
                     loadBoxInfo()  // перезагружаем данные коробки
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка сохранения размеров", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.error_saving_dim, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -266,7 +284,7 @@ class BoxDetailFragment : Fragment() {
                 val divider = requireContext().getVolWeightDivider()  // всегда Double, минимум 6000.0
                 val vWeight = (length * width * height) / divider
 
-                binding.tvVWeight.text = "Объёмный вес: $vWeight кг"
+                binding.tvVWeight.text = getString(R.string.volume_weight, vWeight)
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -283,13 +301,13 @@ class BoxDetailFragment : Fragment() {
                 val request = RemoveOrderRequest(orderGuid)
                 val response = apiService.removeOrderFromBox(request)
                 if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), "Заказ удалён", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.order_deleted, Toast.LENGTH_SHORT).show()
                     loadBoxDetails()
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка удаления", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.error_deleting, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -315,8 +333,8 @@ private fun printLabel() {
     // 3. Проверяем, что вес — это число (защита от краша в PrintHelper)
     val weightValue = weightClean.toDoubleOrNull()
     if (weightValue == null || weightValue <= 0) {
-        Log.e("printHelper", "Некорректный вес: '$weightClean'")
-        Toast.makeText(requireContext(), "Некорректный вес для печати", Toast.LENGTH_SHORT).show()
+        //Log.e("printHelper", "Некорректный вес: '$weightClean'")
+        Toast.makeText(requireContext(), R.string.incorrect_weight, Toast.LENGTH_SHORT).show()
         soundManager.playError()
         return
     }
@@ -348,10 +366,14 @@ private fun printLabel() {
             height = height.toString()
             )
         soundManager.playPrint()
-        Toast.makeText(requireContext(), "Этикетка отправлена на печать", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), R.string.sent_for_printing, Toast.LENGTH_SHORT).show()
     } catch (e: Exception) {
         Log.e("printHelper", "Ошибка печати этикетки", e)
-        Toast.makeText(requireContext(), "Ошибка печати: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        Toast.makeText(
+            requireContext(),
+            getString(R.string.error_printing, e.localizedMessage ),
+            Toast.LENGTH_LONG)
+            .show()
         soundManager.playError()
     }
 }
@@ -362,7 +384,11 @@ private fun printLabel() {
                 val searchResponse = apiService.searchOrder(tcode)
 
                 if (!searchResponse.isSuccessful || searchResponse.body().isNullOrEmpty()) {
-                    val msg = if (!searchResponse.isSuccessful) "Ошибка поиска: ${searchResponse.code()}" else "Заказ не найден"
+                    val msg = if (!searchResponse.isSuccessful) {
+                        getString(R.string.search_error, searchResponse.code())
+                    } else {
+                        getString(R.string.order_not_found)
+                    }
                     //Log.e("AddOrder", msg)
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
                     soundManager.playError()
@@ -372,7 +398,7 @@ private fun printLabel() {
                 val order = searchResponse.body()!![0]
                 val orderGuid = order.guid ?: run {
                     //Log.e("AddOrder", "У заказа нет GUID")
-                    Toast.makeText(requireContext(), "У заказа нет GUID", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.no_GUID, Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                     return@launch
                 }
@@ -398,7 +424,7 @@ private fun printLabel() {
                         val newGuid = firstItem?.get("guid") as? String
 
                         //Log.d("AddOrder", "Успех: добавлен GUID $newGuid")
-                        Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), getString(R.string.order_added), Toast.LENGTH_SHORT).show()
                         soundManager.playSuccess()
                         loadBoxDetails()
 
@@ -419,7 +445,11 @@ private fun printLabel() {
                             },
                             onFailure = { e ->
                                 Log.e("AddOrder", "Ошибка записи в Firebase", e)
-                                Toast.makeText(requireContext(), "Не удалось сохранить в Firebase: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    requireContext(),
+                                    getString(R.string.error_firebase, e.localizedMessage),
+                                    Toast.LENGTH_LONG)
+                                    .show()
                                 soundManager.playError()
                             }
                         )
@@ -433,7 +463,7 @@ private fun printLabel() {
 
                         if (success) {
                             //Log.d("AddOrder", "Успех в объектном формате")
-                            Toast.makeText(requireContext(), "Заказ добавлен", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), getString(R.string.order_added), Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
                             loadBoxDetails()
                         } else {
@@ -445,18 +475,31 @@ private fun printLabel() {
                     // Неизвестный формат
                     else {
                         Log.e("AddOrder", "Неожиданный формат ответа: $rawBody")
-                        Toast.makeText(requireContext(), "Неизвестный ответ сервера", Toast.LENGTH_LONG).show()
+                        Toast.makeText(requireContext(),
+                            R.string.server_res_unknown,
+                            Toast.LENGTH_LONG
+                        ).show()
                         soundManager.playError()
                     }
                 } else {
                     val errorBody = addResponse.errorBody()?.string() ?: "Нет тела ошибки"
                     Log.e("AddOrder", "Ошибка сервера: код ${addResponse.code()}, тело: $errorBody")
-                    Toast.makeText(requireContext(), "Ошибка сервера: ${addResponse.code()}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(),
+                        getString(
+                            R.string.server_error,
+                            addResponse.code()),
+                        Toast.LENGTH_LONG)
+                        .show()
                     soundManager.playError()
                 }
             } catch (e: Exception) {
                 Log.e("AddOrder", "Сетевая/другая ошибка при добавлении заказа", e)
-                Toast.makeText(requireContext(), "Сеть/ошибка: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(),
+                    getString(
+                        R.string.net_error,
+                        e.localizedMessage),
+                    Toast.LENGTH_LONG)
+                     .show()
                 soundManager.playError()
             }
         }
@@ -466,11 +509,11 @@ private fun printLabel() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = apiService.getBoxes(tCode = boxTracking)  // GET /api/order/box?tCode=tracking_code
-                Log.d("loadBoxInfo", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
+                //Log.d("loadBoxInfo", "Ответ код: ${response.code()}, успешный: ${response.isSuccessful}")
                 if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
                     val box = response.body()!![0]  // берём первую (единственную) коробку по tCode
 
-                    binding.tvBoxNumber.text = "Номер коробки: ${boxTracking}"
+                    binding.tvBoxNumber.text = getString(R.string.box, boxTracking )
 
                     // Заполняем поля размеров
                     binding.etLength.setText(box.length?.toString() ?: "70")
@@ -479,18 +522,18 @@ private fun printLabel() {
                     binding.etGrossWeight.setText(box.grossWeight?.toString() ?: "0.0")
 
                     // Показываем веса из API
-                    binding.tvGrossWeight.text = "Общий вес: %.2f кг".format(box.grossWeight ?: 0.0)
-                    binding.tvVWeight.text = "Объёмный вес: %.2f кг".format(box.vWeight ?: 0.0)
+                    binding.tvGrossWeight.text = getString(R.string.weight_total, box.grossWeight ?: 0.0 )
+                    binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0 )
 
                     // Если размеры изменились — пересчитываем v_weight локально
                     //setupSizeListeners()
                 } else {
                     Log.e("loadBoxInfo", "Ошибка API: ${response.code()} - ${response.message()}")
-                    Toast.makeText(requireContext(), "Ошибка загрузки данных коробки", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.error_load_detal, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Log.e("loadBoxInfo", "Сеть/исключение: ${e.message}", e)
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
@@ -506,16 +549,17 @@ private fun printLabel() {
                     ordersAdapter.submitList(orders)
 
                     val totalGrossWeight = orders.sumOf { it.grossWeight?.toDouble() ?: 0.0 }
-                    binding.tvGrossWeight.text = "Общий вес: %.2f кг".format(totalGrossWeight)
-                    binding.tvOrderCount.text = "Заказов: ${orders.size}"
+                    binding.tvGrossWeight.text = getString(R.string.weight_total, totalGrossWeight)
+                    binding.tvOrderCount.text = getString(R.string.orders_count, orders.size)
 
                     // Пересчитываем v_weight (если размеры уже загружены или дефолтные)
-                    binding.tvVWeight.text = "Объёмный вес: %.2f кг".format(calculateVWeight())
+                    binding.tvVWeight.text = getString(R.string.volume_weight, calculateVWeight())
+
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка загрузки заказов", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.error_load_orders, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -532,12 +576,12 @@ private fun printLabel() {
                             //Log.d("BoxDetail", "Взято первое имя партии: '$partialName'")
                         } else {
                         //Log.e("BoxDetail", "Ошибка API: ${response.code()} ")
-                        Toast.makeText(requireContext(), "Ошибка загрузки заказов", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), R.string.error_load_orders, Toast.LENGTH_SHORT).show()
                         }
                     }
                 } catch (e: Exception) {
                     Log.e("BoxDetail", "Ошибка сети", e)
-                    Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
                 }
             }
         }

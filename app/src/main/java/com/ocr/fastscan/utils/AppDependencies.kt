@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.preference.PreferenceManager
+import com.ocr.fastscan.R
 import com.ocr.fastscan.api.NetworkModule
 import com.ocr.fastscan.api.OnzaApiService
 import kotlinx.coroutines.CoroutineScope
@@ -37,7 +38,7 @@ object AppDependencies {
         val passVal = prefs.getString("password", "")?.trim() ?: ""
 
         if (loginVal.isEmpty() || passVal.isEmpty()) {
-            Toast.makeText(context, "Логин или пароль не заполнены", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, R.string.login_not_filled, Toast.LENGTH_LONG).show()
             return
         }
 
@@ -54,20 +55,27 @@ object AppDependencies {
                                 authData.accessToken,
                                 authData.refreshToken ?: ""
                             )
-                            Toast.makeText(context, "✅ Успешный вход!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context,
+                                (R.string.login_succes),
+                                Toast.LENGTH_SHORT)
+                                .show()
                             //Log.d("Auth", "Авто-логин успешен. Токен сохранён.")
                         } else {
-                            Toast.makeText(context, "Ошибка: токен не получен", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, R.string.token_error, Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Toast.makeText(context, "Ошибка входа: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,
+                            context.getString(
+                                R.string.net_error,
+                                response.code()),
+                            Toast.LENGTH_SHORT).show()
                         Log.e("Auth", "Неуспешный ответ сервера: ${response.code()}")
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("Auth", "Ошибка при авто-логине", e)
-                    Toast.makeText(context, "Ошибка сети при входе", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.net_error, Toast.LENGTH_LONG).show()
                 }
             }
         }

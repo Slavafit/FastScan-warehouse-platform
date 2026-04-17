@@ -23,13 +23,13 @@ class SearchOrder(private val fragment: Fragment) {
         val input = dialogView.findViewById<EditText>(R.id.etSearchTrack)
 
         AlertDialog.Builder(context)
-            .setTitle("Глобальный поиск")
+            .setTitle(R.string.title_find)
             .setView(dialogView)
-            .setPositiveButton("Найти") { _, _ ->
+            .setPositiveButton(R.string.find) { _, _ ->
                 val track = input.text.toString().trim()
                 if (track.isNotEmpty()) startGlobalSearch(track)
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
@@ -37,11 +37,13 @@ class SearchOrder(private val fragment: Fragment) {
         fragment.lifecycleScope.launch {
             try {
                 // показать Toast "Идет поиск..."
-                Toast.makeText(context, "Ищем $track...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.finding, track), Toast.LENGTH_SHORT).show()
+
                 val result = firebaseManager.findOrderEverywhere(track)
                 displayResults(track, result)
             } catch (e: Exception) {
-                Toast.makeText(context, "Ошибка: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.error, e.message), Toast.LENGTH_SHORT).show()
+
                 //Log.e("SearchOrder", "Ошибка поиска", e)
             }
         }
@@ -49,16 +51,19 @@ class SearchOrder(private val fragment: Fragment) {
 
     private fun displayResults(track: String, result: SearchResult) {
         if (result.shipment == null && result.boxEntry == null) {
-            showSimpleDialog("Пусто", "Трек $track не найден.")
+            showSimpleDialog(
+            context.getString(R.string.empty),
+            context.getString(R.string.no_founded, track ))
             return
         }
 
         val sb = StringBuilder()
 // БЛОК 1: Данные из коллекции shipments (Регистрация)
         if (result.shipment != null) {
-            sb.append("📋 РЕГИСТРАЦИЯ:\n")
-            sb.append("Клиент: ${result.shipment.clientName} (${result.shipment.clientCode})\n")
-            sb.append("Вес: ${result.shipment.weight} кг\n")
+            sb.append(R.string.registration_title).append("\n")
+            sb.append("${(R.string.client)}: ${result.shipment.clientName} (${result.shipment.clientCode})\n")
+            val weight = result.shipment.weight ?: 0.0
+            sb.append(R.string.weight_format, weight).append("\n")
 
             // Создаем нужный формат: день.месяц.год часы:минуты
             val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
@@ -66,31 +71,34 @@ class SearchOrder(private val fragment: Fragment) {
             // Берем полное время из createdAt и форматируем его
             val formattedDateTime = sdf.format(result.shipment.createdAt.toDate())
             // Используем твое поле dateString для отображения даты
-            sb.append("Дата рег.: $formattedDateTime\n\n")
+            sb.append(R.string.reg_date, formattedDateTime).append("\n\n")
         } else {
-            sb.append("❌ Нет данных о регистрации\n\n")
+            sb.append(R.string.no_registration).append("\n\n")
         }
 
         // БЛОК 2: Данные из коллекции box_entries (Упаковка в коробку)
         if (result.boxEntry != null) {
-            sb.append("📦 В КОРОБКЕ:\n")
-            sb.append("Номер коробки: ${result.boxEntry.boxTracking}\n")
+            sb.append(R.string.in_box_title).append("\n")
+            sb.append(R.string.box_number, result.boxEntry.boxTracking).append("\n")
 
             // Если при упаковке сохраняется свой вес, можно вывести и его
             if (result.boxEntry.orderWeight > 0.0) {
-                sb.append("Фактический вес: ${result.boxEntry.orderWeight} кг\n")
+                sb.append(R.string.actual_weight, result.boxEntry.orderWeight).append("\n")
             }
 
             // Форматируем дату упаковки (если она есть)
             result.boxEntry.date?.let { timestamp ->
                 val formattedDate = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
                     .format(timestamp.toDate())
-                sb.append("Упаковано: $formattedDate\n")
+                sb.append(R.string.packed_date, formattedDate).append("\n")
             }
         } else {
-            sb.append("⚠️ Заказ еще не упакован в коробку")
+            sb.append(R.string.not_packed_yet)
         }
-        showSimpleDialog("Инфо: $track", sb.toString())
+        showSimpleDialog(
+            context.getString(R.string.dialog_title_info, track),
+            sb.toString()
+           )
     }
 
     private fun showSimpleDialog(title: String, msg: String) {

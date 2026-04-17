@@ -2,12 +2,12 @@
     <string name="app_name">FastScan Pro</string>
 
     <string name="server_settings">Server Settings</string>
-    <string name="server_url_title">Server URL</string>
+    <string name="server_url_title">" URL Server"</string>
     <string name="server_url_summary">Default: https://onza-api.ibm.kg</string>
     <string name="login_title">Login</string>
     <string name="password_title">Password</string>
     <string name="vol_weight_title">Vol Weight</string>
-    <string name="vol_weight_summary">По умолчанию: 6000</string>
+    <string name="vol_weight_summary">By default: 6000</string>
     <string name="licence_title">Licence</string>
     <string name="licence_email_title">Email for licence</string>
     <string name="licence_email_summary">Enter email, linked with licence</string>
@@ -21,7 +21,7 @@
     <string name="language">Language</string>
     <string name="language_summary">Select language</string>
     <string name="server_weight_address">Server weight adress</string>
-    <string name="server_weight_address_summary">For example: http://192.168.1.169</string>
+    <string name="server_weight_address_summary">For example: http://192.168.1.50</string>
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -42,10 +42,17 @@
     <string name="show_all_boxes">Show all boxes</string>
     <string name="no_boxes">There are no open boxes. Create a new one.</string>
     <string name="no_open_parties">There are no open parties</string>
-    <string name="box_number">Box number</string>
+<!--    <string name="box_number">Box number</string>-->
+    <string name="box_track">Box number</string>
     <string name="finish_party_property">Finish party</string>
     <string name="create">Create</string>
     <string name="box_created">Box created %s</string>
+    <string name="login_succes">✅ Successful login</string>
+    <string name="login_not_filled">Login or password is not filled in</string>
+    <string name="token_error">Error: token not received</string>
+
+
+
 
 
 
@@ -65,10 +72,12 @@
     <string name="track_not_found">Track not found. Please scan KG</string>
     <string name="found">Found: %1$s (%2$s)</string>
     <string name="client_not_found">Client not found</string>
-    <string name="server_error"> Server error</string>
-    <string name="net_error">Net error %s</string>
+    <string name="server_error">Server error %1$d</string>
+    <string name="server_res_unknown">Respuesta desconocida del servidor</string>
+    <string name="net_error">Net error %1$x</string>
     <string name="scan_kg">Scan KG</string>
     <string name="order_saved">ORDER SAVED!</string>
+    <string name="order_added">ORDER ADDED!</string>
     <string name="token_cleared">Tokens cleared</string>
     <string name="input_4_numbers">Enter at least 4 digits after KG</string>
     <string name="input_all_fields">Fill all fields and client code</string>
@@ -79,16 +88,27 @@
     <string name="no_code">No code</string>
     <string name="selected">Selected: %1$s</string>
     <string name="scan_error_result">Result scan error</string>
-    <string name="error_create">Error create %s</string>
-    <string name="unknown_error">Unknown error %s</string>
-
+    <string name="error_create">⚠️ Error create %s</string>
+    <string name="unknown_error">⚠️ Unknown error %s</string>
+    <string name="error_load">⚠️ Load error</string>
+    <string name="error_load_detal">⚠️ Error loading parts</string>
+    <string name="error_load_orders">⚠️ Error loading orders</string>
+    <string name="all_values_positive">All values must be positive.</string>
+    <string name="weight_saved">Dimensions and weight are preserved</string>
+    <string name="error_saving_dim">⚠️ Error saving dimensions</string>
+    <string name="error_deleting">⚠️ Error deleting</string>
+    <string name="incorrect_weight">⚠️ Incorrect weight for printing</string>
+    <string name="sent_for_printing">The label has been sent for printing.</string>
+    <string name="error_printing">Error printing: %1$s</string>
+    <string name="no_GUID">The order does not have GUID</string>
+    <string name="error_firebase">Failed to save to Firebase: %1$s</string>
 
 
 
 
     <string name="scan_wait">Waiting scan track...</string>
     <string name="scan_wait_client">Waiting scan client kode...</string>
-    <string name="weight_kg">Weight (kg)</string>
+    <string name="weight_kg">📦 Weight: %1$.2f kg</string>
     <string name="weight">Weight:</string>
     <string name="weight_format">Weight: %.2f kg</string>
     <string name="box_info">Save box</string>
@@ -108,7 +128,7 @@
 
 
 
-
+    <!-- fragment of the boxes -->
     <string name="add_new_box">Add new box</string>
     <string name="new_box_number">A number will be created: ...</string>
     <string name="length">Length (cm)</string>
@@ -120,13 +140,26 @@
     <string name="height_h">Height H</string>
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Tracking code</string>
+    <string name="order_deleted">Order deleted</string>
+    <string name="search_error">Search error: %1$d</string>
+    <string name="order_not_found">Order not found</string>
+    <string name="weight_total">Total weight: %1$.2f kg</string>
 
+
+
+
+    <!--   fragment of the party -->
     <string name="new_party">Creation of a new party</string>
     <string name="input_party">Party name KG (numbers only)</string>
-    <string name="track_code">Track code %s</string>
-    <string name="party_name">Party code %s</string>
-    <string name="country">Country</string>
-    <string name="boxes_count">Box count %s</string>
+    <string name="track_code">Track code: %1$s</string>
+    <string name="party_name">Party code: %1$s</string>
+    <string name="country">Country: %1$s</string>
+    <string name="boxes_count">Box count: %1d</string>
+    <string name="input_party_name">Input party name</string>
+    <string name="party_created">The party was created</string>
+    <string name="error_code">Error creating code %d</string>
+    <string name="date">Fecha: %1$s</string>
+    <string name="no_date">sin fecha</string>
 
 
 
@@ -151,11 +184,34 @@
     <string name="edit_dimensions_and_weight">Editing dimensions and weight</string>
 
 
-    <!-- Диалог превышения веса -->
+    <!-- Dialog превышения веса -->
     <string name="weight_limit_title">⚠️ Check weight</string>
     <string name="weight_limit_message">The entered weight %1$.2f kg exceeds 8 kg.\nAre you sure this is correct?</string>
     <string name="weight_limit_positive">Yes, send</string>
     <string name="weight_limit_negative">No, change</string>
+
+    <!-- Global Search Dialog -->
+    <string name="title_find">Global Search</string>
+    <string name="find">Find</string>
+    <string name="finding">Finding %s... </string>
+    <string name="error">Error: %s</string>
+    <string name="empty">Empty,</string>
+    <string name="no_founded">Empty, Track %s not found</string>
+
+    <string name="dialog_title_info">Track info %1$s</string>
+    <string name="registration_title">📋 REGISTRATION</string>
+    <string name="client">Клиент</string>
+    <string name="weight_kg2">Вес: %1$.2f кг</string>
+    <string name="reg_date">Date of reg.: %1$s</string>
+    <string name="no_registration">❌ No registration data available</string>
+
+    <string name="in_box_title">📦 IN THE BOX</string>
+    <string name="box_number">Box number: %1$s</string>
+    <string name="actual_weight">Actual weight: %1$.2f кг</string>
+    <string name="packed_date">Packed: %1$s</string>
+    <string name="not_packed_yet">⚠️ The order has not yet been packed in a box.</string>
+
+    <string name="not_found">Track %1$s not found</string>
 
 
 

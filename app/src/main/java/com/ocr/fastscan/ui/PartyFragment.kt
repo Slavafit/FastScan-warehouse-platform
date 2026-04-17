@@ -77,7 +77,7 @@ class PartyFragment : Fragment() {
                     binding.tvNoParties.visibility = if (parties.isEmpty()) View.VISIBLE else View.GONE
                     partiesAdapter.submitList(parties)
                 } else {
-                    binding.tvNoParties.text = "Ошибка загрузки"
+                    binding.tvNoParties.text = getString(R.string.error_load)
                     binding.tvNoParties.visibility = View.VISIBLE
                 }
             } catch (e: CancellationException) {
@@ -85,7 +85,7 @@ class PartyFragment : Fragment() {
                 throw e
             } catch (e: Exception) {
                 Log.e("CreateParty", "Ошибка сети", e)
-                binding.tvNoParties.text = "Сеть ошибка"
+                binding.tvNoParties.text = getString(R.string.net_error)
                 binding.tvNoParties.visibility = View.VISIBLE
             } finally {
                 binding.progressBar.visibility = View.GONE
@@ -104,10 +104,13 @@ class PartyFragment : Fragment() {
         AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             //.setTitle("Новая партия")
-            .setPositiveButton("Создать") { _, _ ->
+            .setPositiveButton(R.string.create,) { _, _ ->
                 val inputName = dialogBinding.etPartialName.text.toString().trim()
                 if (inputName.isEmpty()) {
-                    Toast.makeText(requireContext(), "Введите название", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(),
+                        getString(R.string.input_party_name),
+                        Toast.LENGTH_SHORT)
+                        .show()
                     return@setPositiveButton
                 }
                 // Формируем финальное имя: если цифры 123, станет KG123
@@ -120,28 +123,32 @@ class PartyFragment : Fragment() {
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
                         val request = PartialCreateRequest(generatedCode, finalName)
-                        Log.d("CreateParty", "Отправляем: $request")
+                        //Log.d("CreateParty", "Отправляем: $request")
 
                         val response = apiService.createPartial(request)
-                        Log.d("CreateParty", "Код сервера: ${response.code()}")
-                        Log.d("CreateParty", "Тело ответа: ${response.body()}")
+                        //Log.d("CreateParty", "Код сервера: ${response.code()}")
+                        //Log.d("CreateParty", "Тело ответа: ${response.body()}")
 
                         if (response.isSuccessful) {    // Проверка по коду 200 OK, игнорируя опечатку "seccess")))
-                            Toast.makeText(requireContext(), "Партия создана", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), R.string.party_created, Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
                             delay(300)  // Ждем, пока база на сервере обновится
                             loadParties()
                         } else {
-                            Toast.makeText(requireContext(), "Ошибка создания код ${response.code()}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                requireContext(),
+                                getString(R.string.error_code, response.code()),
+                                Toast.LENGTH_SHORT
+                            ).show()
                             soundManager.playError()
                         }
                     } catch (e: Exception) {
-                        Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
                         soundManager.playError()
                     }
                 }
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 

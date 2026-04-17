@@ -543,7 +543,7 @@ class ScanFragment : Fragment() {
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
-    // ==================== ПОЛУЧЕНИЕ ВЕСА С СЕРВЕРА ====================
+    // ==================== ПОЛУЧЕНИЕ ВЕСА С СЕРВЕРА LAN ====================
     private fun fetchWeightFromServer() {
         binding.btnScanWeight.isEnabled = false
 
@@ -559,7 +559,7 @@ class ScanFragment : Fragment() {
                     binding.etWeight.requestFocus()
                     binding.etWeight.selectAll()
 
-                    Toast.makeText(requireContext(), "Вес получен: $weightStr кг", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(requireContext(), "Вес получен: $weightStr кг", Toast.LENGTH_SHORT).show()
                     soundManager.playSuccess()
                 } else {
                     Toast.makeText(requireContext(), "Не удалось получить вес с сервера", Toast.LENGTH_SHORT).show()

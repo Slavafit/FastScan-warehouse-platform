@@ -1,10 +1,12 @@
 package com.ocr.fastscan.ui
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.Partial
 import com.ocr.fastscan.databinding.ItemPartyBinding
 import java.text.SimpleDateFormat
@@ -28,19 +30,13 @@ class PartiesAdapter(
         fun bind(party: Partial) {
             val context = binding.root.context
 
-            // Исправляем getString и путь к ресурсам (R.string вместо R.getString)
-//            binding.tvPartialCode.text = context.getString(R.string.track_code, party.partial_code)
-//            binding.tvPartialName.text = context.getString(R.string.party_name, party.partial_name)
-//            binding.tvWarehouse.text = context.getString(R.string.country, party.warehouse_name)
-//            binding.tvBoxCount.text = context.getString(R.string.boxes_count, party.boxCount)
+            binding.tvPartialCode.text = context.getString(R.string.track_code, party.partial_code)
+            binding.tvPartialName.text = context.getString(R.string.party_name, party.partial_name)
+            binding.tvWarehouse.text = context.getString(R.string.country, party.warehouse_name)
+            binding.tvBoxCount.text = context.getString(R.string.boxes_count, party.boxCount)
 
-            binding.tvPartialCode.text = "Трек: ${party.partial_code}"
-            binding.tvPartialName.text = "Код: ${party.partial_name}"
-            binding.tvWarehouse.text = "Страна: ${party.warehouse_name}"
-            binding.tvBoxCount.text = "Коробок: ${party.boxCount}"
-
-            val dateCreated = formatBoxDate(party.date_created)  // ← форматируем
-            binding.tvDate.text = "Дата: ${dateCreated}"
+            val dateCreated = formatBoxDate(context, party.date_created)  // ← форматируем
+            binding.tvDate.text = context.getString(R.string.date, dateCreated)
 
             binding.root.setOnClickListener {
                 onClick(party)
@@ -48,13 +44,16 @@ class PartiesAdapter(
         }
     }
     //формат даты Результат: "23.02.2026 17:14"
-    private fun formatBoxDate(isoDate: String?): String {
-        if (isoDate.isNullOrBlank()) return "Нет даты"
+    private fun formatBoxDate(context: Context, isoDate: String?): String {
+        if (isoDate.isNullOrBlank())
+        {
+            return context.getString(R.string.no_date)
+        }
 
         try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
             inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-            val date = inputFormat.parse(isoDate) ?: return "Ошибка даты"
+            val date = inputFormat.parse(isoDate) ?: return context.getString(R.string.no_date)
 
             val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
             return outputFormat.format(date)

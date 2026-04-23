@@ -480,7 +480,7 @@ class ScanFragment : Fragment() {
             } catch (e: Exception) {
                 Toast.makeText(
                     requireContext(),
-                    getString(R.string.net_error),
+                    getString(R.string.net_error_short),
                     Toast.LENGTH_SHORT)
                     .show()
                 //Log.e("SearchClient", e.message, e)

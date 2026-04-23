@@ -188,8 +188,8 @@ class PrintHelper(private val context: Context) {
         // Заголовок
         paint.textSize = 18f
         paint.isFakeBoldText = true
-        canvas.drawText("Onza España", padding + 20f, y, paint)
-        y += 40f
+        canvas.drawText("Onza España", padding + 10f, y, paint)
+        y += 30f
 
         //Штрих-код (генерируем Bitmap и рисуем)
         val barcodeHeight = 100
@@ -216,7 +216,7 @@ class PrintHelper(private val context: Context) {
         // Партия
         paint.textSize = 30f
         paint.isFakeBoldText = false
-        canvas.drawText("Party: $partialName", padding + 40f, y, paint)
+        canvas.drawText("Part: $partialName", padding + 40f, y, paint)
         y += 40f
 
         // Вес
@@ -228,7 +228,7 @@ class PrintHelper(private val context: Context) {
         // Размеры
         paint.textSize = 12f
         paint.isFakeBoldText = false
-        canvas.drawText("Box size: $length X $height X $width", padding + 40f, y, paint)
+        canvas.drawText("Box dimensions: $length X $height X $width", padding + 40f, y, paint)
         y += 20f
 
         // Дата печати
@@ -236,6 +236,9 @@ class PrintHelper(private val context: Context) {
         paint.textSize = 12f
         paint.isFakeBoldText = false
         canvas.drawText("Printed: $dateStr", padding + 40f, y, paint)
+        y += 5f
+        //Штрих-код
+        canvas.drawBitmap(barcodeBmp, padding, y, barcodePaint)
     }
 
     private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {
@@ -287,7 +290,7 @@ class PrintHelper(private val context: Context) {
         // Рисуем чуть выше (y = 40f), чтобы сэкономить место.
         // Занимает пространство от 40 до 160 по вертикали (40 + 120).
         val barcodeBmp = BarcodeUtils.generateBarcode(trackingCode, 300, 100)
-        canvas.drawBitmap(barcodeBmp, 20f, 40f, paint)
+        canvas.drawBitmap(barcodeBmp, 20f, 30f, paint)
 
         // 2. Полный трек-номер прямо под штрих-кодом
         paint.textSize = 25f
@@ -310,14 +313,22 @@ class PrintHelper(private val context: Context) {
         paint.textSize = 25f // Чуть крупнее для склада
         paint.isFakeBoldText = false // Возвращаем обычный шрифт
         canvas.drawText("Weight: $weight kg", 20f, 340f, paint)
+        // 7. Штрих-код
+        // Рисуем чуть выше (y = 40f), чтобы сэкономить место.
+        // Занимает пространство от 40 до 160 по вертикали (40 + 120).
+        val barcodeBmp2 = BarcodeUtils.generateBarcode(trackingCode, 300, 10)
+        canvas.drawBitmap(barcodeBmp2, 20f, 0f, paint)
     }
+    //function print party
     fun printParty(
         partialCode: String,
         partialName: String,
         warehouseName: String,
         dateCreated: String,
         boxes: List<BoxInPartial>
-    ) {
+    )
+    {
+        //Log.e("PrintHelper", "Передаём в печать -> partialCode: $partialCode, partialName: $partialName")
         if (boxes.isEmpty()) {
             Log.w("PrintHelper", "Нет коробок для печати")
             return
@@ -338,6 +349,7 @@ class PrintHelper(private val context: Context) {
         paint.isFakeBoldText = true
         canvas.drawText("Партия: $partialCode ($partialName)", 40f, y, paint)
         y += 30f
+        //Log.e("PrintHelper", "Партия -> partialCode: $partialCode, partialName: $partialName")
 
         paint.textSize = 12f
         paint.isFakeBoldText = false
@@ -346,7 +358,7 @@ class PrintHelper(private val context: Context) {
 
         // Заголовок таблицы
         paint.isFakeBoldText = true
-        canvas.drawText("Трек                Размеры         Вес      Объёмный", 40f, y, paint)
+        canvas.drawText("Трек                                Размеры         Вес        Объёмный", 40f, y, paint)
         y += 20f
         paint.isFakeBoldText = false
 
@@ -385,14 +397,14 @@ class PrintHelper(private val context: Context) {
         document.finishPage(page)
 
         // Сохраняем временный файл
-        val fileName = "party_${partialCode.replace("/", "_")}_${SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())}.pdf"
+        val fileName = "party_${partialName.replace(" ", "-")}.pdf"
         val pdfFile = File(context.cacheDir, fileName)
 
         try {
             FileOutputStream(pdfFile).use { output ->
                 document.writeTo(output)
             }
-            Log.d("PrintHelper", "PDF создан: ${pdfFile.absolutePath}")
+            //Log.d("PrintHelper", "PDF создан: ${pdfFile.absolutePath}")
         } catch (e: Exception) {
             Log.e("PrintHelper", "Ошибка создания PDF", e)
             return

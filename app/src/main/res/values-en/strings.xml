@@ -1,25 +1,24 @@
 <resources>
     <string name="app_name">FastScan Pro</string>
-
-    <string name="server_settings">Server Settings</string>
+    <string name="language_settings">🌍 App language</string>
+    <string name="language">Language</string>
+    <string name="language_summary">Select language</string>
+    <string name="server_settings">💻⚙️ Server Settings</string>
     <string name="server_url_title">" URL Server"</string>
     <string name="server_url_summary">Default: https://onza-api.ibm.kg</string>
     <string name="login_title">Login</string>
     <string name="password_title">Password</string>
     <string name="vol_weight_title">Vol Weight</string>
     <string name="vol_weight_summary">By default: 6000</string>
-    <string name="licence_title">Licence</string>
+    <string name="licence_title">📃 Licence</string>
     <string name="licence_email_title">Email for licence</string>
     <string name="licence_email_summary">Enter email, linked with licence</string>
     <string name="licence_status_title">Licence status</string>
     <string name="licence_status_summary">Check...</string>
-    <string name="developer_info_title">About developer</string>
+    <string name="developer_info_title">👨🏻‍💻 About developer</string>
     <string name="developer_title">Viacheslav Fitlin</string>
     <string name="developer_summary">Telegramm: @Slavafit</string>
 
-    <string name="language_settings">App language</string>
-    <string name="language">Language</string>
-    <string name="language_summary">Select language</string>
     <string name="server_weight_address">Server weight adress</string>
     <string name="server_weight_address_summary">For example: http://192.168.1.50</string>
 
@@ -32,19 +31,19 @@
     <string name="lighter">Lighter (+)</string>
     <string name="send_order">SEND ORDER</string>
     <string name="find_order">Find order info</string>
-    <string name="sending">Sending...</string>
+    <string name="sending">🚀 Sending...</string>
 
     <string name="scan">Scan</string>
     <string name="boxes">Boxes</string>
     <string name="new_box">New box %s</string>
     <string name="open_boxes">Open boxes</string>
     <string name="all_boxes">All boxes</string>
-    <string name="show_all_boxes">Show all boxes</string>
+    <string name="show_all_boxes">👀 Show all boxes</string>
     <string name="no_boxes">There are no open boxes. Create a new one.</string>
     <string name="no_open_parties">There are no open parties</string>
 <!--    <string name="box_number">Box number</string>-->
     <string name="box_track">Box number</string>
-    <string name="finish_party_property">Finish party</string>
+    <string name="finish_part_property">Finish part</string>
     <string name="create">Create</string>
     <string name="box_created">Box created %s</string>
     <string name="login_succes">✅ Successful login</string>
@@ -58,14 +57,14 @@
 
     <string name="scan_track">Scan order track</string>
     <string name="save_sizes">Save sizes</string>
-    <string name="print_label">Print label</string>
-    <string name="refresh">Refresh</string>
-    <string name="back">Back</string>
+    <string name="print_label">🖨️ Print label</string>
+    <string name="refresh">🔄 Refresh</string>
+    <string name="back">↩️ Back</string>
     <string name="save">Save</string>
     <string name="apply">APPLY</string>
     <string name="parties">Parties</string>
     <string name="scan_or_input">Scan or input...</string>
-    <string name="generate_track">GENERATE ONZA</string>
+    <string name="generate_track">✨ GENERATE ONZA</string>
 
 //tost
     <string name="name_not_specified">Name not specified</string>
@@ -74,7 +73,9 @@
     <string name="client_not_found">Client not found</string>
     <string name="server_error">Server error %1$d</string>
     <string name="server_res_unknown">Respuesta desconocida del servidor</string>
-    <string name="net_error">Net error %1$x</string>
+    <string name="net_error">Net error %1$s</string>
+    <string name="net_error_code">Net error %1$d</string>
+        <string name="net_error_short">Net error</string>
     <string name="scan_kg">Scan KG</string>
     <string name="order_saved">ORDER SAVED!</string>
     <string name="order_added">ORDER ADDED!</string>
@@ -106,25 +107,25 @@
 
 
 
-    <string name="scan_wait">Waiting scan track...</string>
+    <string name="scan_wait">⌛ Waiting scan track...</string>
     <string name="scan_wait_client">Waiting scan client kode...</string>
-    <string name="weight_kg">📦 Weight: %1$.2f kg</string>
+    <string name="weight_kg">⚖️ Weight (kg)</string>
     <string name="weight">Weight:</string>
     <string name="weight_format">Weight: %.2f kg</string>
-    <string name="box_info">Save box</string>
+    <string name="box_info">💾 Save box</string>
     <string name="save_box">Package</string>
     <string name="shoe_box">Shoes</string>
     <string name="bag_box">Bag</string>
-    <string name="client_code">Client code (KG)</string>
+    <string name="client_code">👤 Client code (KG)</string>
     <string name="search_client">Search by name</string>
-    <string name="dimensions">Dimensions (L x W x H), cm</string>
+    <string name="dimensions">📏 Dimensions (L x W x H), cm</string>
     <string name="volume_weight">Volume weight: %.2f kg</string>
     <string name="sizes">Sizes: %1$d × %2$d × %3$d</string>
     <string name="orders_count">Orders: %d</string>
     <string name="date_created">Created: %s</string>
     <string name="box">Box: %s</string>
-    <string name="calc_v_weight">Calculation of volumetric weight</string>
-    <string name="dimensions_more_0">Dimensions must be greater than 0</string>
+    <string name="calc_v_weight">🧮 Calculation of volumetric weight</string>
+    <string name="dimensions_more_0">☝️ Dimensions must be greater than 0</string>
 
 
 
@@ -149,14 +150,14 @@
 
 
     <!--   fragment of the party -->
-    <string name="new_party">Creation of a new party</string>
-    <string name="input_party">Party name KG (numbers only)</string>
+    <string name="new_part">Creation of a new party</string>
+    <string name="input_part">Party name KG (numbers only)</string>
     <string name="track_code">Track code: %1$s</string>
-    <string name="party_name">Party code: %1$s</string>
+    <string name="part_name">Party code: %1$s</string>
     <string name="country">Country: %1$s</string>
     <string name="boxes_count">Box count: %1d</string>
-    <string name="input_party_name">Input party name</string>
-    <string name="party_created">The party was created</string>
+    <string name="input_part_name">Input party name</string>
+    <string name="part_created">The party was created</string>
     <string name="error_code">Error creating code %d</string>
     <string name="date">Fecha: %1$s</string>
     <string name="no_date">sin fecha</string>
@@ -169,10 +170,10 @@
     <!-- Client search dialog-->
     <string name="first_name">First name</string>
     <string name="last_name">Last name</string>
-    <string name="search_client_title">Search by name and surname</string>
+    <string name="search_client_title">🕵🏻 Search by name and surname</string>
     <string name="search">Search</string>
     <string name="loading_clients">Loading clients...</string>
-    <string name="no_client_found">Client not found</string>
+    <string name="no_client_found">🙅🏻‍♀️ Client not found</string>
     <string name="clients_found">Multiple clients found</string>
 
 
@@ -181,17 +182,17 @@
     <string name="for_example">For example: 28038252</string>
     <string name="select_box">Select a box to add</string>
     <string name="orders">Orders: 0</string>
-    <string name="edit_dimensions_and_weight">Editing dimensions and weight</string>
+    <string name="edit_dimensions_and_weight">✏️ Editing dimensions and weight</string>
 
 
     <!-- Dialog превышения веса -->
     <string name="weight_limit_title">⚠️ Check weight</string>
     <string name="weight_limit_message">The entered weight %1$.2f kg exceeds 8 kg.\nAre you sure this is correct?</string>
-    <string name="weight_limit_positive">Yes, send</string>
-    <string name="weight_limit_negative">No, change</string>
+    <string name="weight_limit_positive">✔ Yes, send</string>
+    <string name="weight_limit_negative">✘ No, change</string>
 
     <!-- Global Search Dialog -->
-    <string name="title_find">Global Search</string>
+    <string name="title_find">🕵🏻 Global Search</string>
     <string name="find">Find</string>
     <string name="finding">Finding %s... </string>
     <string name="error">Error: %s</string>

@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/new_party"
+        android:text="@string/new_part"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -25,7 +25,7 @@
         android:id="@+id/etPartialName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/input_party"
+        android:hint="@string/input_part"
         android:inputType="number"
         android:layout_marginTop="16dp" />
 

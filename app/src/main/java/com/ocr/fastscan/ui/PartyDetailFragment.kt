@@ -231,45 +231,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
     //            }
     //        }
     //    }
-    //private fun finishParty() {
-    //    AlertDialog.Builder(requireContext())
-    //        .setTitle("Завершить партию?")
-    //        .setMessage("Завершить партию $partialCode?")
-    //        .setPositiveButton("Завершить") { _, _ ->
-    //            viewLifecycleOwner.lifecycleScope.launch {
-    //                try {
-    //                    val request = SendPartialRequest(partial = partialGuid)
-    //                    val response = apiService.sendPartial(request)
-    //                    if (response.isSuccessful) {
-    //                        Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
-    //                        soundManager.playSuccess()
-    //
-    //                        // Печать документа
-    //                        val printHelper = PrintHelper(requireContext())
-    //                        partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
-    //                        printHelper.printParty(
-    //                            partialCode = partialCode,
-    //                            partialName = partialName,  //переменная с именем партии (KG 87 и т.д.
-    //                            warehouseName = "Spain",    // или откуда берёшь
-    //                            dateCreated = SimpleDateFormat("dd.MM.yyyy").format(Date()), // или откуда берёшь
-    //                            boxes = boxesAdapter.currentList
-    //                        )
-    //
-    //                        // Возврат в список
-    //                        parentFragmentManager.popBackStack()
-    //                    } else {
-    //                        Toast.makeText(requireContext(), "Ошибка завершения", Toast.LENGTH_SHORT).show()
-    //                        soundManager.playError()
-    //                    }
-    //                } catch (e: Exception) {
-    //                    Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
-    //                    soundManager.playError()
-    //                }
-    //            }
-    //        }
-    //        .setNegativeButton("Отмена", null)
-    //        .show()
-    //}
+
     private fun finishParty() {
         if (isFinishing) return // Защита от дребезга (двойного клика)
 
@@ -298,12 +260,13 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                             // 2. Вызываем печать (PrintHelper должен быть асинхронным внутри)
                             val printHelper = PrintHelper(requireContext())
                             printHelper.printParty(
-                                partialCode = partialCode,
-                                partialName = titleName,
-                                warehouseName = "Spain",
-                                dateCreated = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date()),
+                                partialCode,
+                                partialName,
+                                "Spain BMG",
+                                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date()),
                                 boxes = currentBoxes
                             )
+                            Log.e("PrintHelper", "printHelper.printParty: partialCode: $partialCode, partialName: $partialName, titleName: $titleName")
 
                             // 3. Возвращаемся назад.
                             // Используем Dispatchers.Main для уверенности и небольшую задержку,

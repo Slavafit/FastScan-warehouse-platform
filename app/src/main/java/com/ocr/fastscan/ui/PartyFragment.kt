@@ -108,7 +108,7 @@ class PartyFragment : Fragment() {
                 val inputName = dialogBinding.etPartialName.text.toString().trim()
                 if (inputName.isEmpty()) {
                     Toast.makeText(requireContext(),
-                        getString(R.string.input_party_name),
+                        getString(R.string.input_part_name),
                         Toast.LENGTH_SHORT)
                         .show()
                     return@setPositiveButton
@@ -130,7 +130,7 @@ class PartyFragment : Fragment() {
                         //Log.d("CreateParty", "Тело ответа: ${response.body()}")
 
                         if (response.isSuccessful) {    // Проверка по коду 200 OK, игнорируя опечатку "seccess")))
-                            Toast.makeText(requireContext(), R.string.party_created, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), R.string.part_created, Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
                             delay(300)  // Ждем, пока база на сервере обновится
                             loadParties()
@@ -143,7 +143,7 @@ class PartyFragment : Fragment() {
                             soundManager.playError()
                         }
                     } catch (e: Exception) {
-                        Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
                         soundManager.playError()
                     }
                 }

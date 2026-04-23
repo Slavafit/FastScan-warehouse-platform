@@ -1,11 +1,11 @@
 <resources>
 <string name="app_name">FastScan</string>
 
-    <string name="language_settings">Язык приложения</string>
+    <string name="language_settings">🌍 Язык приложения</string>
     <string name="language">Язык</string>
     <string name="language_summary">Выберите язык приложения</string>
 
-    <string name="server_settings">Настройки сервера</string>
+    <string name="server_settings">💻⚙️ Настройки сервера</string>
     <string name="server_url_title">URL сервера</string>
     <string name="server_url_summary">По умолчанию: https://onza-api.ibm.kg</string>
     <string name="login_title">Логин</string>
@@ -17,13 +17,13 @@
     <string name="server_weight_address_summary">Например: http://192.168.1.50</string>
 
 
-    <string name="licence_title">Лицензия</string>
+    <string name="licence_title">📃 Лицензия</string>
     <string name="licence_email_title">Email для лицензии</string>
     <string name="licence_email_summary">Введите email, привязанный к лицензии</string>
     <string name="licence_status_title">Статус лицензии</string>
     <string name="licence_status_summary">Проверка...</string>
 
-    <string name="developer_info_title">О разработчике</string>
+    <string name="developer_info_title">👨🏻‍💻 О разработчике</string>
     <string name="developer_title">Вячеслав Фитлин</string>
     <string name="developer_summary">Telegramm: @Slavafit</string>
 
@@ -33,7 +33,7 @@
     <string name="parties">Партии</string>
     <string name="no_open_parties">Нет открытых партий</string>
     <string name="box_track">Номер коробки %s</string>
-    <string name="finish_party_property">Завершить партию</string>
+    <string name="finish_part_property">Завершить партию</string>
     <string name="create">Создать</string>
     <string name="box_created">Коробка создана %s</string>
     <string name="login_succes">✅ Успешный вход</string>
@@ -44,13 +44,13 @@
 
     <string name="scan_track">Сканировать трек заказа</string>
     <string name="save_sizes">Сохранить размеры</string>
-    <string name="print_label">Печать лейбла</string>
+    <string name="print_label">🖨️ Печать лейбла</string>
     <string name="scan_or_input">Скан или ввод...</string>
-    <string name="generate_track">ГЕНЕРИРОВАТЬ ONZA</string>
+    <string name="generate_track">✨ ГЕНЕРИРОВАТЬ ONZA</string>
 
     <!-- кнопки -->
-    <string name="refresh">Обновить</string>
-    <string name="back">Hазад</string>
+    <string name="refresh">🔄 Обновить</string>
+    <string name="back">↩️ Hазад</string>
     <string name="save">Сохранить</string>
     <string name="ok">OK</string>
     <string name="cancel">Отмена</string>
@@ -64,7 +64,7 @@
     <string name="apply">ПРИМЕНИТЬ</string>
     <string name="send_order">ОТПРАВИТЬ ЗАКАЗ</string>
     <string name="find_order">Найти информацию о заказе</string>
-    <string name="sending">Отправка...</string>
+    <string name="sending">🚀 Отправка...</string>
 
 
     <!-- tost -->
@@ -74,7 +74,9 @@
     <string name="found">Найден: %1$s (%2$s)</string>
     <string name="server_error">Ошибка сервера %1$d</string>
     <string name="server_res_unknown">Неизвестный ответ сервера</string>
-    <string name="net_error">Ошибка сети %1$x</string>
+    <string name="net_error">Ошибка сети %1$s</string>
+    <string name="net_error_code">Ошибка сети %1$d</string>
+    <string name="net_error_short">Ошибка сети</string>
     <string name="scan_kg">Сканирование KG</string>
     <string name="order_saved">ЗАКАЗ УСПЕШНО СОХРАНЕН!</string>
     <string name="order_added">ЗАКАЗ ДОБАВЛЕН!</string>
@@ -107,25 +109,25 @@
 
 
     <!-- фрагмент сканирование -->
-    <string name="scan_wait">Ожидание сканирования...</string>
+    <string name="scan_wait">⌛ Ожидание сканирования...</string>
     <string name="scan_wait_client">Сканирование кода клиента...</string>
-    <string name="weight_kg">Вес (кг)</string>
+    <string name="weight_kg">⚖️ Вес (кг)</string>
     <string name="weight">Bec:</string>
-    <string name="weight_format">📦 Вес: %1$.2f кг</string>
-    <string name="box_info">Сохранить коробку</string>
+    <string name="weight_format">Вес: %1$.2f кг</string>
+    <string name="box_info">💾 Сохранить коробку</string>
     <string name="save_box">Упаковка</string>
     <string name="shoe_box">Обувь</string>
     <string name="bag_box">Сумка</string>
-    <string name="client_code">Код клиента (KG)</string>
+    <string name="client_code">👤 Код клиента (KG)</string>
     <string name="search_client">Поиск по имени</string>
-    <string name="dimensions">Размеры (Д х Ш х В), см</string>
+    <string name="dimensions">📏 Размеры (Д х Ш х В), см</string>
     <string name="volume_weight">Объёмный вес: %.2f кг</string>
     <string name="sizes">Размеры: %1$d × %2$d × %3$d см</string>
     <string name="orders_count">Заказов: %d шт.</string>
     <string name="date_created">Создано: %s</string>
     <string name="box">Коробка: %s</string>
-    <string name="calc_v_weight">Расчёт объёмного веса</string>
-    <string name="dimensions_more_0">Размеры должны быть больше 0</string>
+    <string name="calc_v_weight">🧮 Расчёт объёмного веса</string>
+    <string name="dimensions_more_0">☝️ Размеры должны быть больше 0</string>
 
 
 
@@ -135,7 +137,7 @@
     <string name="new_box">Новая коробка %s</string>
     <string name="open_boxes">Открытые коробки</string>
     <string name="all_boxes">Все коробки</string>
-    <string name="show_all_boxes">Показать все</string>
+    <string name="show_all_boxes">👀 Показать все</string>
     <string name="no_boxes">Нет открытых коробок. Создайте новую.</string>
     <string name="add_new_box">Добавить новую коробку</string>
     <string name="new_box_number">Будет создан номер: ...</string>
@@ -156,14 +158,14 @@
 
 
     <!-- фрагмент партии -->
-    <string name="new_party">Создание новой партии</string>
-    <string name="input_party">Название партии KG(только цифры)</string>
+    <string name="new_part">Создание новой партии</string>
+    <string name="input_part">Название партии KG(только цифры)</string>
     <string name="track_code">Трек-код: %1$s</string>
-    <string name="party_name">Код партии: %1$s</string>
+    <string name="part_name">Код партии: %1$s</string>
     <string name="country">Страна: %1$s</string>
     <string name="boxes_count">Коробок: %1d</string>
-    <string name="input_party_name">Введите название партии</string>
-    <string name="party_created">Партия создана</string>
+    <string name="input_part_name">Введите название партии</string>
+    <string name="part_created">Партия создана</string>
     <string name="error_code">Ошибка создания код %d</string>
     <string name="date">Дата: %1$s</string>
     <string name="no_date">Нет даты</string>
@@ -173,10 +175,10 @@
     <!-- Диалог поиска клиента -->
     <string name="first_name">Имя</string>
     <string name="last_name">Фамилия</string>
-    <string name="search_client_title">Поиск по имени и фамилии</string>
+    <string name="search_client_title">🕵🏻 Поиск по имени и фамилии</string>
     <string name="search">Поиск</string>
     <string name="loading_clients">Загрузка клиентов...</string>
-    <string name="no_client_found">Клиент не найден</string>
+    <string name="no_client_found">🙅🏻‍♀️ Клиент не найден</string>
     <string name="clients_found">Найдено несколько клиентов</string>
 
     <!-- Диалог поиска трека -->
@@ -184,17 +186,17 @@
     <string name="for_example">Например: 28038252</string>
     <string name="select_box">Выберите коробку для добавления</string>
     <string name="orders">Заказов: 0</string>
-    <string name="edit_dimensions_and_weight">Редактирование размеров и веса</string>
+    <string name="edit_dimensions_and_weight">✏️ Редактирование размеров и веса</string>
 
     <!-- Диалог превышения веса -->
     <string name="weight_limit_title">⚠️ Проверьте вес</string>
     <string name="weight_limit_message">Введенный вес %.2f кг превышает 8 кг.\nВы уверены, что всё верно?</string>
-    <string name="weight_limit_positive">Да, отправить</string>
-    <string name="weight_limit_negative">Нет, изменить</string>
+    <string name="weight_limit_positive">✔ Да, отправить</string>
+    <string name="weight_limit_negative">✘ Нет, изменить</string>
 
     <!-- Диалог Глобального поиска -->
 
-    <string name="title_find">Глобальный поиск</string>
+    <string name="title_find">🕵🏻 Глобальный поиск</string>
     <string name="find">Найти</string>
     <string name="finding">Ищем %s... </string>
     <string name="error">Ошибка: %s</string>

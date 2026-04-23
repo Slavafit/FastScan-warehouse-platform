@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="language_settings">Idioma de apicacion</string>
+    <string name="language_settings">🌍 Idioma de apicacion</string>
     <string name="language">Idioma</string>
     <string name="language_summary">idioma de app</string>
 
     <string name="app_name">FastScan Pro</string>
 
-    <string name="server_settings">Configuración del servidor</string>
+    <string name="server_settings">💻⚙️ Configuración del servidor</string>
     <string name="server_url_title">URL del servidor</string>
     <string name="server_url_summary">Por defecto: https://onza-api.ibm.kg</string>
     <string name="login_title">Login</string>
@@ -16,13 +16,13 @@
     <string name="server_weight_address">Dirección de peso del servidor</string>
     <string name="server_weight_address_summary">Por ejemplo: http://192.168.1.50</string>
 
-    <string name="licence_title">Licencia</string>
+    <string name="licence_title">📃 Licencia</string>
     <string name="licence_email_title">Email para licencia</string>
     <string name="licence_email_summary">Introduce el email asociado a la licencia</string>
     <string name="licence_status_title">Estado de la licencia</string>
     <string name="licence_status_summary">Comprobando...</string>
 
-    <string name="developer_info_title">Acerca del desarrollador</string>
+    <string name="developer_info_title">👨🏻‍💻 Acerca del desarrollador</string>
     <string name="developer_title">Viacheslav Fitlin</string>
     <string name="developer_summary">Telegram: @Slavafit</string>
 
@@ -39,12 +39,12 @@
     <string name="new_box">Caja nueva %s</string>
     <string name="open_boxes">Cajas abiertas</string>
     <string name="all_boxes">Todas las cajas</string>
-    <string name="show_all_boxes">Mostrar todas las cajas</string>
+    <string name="show_all_boxes">👀 Mostrar todas las cajas</string>
     <string name="no_boxes">No hay cajas. Crea una nueva.</string>
     <string name="no_open_parties">No hay lote de cajas abiertas.</string>
 <!--    <string name="box_number">Número de caja</string>-->
     <string name="box_track">Número de caja</string>
-    <string name="finish_party_property">Completar un lote de cajas</string>
+    <string name="finish_part_property">Completar un lote de cajas</string>
     <string name="create">Crear</string>
     <string name="box_created">Caja creada %s</string>
     <string name="login_succes">✅ Inicio de sesión exitoso</string>
@@ -57,28 +57,30 @@
 
     <string name="scan_track">Escanear número de seguimiento del pedido</string>
     <string name="save_sizes">Guardar tamaños</string>
-    <string name="print_label">Imprimir etiqueta</string>
-    <string name="refresh">Actualizar</string>
-    <string name="back">Atras</string>
+    <string name="print_label">🖨️ Imprimir etiqueta</string>
+    <string name="refresh">🔄 Actualizar</string>
+    <string name="back">↩️ Atras</string>
     <string name="save">Guardar</string>
     <string name="apply">APRENDER</string>
     <string name="send_order">ENVIAR PEDIDO</string>
-    <string name="scan_wait">Esperando de escaneo...</string>
+    <string name="scan_wait">⌛ Esperando de escaneo...</string>
     <string name="scan_wait_client">Esperando de escaneo cliente...</string>
     <string name="parties">Partes</string>
     <string name="scan_or_input">Escanear o ingresar...</string>
-    <string name="generate_track">GENERAR ONZA</string>
+    <string name="generate_track">✨ GENERAR ONZA</string>
     <string name="find_order">Buscar información del pedido</string>
-    <string name="sending">Enviando...</string>
+    <string name="sending">🚀 Enviando...</string>
 
     //tost
     <string name="name_not_specified">Nombre no especificado</string>
     <string name="track_not_found">Track no encontrada. Por favor, escanee KG</string>
     <string name="found">Encontrado: %1$s (%2$s)</string>
-    <string name="client_not_found">Cliente no encontrado</string>
+    <string name="client_not_found">🙅🏻‍♀️ Cliente no encontrado</string>
     <string name="server_error">Error de servedor %1$d</string>
     <string name="server_res_unknown">Unknown server response</string>
-    <string name="net_error">Error de red %1$d</string>
+    <string name="net_error">Error de red %1$s</string>
+    <string name="net_error_code">Error de red %1$d</string>
+    <string name="net_error_short">Error de red</string>
     <string name="scan_kg">Escanear KG</string>
     <string name="order_saved">PEDIDO GUARDADO!</string>
     <string name="order_added">Pedido agregado!</string>
@@ -110,23 +112,23 @@
 
 
 
-    <string name="weight_kg">Peso (kg)</string>
-    <string name="weight">Peso:</string>
-    <string name="weight_format">📦 Peso: %.2f kg</string>
-    <string name="box_info">Guardar caja</string>
+    <string name="weight_kg">⚖️ Peso (kg)</string>
+    <string name="weight">⚖️ Peso:</string>
+    <string name="weight_format">Peso: %.2f kg</string>
+    <string name="box_info">💾 Guardar caja</string>
     <string name="save_box">Paquete</string>
     <string name="shoe_box">Zapatos</string>
     <string name="bag_box">Bolso</string>
-    <string name="client_code">Código del cliente (KG)</string>
+    <string name="client_code">👤 Código del cliente (KG)</string>
     <string name="search_client">Buscar por nombre</string>
-    <string name="dimensions">Dimensiones (L x W x H), cm</string>
+    <string name="dimensions">📏 Dimensiones (L x W x H), cm</string>
     <string name="volume_weight">Peso volumétrico: %.2f kg</string>
     <string name="sizes">Dimensiones: %1$d × %2$d × %3$d cm</string>
     <string name="orders_count">Órdenes: %d un.</string>
     <string name="date_created">Creado: %s</string>
     <string name="box">Caja: %s</string>
-    <string name="calc_v_weight">Cálculo del peso volumétrico</string>
-    <string name="dimensions_more_0">Las dimensiones deben ser mayores que 0</string>
+    <string name="calc_v_weight">🧮 Cálculo del peso volumétrico</string>
+    <string name="dimensions_more_0">☝️ Las dimensiones deben ser mayores que 0</string>
 
 
 
@@ -150,14 +152,14 @@
 
 
     <!--   fragment of the party -->
-    <string name="new_party">Creación de un nuevo partido</string>
-    <string name="input_party">Nombre del partido: KG (solo números)</string>
+    <string name="new_part">Creación de un nuevo partido</string>
+    <string name="input_part">Nombre del partido: KG (solo números)</string>
     <string name="track_code">Código de seguimiento: %1$s</string>
-    <string name="party_name">Código de despachos: %1$s</string>
+    <string name="part_name">Código de despachos: %1$s</string>
     <string name="country">Pais: %1$s</string>
     <string name="boxes_count">Número de cajas: %1d</string>
-    <string name="input_party_name">Ingrese el nombre de la parte</string>
-    <string name="party_created">El partido fue creado</string>
+    <string name="input_part_name">Ingrese el nombre de la parte</string>
+    <string name="part_created">El partido fue creado</string>
     <string name="error_code">Error al crear el código %d</string>
     <string name="date">Date: %1$s</string>
     <string name="no_date">No date</string>
@@ -169,7 +171,7 @@
     <!-- Client search dialog-->
     <string name="first_name">Nombre</string>
     <string name="last_name">Apellido</string>
-    <string name="search_client_title">Buscar por nombre y apellido</string>
+    <string name="search_client_title">🕵🏻 Buscar por nombre y apellido</string>
     <string name="search">Buscar</string>
     <string name="loading_clients">Cargando clientes...</string>
     <string name="no_client_found">Cliente no encontrado</string>
@@ -181,15 +183,15 @@
     <string name="for_example">Por ejemplo: 28038252</string>
     <string name="select_box">Seleccione una caja para agregar</string>
     <string name="orders">Pedidos: 0</string>
-    <string name="edit_dimensions_and_weight">Editar dimensiones y peso</string>
+    <string name="edit_dimensions_and_weight">✏️ Editar dimensiones y peso</string>
 
     <string name="weight_limit_title">⚠️ Comprobar peso</string>
     <string name="weight_limit_message">El peso introducido %1$.2f kg supera los 8 kg.\n¿Está seguro de que esto es correcto?</string>
-    <string name="weight_limit_positive">Sí, enviar</string>
-    <string name="weight_limit_negative">No, cambiar</string>
+    <string name="weight_limit_positive">✔ Sí, enviar</string>
+    <string name="weight_limit_negative">✘ No, cambiar</string>
 
     <!-- Global Search Dialog -->
-    <string name="title_find">Búsqueda global</string>
+    <string name="title_find">🕵🏻 Búsqueda global</string>
     <string name="find">Buscar</string>
     <string name="finding">Buscando %s... </string>
     <string name="error">Error: %s</string>

@@ -18,7 +18,6 @@ import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.launch
 import android.text.TextWatcher
 import android.util.Log
-import android.widget.EditText
 import com.ocr.fastscan.R
 import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.ScanUtils
@@ -34,7 +33,7 @@ class BoxDetailFragment : Fragment() {
     private val soundManager by lazy { AppDependencies.soundManager }
 
     private var boxGuid: String = ""
-    private var boxСodeid: String = ""
+    private var boxCodeid: String = ""
     private var boxTracking: String = ""
     private var boxWeight: String = ""
     private var partialName: String = ""
@@ -63,7 +62,7 @@ class BoxDetailFragment : Fragment() {
     companion object {
         fun newInstance(
             boxGuid: String,
-            boxСodeid: String,
+            boxCodeid: String,
             boxTracking: String,
             boxWeight: String,
             partialName: String = "España"
@@ -72,7 +71,7 @@ class BoxDetailFragment : Fragment() {
             val fragment = BoxDetailFragment()
             val args = Bundle()
             args.putString("box_guid", boxGuid)
-            args.putString("codeid", boxСodeid)
+            args.putString("codeid", boxCodeid)
             args.putString("box_tracking", boxTracking)
             args.putString("box_weight", boxWeight)
             args.putString("partial_name", partialName)
@@ -84,7 +83,7 @@ class BoxDetailFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         boxGuid = arguments?.getString("box_guid") ?: ""
-        boxСodeid = arguments?.getString("codeid") ?: ""
+        boxCodeid = arguments?.getString("codeid") ?: ""
         boxTracking = arguments?.getString("box_tracking") ?: ""
         boxWeight = arguments?.getString("box_weight") ?: ""
         partialName = arguments?.getString("partial_name") ?: "KG"  // ← ключевой момент!
@@ -99,7 +98,7 @@ class BoxDetailFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentBoxDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -173,7 +172,7 @@ class BoxDetailFragment : Fragment() {
                     ordersAdapter.submitList(orders)
 
                     // Считаем суммарный вес
-                    val totalGrossWeight = orders.sumOf { it.grossWeight?.toDouble() ?: 0.0 }
+                    val totalGrossWeight = orders.sumOf { it.grossWeight ?: 0.0 }
                     // обновляем UI
                     binding.tvGrossWeight.text = getString(
                         R.string.weight_total,
@@ -198,8 +197,12 @@ class BoxDetailFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(),
-                    R.string.net_error,
-                    Toast.LENGTH_SHORT)
+                    getString(
+                        R.string.net_error,
+                        e
+                    ),
+                    Toast.LENGTH_SHORT
+                )
                     .show()
             } finally {
                 binding.progressBar.visibility = View.GONE
@@ -235,7 +238,7 @@ class BoxDetailFragment : Fragment() {
             try {
                 val request = BoxRequest(
                     guid = boxGuid,  // ← обязательно для обновления!
-                    codeid = boxСodeid, // ← обязательно для обновления!
+                    codeid = boxCodeid, // ← обязательно для обновления!
                     trackingCode = boxTracking,
                     width = width,
                     height = height,
@@ -266,7 +269,13 @@ class BoxDetailFragment : Fragment() {
                     Toast.makeText(requireContext(), R.string.error_saving_dim, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    getString(
+                        R.string.net_error,
+                        e
+                    ),
+                    Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -307,7 +316,12 @@ class BoxDetailFragment : Fragment() {
                     Toast.makeText(requireContext(), R.string.error_deleting, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    getString(
+                        R.string.net_error,
+                        e
+                    ), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -321,23 +335,28 @@ private fun printLabel() {
     val fullWeightText = binding.tvGrossWeight.text.toString()
 
     // 2. Очень надёжная очистка веса (убираем всё лишнее)
-    val weightClean = fullWeightText
-        .replace("Общий вес:", "", ignoreCase = true)
-        .replace("Вес:", "", ignoreCase = true)
-        .replace(" кг", "", ignoreCase = true)
-        .replace("kg", "", ignoreCase = true)
-        .replace(",", ".")          // запятая → точка (русский формат)
-        .replace("\\s+", "")        // все пробелы убираем
-        .trim()
+        val weightClean = fullWeightText
+            .replace("Общий вес:", "", ignoreCase = true)
+            .replace("Вес:", "", ignoreCase = true)
+            .replace("Weight total:", "", ignoreCase = true)
+            .replace(" кг", "", ignoreCase = true)
+            .replace("kg", "", ignoreCase = true)
+            .replace("кг", "", ignoreCase = true)
+            .replace(",", ".")                    // запятая → точка
+            .replace(Regex("[^0-9.]"), "")        // оставляем только цифры и точку
+            .trim()
 
-    // 3. Проверяем, что вес — это число (защита от краша в PrintHelper)
-    val weightValue = weightClean.toDoubleOrNull()
-    if (weightValue == null || weightValue <= 0) {
-        //Log.e("printHelper", "Некорректный вес: '$weightClean'")
-        Toast.makeText(requireContext(), R.string.incorrect_weight, Toast.LENGTH_SHORT).show()
-        soundManager.playError()
-        return
-    }
+        //Log.d("printHelper", "Очищенный вес: '$weightClean'")
+
+    // 3. Преобразуем в число
+        val weightValue = weightClean.toDoubleOrNull()
+
+        if (weightValue == null || weightValue <= 0) {
+            //Log.e("printHelper", "Не удалось распарсить вес: '$weightClean'")
+            Toast.makeText(requireContext(), R.string.incorrect_weight, Toast.LENGTH_SHORT).show()
+            soundManager.playError()
+            return
+        }
 
     // 4. Трек-номер (убираем лишние пробелы)
     val trimmedTracking = boxTracking.trim()
@@ -420,8 +439,8 @@ private fun printLabel() {
 
                     // Успех: массив с GUID
                     if (rawBody is List<*> && rawBody.isNotEmpty()) {
-                        val firstItem = rawBody[0] as? Map<*, *>
-                        val newGuid = firstItem?.get("guid") as? String
+                        //val firstItem = rawBody[0] as? Map<*, *>
+                        //val newGuid = firstItem?.get("guid") as? String
 
                         //Log.d("AddOrder", "Успех: добавлен GUID $newGuid")
                         Toast.makeText(requireContext(), getString(R.string.order_added), Toast.LENGTH_SHORT).show()
@@ -533,7 +552,7 @@ private fun printLabel() {
                 }
             } catch (e: Exception) {
                 Log.e("loadBoxInfo", "Сеть/исключение: ${e.message}", e)
-                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
@@ -548,7 +567,7 @@ private fun printLabel() {
                     val orders = response.body()!!
                     ordersAdapter.submitList(orders)
 
-                    val totalGrossWeight = orders.sumOf { it.grossWeight?.toDouble() ?: 0.0 }
+                    val totalGrossWeight = orders.sumOf { it.grossWeight ?: 0.0 }
                     binding.tvGrossWeight.text = getString(R.string.weight_total, totalGrossWeight)
                     binding.tvOrderCount.text = getString(R.string.orders_count, orders.size)
 
@@ -559,7 +578,12 @@ private fun printLabel() {
                     Toast.makeText(requireContext(), R.string.error_load_orders, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    getString(
+                        R.string.net_error,
+                        e
+                    ), Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
@@ -581,7 +605,7 @@ private fun printLabel() {
                     }
                 } catch (e: Exception) {
                     Log.e("BoxDetail", "Ошибка сети", e)
-                    Toast.makeText(requireContext(), R.string.net_error, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
                 }
             }
         }

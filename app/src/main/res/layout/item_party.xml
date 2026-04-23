@@ -24,7 +24,7 @@
             android:id="@+id/tvPartialName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="KG 87" />
+            android:text="KG 00" />
 
         <TextView
             android:id="@+id/tvWarehouse"

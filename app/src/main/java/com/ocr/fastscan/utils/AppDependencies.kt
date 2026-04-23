@@ -75,7 +75,7 @@ object AppDependencies {
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e("Auth", "Ошибка при авто-логине", e)
-                    Toast.makeText(context, R.string.net_error, Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.net_error_short, Toast.LENGTH_LONG).show()
                 }
             }
         }

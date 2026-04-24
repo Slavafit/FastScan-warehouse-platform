@@ -2,6 +2,7 @@ package com.ocr.fastscan.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import com.ocr.fastscan.R
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,9 +14,10 @@ class OrdersAdapter(
 ) : ListAdapter<OrderDetails, OrdersAdapter.ViewHolder>(DiffCallback) {
 
     class ViewHolder(private val binding: ItemOrderInBoxBinding) : RecyclerView.ViewHolder(binding.root) {
+        private val context = binding.root.context
         fun bind(order: OrderDetails, onDelete: (OrderDetails) -> Unit) {
-            binding.tvTrackingNumber.text = order.trackingNumber ?: "Нет номера"
-            binding.tvWeight.text = "Вес: %.2f кг".format(order.grossWeight ?: 0.0)
+            binding.tvTrackingNumber.text = order.trackingNumber ?: "..."
+            binding.tvWeight.text = context.getString(R.string.weight_format, order.grossWeight?: 0.0)
 
             binding.btnDelete.setOnClickListener { onDelete(order) }
         }

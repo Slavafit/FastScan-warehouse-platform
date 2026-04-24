@@ -63,8 +63,12 @@
     <string name="save">Guardar</string>
     <string name="apply">APRENDER</string>
     <string name="send_order">ENVIAR PEDIDO</string>
+
     <string name="scan_wait">⌛ Esperando de escaneo...</string>
     <string name="scan_wait_client">Esperando de escaneo cliente...</string>
+    <string name="hint_scan_kg">Señale al código del cliente (KG...)</string>
+    <string name="hint_scan_weight">Señale la pantalla de la báscula</string>
+    <string name="hint_scan_track">Señale el código de barras de la pista.</string>
     <string name="parties">Partes</string>
     <string name="scan_or_input">Escanear o ingresar...</string>
     <string name="generate_track">✨ GENERAR ONZA</string>
@@ -92,6 +96,7 @@
     <string name="input_name_surname">Ingrese nombre y apellido</string>
     <string name="input_3_chars">Ingrese al menos 3 caracteres</string>
     <string name="no_code">Sin código</string>
+    <string name="no_number">Sin número</string>
     <string name="selected">Seleccionado: %1$s</string>
     <string name="scan_error_result">Resultado de escaneo no válido</string>
     <string name="error_create">⚠️ Error al crear %s</string>

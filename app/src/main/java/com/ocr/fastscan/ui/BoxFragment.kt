@@ -31,7 +31,7 @@ class BoxFragment : Fragment() {
         // Клик по коробке — открываем детальный экран
         val detailFragment = BoxDetailFragment.newInstance(
             boxGuid =box.guid ?: "",
-            boxСodeid = box.codeid ?: "",
+            boxCodeid = box.codeid ?: "",
             boxTracking = box.trackingCode ?: "",
             boxWeight = box.grossWeight?.toString() ?: "",
             partialName = partialName ?: "KG..."

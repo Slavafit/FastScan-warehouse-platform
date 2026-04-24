@@ -37,9 +37,9 @@ class CameraActivity : AppCompatActivity() {
 
         // Текст подсказки (убедись, что tvHint есть в XML)
         binding.tvHint?.text = when (mode) {
-            "kg" -> "Наведите на код клиента (KG...)"
-            "weight" -> "Наведите на дисплей весов"
-            else -> "Наведите на штрих-код трека"
+            "kg" -> getString(R.string.hint_scan_kg)
+            "weight" -> getString(R.string.hint_scan_weight)
+            else -> getString(R.string.hint_scan_track)
         }
 
         // Показываем нужные кнопки в зависимости от режима

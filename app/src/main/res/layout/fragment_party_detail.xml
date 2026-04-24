@@ -44,7 +44,7 @@
         android:id="@+id/btnFinishParty"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/finish_party_property"
+        android:text="@string/finish_part_property"
         android:layout_marginBottom="16dp"
         android:layout_marginHorizontal="16dp"
         app:layout_constraintBottom_toBottomOf="parent"

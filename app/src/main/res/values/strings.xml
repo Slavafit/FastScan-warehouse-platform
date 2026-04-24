@@ -88,6 +88,7 @@
     <string name="input_name_surname">Введите имя и фамилию</string>
     <string name="input_3_chars">Введите минимум 3 символа</string>
     <string name="no_code">Нет кода</string>
+    <string name="no_number">Нет Номера</string>
     <string name="selected">Выбран: %1$s</string>
     <string name="scan_error_result">Неверный результат сканирования</string>
     <string name="error_create">⚠️ Ошибка создания %s</string>
@@ -111,6 +112,9 @@
     <!-- фрагмент сканирование -->
     <string name="scan_wait">⌛ Ожидание сканирования...</string>
     <string name="scan_wait_client">Сканирование кода клиента...</string>
+    <string name="hint_scan_kg">Наведите на код клиента (KG...)</string>
+    <string name="hint_scan_weight">Наведите на дисплей весов</string>
+    <string name="hint_scan_track">Наведите на штрих-код трека</string>
     <string name="weight_kg">⚖️ Вес (кг)</string>
     <string name="weight">Bec:</string>
     <string name="weight_format">Вес: %1$.2f кг</string>

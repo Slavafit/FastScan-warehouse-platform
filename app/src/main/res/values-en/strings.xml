@@ -52,9 +52,6 @@
 
 
 
-
-
-
     <string name="scan_track">Scan order track</string>
     <string name="save_sizes">Save sizes</string>
     <string name="print_label">🖨️ Print label</string>
@@ -87,6 +84,7 @@
     <string name="input_name_surname">Enter name and surname</string>
     <string name="input_3_chars">Enter at least 3 characters</string>
     <string name="no_code">No code</string>
+    <string name="no_number">No number</string>
     <string name="selected">Selected: %1$s</string>
     <string name="scan_error_result">Result scan error</string>
     <string name="error_create">⚠️ Error create %s</string>
@@ -109,6 +107,9 @@
 
     <string name="scan_wait">⌛ Waiting scan track...</string>
     <string name="scan_wait_client">Waiting scan client kode...</string>
+    <string name="hint_scan_kg">Point to customer code (KG...)</string>
+    <string name="hint_scan_weight">Point to the scale display</string>
+    <string name="hint_scan_track">Point to the track barcode</string>
     <string name="weight_kg">⚖️ Weight (kg)</string>
     <string name="weight">Weight:</string>
     <string name="weight_format">Weight: %.2f kg</string>

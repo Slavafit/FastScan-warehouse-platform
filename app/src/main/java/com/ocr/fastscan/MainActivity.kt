@@ -14,6 +14,7 @@ import com.ocr.fastscan.databinding.ActivityMainBinding
 import com.ocr.fastscan.ui.PartyFragment
 import com.ocr.fastscan.ui.BoxFragment
 import com.ocr.fastscan.ui.ScanFragment
+import com.ocr.fastscan.ui.UnpackedOrdersFragment
 import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.LicenseChecker
 import kotlinx.coroutines.launch
@@ -124,6 +125,12 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_batches -> {
                     supportFragmentManager.commit {
                         replace(R.id.fragment_container, PartyFragment())
+                    }
+                    true
+                }
+                R.id.nav_unpacked -> {                    // ← Новый пункт
+                    supportFragmentManager.commit {
+                        replace(R.id.fragment_container, UnpackedOrdersFragment())
                     }
                     true
                 }

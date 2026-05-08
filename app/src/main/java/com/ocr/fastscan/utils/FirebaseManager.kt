@@ -1,16 +1,15 @@
 package com.ocr.fastscan.utils
 
-import android.content.Context
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ocr.fastscan.data.model.BoxEntry
 import com.ocr.fastscan.data.model.FirestoreShipment
 import com.ocr.fastscan.data.model.SearchResult
 import kotlinx.coroutines.tasks.await
-import java.security.Timestamp
 import com.google.firebase.firestore.toObject
+import java.util.Date
 
-class FirebaseManager(requireContext: Context) {
+class FirebaseManager() {
     private val db = FirebaseFirestore.getInstance()
 
     fun saveShipment(
@@ -72,6 +71,58 @@ class FirebaseManager(requireContext: Context) {
             // Если ошибка в запросе, возвращаем пустой результат
             Log.e("FirebaseSearch", "Ошибка конвертации: ${e.message}", e)
             SearchResult(null, null)
+        }
+    }
+    // Получить ВСЕ зарегистрированные заказы
+    suspend fun getAllShipments(): List<FirestoreShipment> {
+        return try {
+            val snapshot = db.collection("shipments")
+                .get()
+                .await()
+            snapshot.toObjects(FirestoreShipment::class.java)
+        } catch (e: Exception) {
+            Log.e("FirebaseManager", "Ошибка получения shipments", e)
+            emptyList()
+        }
+    }
+
+    // Получить ВСЕ записи об упаковке в коробки
+    suspend fun getAllBoxEntries(): List<BoxEntry> {
+        return try {
+            val snapshot = db.collection("box_entries")
+                .get()
+                .await()
+            snapshot.toObjects(BoxEntry::class.java)
+        } catch (e: Exception) {
+            Log.e("FirebaseManager", "Ошибка получения box_entries", e)
+            emptyList()
+        }
+    }
+    // Получить заказы (shipments) после определённой даты
+    suspend fun getShipmentsAfter(date: Date): List<FirestoreShipment> {
+        return try {
+            val snapshot = db.collection("shipments")
+                .whereGreaterThanOrEqualTo("createdAt", com.google.firebase.Timestamp(date))
+                .get()
+                .await()
+
+            snapshot.toObjects(FirestoreShipment::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    // Получить записи об упаковке после определённой даты
+    suspend fun getBoxEntriesAfter(date: Date): List<BoxEntry> {
+        return try {
+            val snapshot = db.collection("box_entries")
+                .whereGreaterThanOrEqualTo("date", com.google.firebase.Timestamp(date))
+                .get()
+                .await()
+
+            snapshot.toObjects(BoxEntry::class.java)
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 }

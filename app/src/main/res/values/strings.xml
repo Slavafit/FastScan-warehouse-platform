@@ -33,7 +33,9 @@
     <string name="parties">Партии</string>
     <string name="no_open_parties">Нет открытых партий</string>
     <string name="box_track">Номер коробки %s</string>
-    <string name="finish_part_property">Завершить партию</string>
+    <string name="finish_part">Завершить</string>
+    <string name="finish_part_property">Завершить партию %1$s ?</string>
+    <string name="finish_party_title">Завершить партию</string>
     <string name="create">Создать</string>
     <string name="box_created">Коробка создана %s</string>
     <string name="login_succes">✅ Успешный вход</string>
@@ -96,6 +98,7 @@
     <string name="error_load">⚠️ Ошибка загрузки</string>
     <string name="error_load_detal">⚠️ Ошибка загрузки деталей</string>
     <string name="error_load_orders">⚠️ Ошибка загрузки заказов</string>
+    <string name="error_load_boxes">⚠️ Ошибка загрузки коробок %1$s</string>
     <string name="all_values_positive">Все значения должны быть положительными</string>
     <string name="weight_saved">Размеры и вес сохранены</string>
     <string name="error_saving_dim">⚠️ Ошибка сохранения размеров</string>
@@ -105,6 +108,8 @@
     <string name="error_printing">Ошибка печати: %1$s</string>
     <string name="no_GUID">У заказа нет GUID</string>
     <string name="error_firebase">Не удалось сохранить в Firebase: %1$s</string>
+    <string name="part_finished">Партия завершена</string>
+    <string name="delete_box">Удаление коробки временно недоступно</string>
 
 
 
@@ -162,6 +167,9 @@
 
 
     <!-- фрагмент партии -->
+    <string name="part_title">Партия</string>
+    <string name="part">Партия %1$s</string>
+    <string name="no_party_name">Без названия</string>
     <string name="new_part">Создание новой партии</string>
     <string name="input_part">Название партии KG(только цифры)</string>
     <string name="track_code">Трек-код: %1$s</string>
@@ -173,6 +181,20 @@
     <string name="error_code">Ошибка создания код %d</string>
     <string name="date">Дата: %1$s</string>
     <string name="no_date">Нет даты</string>
+    <string name="box_added">Коробка добавлена</string>
+
+    <!-- фрагмент незакрытые -->
+    <string name="unclosed">Незакрытые</string>
+    <string name="unpacked_orders_title">Незакрытые заказы</string>
+    <string name="unpacked_count_default">Незакрытых заказов: <b>%1$d</b></string>
+    <string name="search_hint">Поиск по треку или клиенту...</string>
+    <string name="today">Сегодня</string>
+    <string name="last_3_days">3 дня</string>
+    <string name="last_week">Неделя</string>
+    <string name="all_time">Все</string>
+    <string name="print_report">Печать отчёта</string>
+    <string name="no_unpacked_orders">Нет незакрытых заказов</string>
+
 
 
 

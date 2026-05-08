@@ -60,10 +60,16 @@ class SearchOrder(private val fragment: Fragment) {
         val sb = StringBuilder()
 // БЛОК 1: Данные из коллекции shipments (Регистрация)
         if (result.shipment != null) {
-            sb.append(R.string.registration_title).append("\n")
-            sb.append("${(R.string.client)}: ${result.shipment.clientName} (${result.shipment.clientCode})\n")
+            sb.append(context.getString(R.string.registration_title)).append("\n")
+            sb.append(
+                context.getString(
+                    R.string.client
+                )
+            ).append(": ${result.shipment.clientName} (${result.shipment.clientCode})\n")
             val weight = result.shipment.weight ?: 0.0
-            sb.append(R.string.weight_format, weight).append("\n")
+            sb.append(
+                context.getString(R.string.weight_format, weight)
+            ).append("\n")
 
             // Создаем нужный формат: день.месяц.год часы:минуты
             val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
@@ -71,29 +77,37 @@ class SearchOrder(private val fragment: Fragment) {
             // Берем полное время из createdAt и форматируем его
             val formattedDateTime = sdf.format(result.shipment.createdAt.toDate())
             // Используем твое поле dateString для отображения даты
-            sb.append(R.string.reg_date, formattedDateTime).append("\n\n")
+            sb.append(
+                context.getString(R.string.reg_date, formattedDateTime)
+            ).append("\n\n")
         } else {
-            sb.append(R.string.no_registration).append("\n\n")
+            sb.append(context.getString(R.string.no_registration)).append("\n\n")
         }
 
         // БЛОК 2: Данные из коллекции box_entries (Упаковка в коробку)
         if (result.boxEntry != null) {
-            sb.append(R.string.in_box_title).append("\n")
-            sb.append(R.string.box_number, result.boxEntry.boxTracking).append("\n")
+            sb.append(context.getString(R.string.in_box_title)).append("\n")
+            sb.append(
+                context.getString(R.string.box_number, result.boxEntry.boxTracking)
+            ).append("\n")
 
             // Если при упаковке сохраняется свой вес, можно вывести и его
             if (result.boxEntry.orderWeight > 0.0) {
-                sb.append(R.string.actual_weight, result.boxEntry.orderWeight).append("\n")
+                sb.append(
+                    context.getString(R.string.actual_weight, result.boxEntry.orderWeight)
+                ).append("\n")
             }
 
             // Форматируем дату упаковки (если она есть)
             result.boxEntry.date?.let { timestamp ->
                 val formattedDate = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
                     .format(timestamp.toDate())
-                sb.append(R.string.packed_date, formattedDate).append("\n")
+                sb.append(
+                    context.getString(R.string.packed_date, formattedDate)
+                ).append("\n")
             }
         } else {
-            sb.append(R.string.not_packed_yet)
+            sb.append(context.getString(R.string.not_packed_yet))
         }
         showSimpleDialog(
             context.getString(R.string.dialog_title_info, track),

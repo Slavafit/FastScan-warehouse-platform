@@ -15,5 +15,9 @@
         android:id="@+id/nav_batches"
         android:icon="@drawable/ic_batch"
         android:title="@string/parties" />
+    <item
+        android:id="@+id/nav_unpacked"
+        android:icon="@drawable/ic_unpacked"
+        android:title="@string/unclosed" />
 
 </menu>

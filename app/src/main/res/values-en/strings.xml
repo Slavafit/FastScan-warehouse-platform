@@ -43,7 +43,10 @@
     <string name="no_open_parties">There are no open parties</string>
 <!--    <string name="box_number">Box number</string>-->
     <string name="box_track">Box number</string>
-    <string name="finish_part_property">Finish part</string>
+    <string name="finish_part">Finish</string>
+    <string name="finish_part_property">Finish part %1$s ?</string>
+    <string name="finish_party_title">Finish part</string>
+
     <string name="create">Create</string>
     <string name="box_created">Box created %s</string>
     <string name="login_succes">✅ Successful login</string>
@@ -72,7 +75,7 @@
     <string name="server_res_unknown">Respuesta desconocida del servidor</string>
     <string name="net_error">Net error %1$s</string>
     <string name="net_error_code">Net error %1$d</string>
-        <string name="net_error_short">Net error</string>
+    <string name="net_error_short">Net error</string>
     <string name="scan_kg">Scan KG</string>
     <string name="order_saved">ORDER SAVED!</string>
     <string name="order_added">ORDER ADDED!</string>
@@ -92,6 +95,7 @@
     <string name="error_load">⚠️ Load error</string>
     <string name="error_load_detal">⚠️ Error loading parts</string>
     <string name="error_load_orders">⚠️ Error loading orders</string>
+    <string name="error_load_boxes">⚠️ Error loading boxes %1$s</string>
     <string name="all_values_positive">All values must be positive.</string>
     <string name="weight_saved">Dimensions and weight are preserved</string>
     <string name="error_saving_dim">⚠️ Error saving dimensions</string>
@@ -101,6 +105,9 @@
     <string name="error_printing">Error printing: %1$s</string>
     <string name="no_GUID">The order does not have GUID</string>
     <string name="error_firebase">Failed to save to Firebase: %1$s</string>
+    <string name="part_finished">Part finished</string>
+    <string name="delete_box">Box removal is temporarily unavailable.</string>
+
 
 
 
@@ -151,20 +158,33 @@
 
 
     <!--   fragment of the party -->
-    <string name="new_part">Creation of a new party</string>
-    <string name="input_part">Party name KG (numbers only)</string>
+    <string name="part_title">Batch</string>
+    <string name="part">Batch %1$s</string>
+    <string name="no_party_name">No name</string>
+    <string name="new_part">Creation of a new batch</string>
+    <string name="input_part">Batch name KG (numbers only)</string>
     <string name="track_code">Track code: %1$s</string>
-    <string name="part_name">Party code: %1$s</string>
+    <string name="part_name">Batch code: %1$s</string>
     <string name="country">Country: %1$s</string>
     <string name="boxes_count">Box count: %1d</string>
-    <string name="input_part_name">Input party name</string>
-    <string name="part_created">The party was created</string>
+    <string name="input_part_name">Input batch name</string>
+    <string name="part_created">The batch was created</string>
     <string name="error_code">Error creating code %d</string>
-    <string name="date">Fecha: %1$s</string>
-    <string name="no_date">sin fecha</string>
+    <string name="date">Date: %1$s</string>
+    <string name="no_date">no date</string>
+    <string name="box_added">La caja añadida</string>
 
-
-
+    <!-- fragment unclosed -->
+    <string name="unclosed">Unclosed</string>
+    <string name="unpacked_orders_title">Unpacked Orders</string>
+    <string name="unpacked_count_default">Unpacked orders: <b>%1$d</b></string>
+    <string name="search_hint">Search by track or client...</string>
+    <string name="today">Today</string>
+    <string name="last_3_days">Last 3 days</string>
+    <string name="last_week">Last week</string>
+    <string name="all_time">All time</string>
+    <string name="print_report">Print Report</string>
+    <string name="no_unpacked_orders">No unpacked orders</string>
 
 
 

@@ -44,14 +44,15 @@
     <string name="no_open_parties">No hay lote de cajas abiertas.</string>
 <!--    <string name="box_number">Número de caja</string>-->
     <string name="box_track">Número de caja</string>
-    <string name="finish_part_property">Completar un lote de cajas</string>
+    <string name="finish_part">Completar</string>
+    <string name="finish_part_property">Completar un lote de cajas %1$s ?</string>
+    <string name="finish_party_title">Completar un lote de cajas</string>
+
     <string name="create">Crear</string>
     <string name="box_created">Caja creada %s</string>
     <string name="login_succes">✅ Inicio de sesión exitoso</string>
     <string name="login_not_filled">El nombre de usuario o la contraseña no se han introducido.</string>
     <string name="token_error">Error: No se recibió el token</string>
-
-
 
 
 
@@ -104,6 +105,7 @@
     <string name="error_load">⚠️ Error de carga</string>
     <string name="error_load_detal">⚠️ Error al cargar las piezas</string>
     <string name="error_load_orders">⚠️ Error al cargar los pedidos</string>
+    <string name="error_load_boxes">⚠️ Error al cargar las cajas %1$s</string>
     <string name="all_values_positive">Todos los valores deben ser positivos.</string>
     <string name="weight_saved">Las dimensiones y el peso se conservan</string>
     <string name="error_saving_dim">⚠️ Dimensiones de guardado de errores</string>
@@ -113,7 +115,8 @@
     <string name="error_printing">Impresión de error: %1$s</string>
     <string name="no_GUID">El pedido no tiene GUID</string>
     <string name="error_firebase">No se pudo guardar en Firebase: %1$s</string>
-
+    <string name="part_finished">La parte terminada</string>
+    <string name="delete_box">Eliminar la caja no está disponible temporalmente.</string>
 
 
 
@@ -157,18 +160,33 @@
 
 
     <!--   fragment of the party -->
-    <string name="new_part">Creación de un nuevo partido</string>
-    <string name="input_part">Nombre del partido: KG (solo números)</string>
+    <string name="part_title">Lote</string>
+    <string name="part">Lote %1$s</string>
+    <string name="no_party_name">Sin nombre</string>
+    <string name="new_part">Creación de un nuevo lote</string>
+    <string name="input_part">Nombre del lote: KG (solo números)</string>
     <string name="track_code">Código de seguimiento: %1$s</string>
     <string name="part_name">Código de despachos: %1$s</string>
     <string name="country">Pais: %1$s</string>
     <string name="boxes_count">Número de cajas: %1d</string>
-    <string name="input_part_name">Ingrese el nombre de la parte</string>
-    <string name="part_created">El partido fue creado</string>
+    <string name="input_part_name">Ingrese el nombre de la lote</string>
+    <string name="part_created">El lote fue creado</string>
     <string name="error_code">Error al crear el código %d</string>
-    <string name="date">Date: %1$s</string>
-    <string name="no_date">No date</string>
+    <string name="date">Fecha: %1$s</string>
+    <string name="no_date">sin fecha</string>
+    <string name="box_added">Box added</string>
 
+    <!-- fragment unclosed -->
+    <string name="unclosed">Sin cerrar</string>
+    <string name="unpacked_orders_title">Pedidos sin empaquetar</string>
+    <string name="unpacked_count_default">Pedidos sin empaquetar: <b>%1$d</b></string>
+    <string name="search_hint">Buscar por tracking o cliente...</string>
+    <string name="today">Hoy</string>
+    <string name="last_3_days">Últimos 3 días</string>
+    <string name="last_week">Última semana</string>
+    <string name="all_time">Todo el tiempo</string>
+    <string name="print_report">Imprimir reporte</string>
+    <string name="no_unpacked_orders">No hay pedidos sin empaquetar</string>
 
 
 

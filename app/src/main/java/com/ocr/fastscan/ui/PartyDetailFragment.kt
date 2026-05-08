@@ -35,9 +35,9 @@ class PartyDetailFragment : Fragment() {
     private var isFinishing = false
 
 private val boxesAdapter = BoxesInPartialAdapter { box ->
-    Log.d("PartyDetail", "Открываем детали коробки, передаём partialName: '$partialName'")  // ← лог для проверки
+    //Log.d("PartyDetail", "Открываем детали коробки, передаём partialName: '$partialName'")  // ← лог для проверки
     // Удаление пока отключено
-    Toast.makeText(requireContext(), "Удаление коробки временно недоступно", Toast.LENGTH_SHORT).show()
+    Toast.makeText(requireContext(), R.string.delete_box, Toast.LENGTH_SHORT).show()
     val detailFragment = BoxDetailFragment.newInstance(
         box.guid ?: "",
         box.codeid ?: "",
@@ -78,24 +78,25 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
+        // Лучше брать название напрямую из правильного TextView
+        partialName = binding.tvTitle.text.toString().trim()
+
+        // Если tvTitle пустой — fallback
+        if (partialName.isBlank()) {
+            partialName = partialName ?: getString(R.string.no_party_name)
+        }
+
+        //partialName = binding.tvTitle.text.toString().replace("Партия ", "").trim()
 
         super.onViewCreated(view, savedInstanceState)
 
-        binding.tvTitle.text = "Партия $partialCode"
+        binding.tvTitle.text = getString(R.string.part, partialCode)
         binding.btnAddBox.setOnClickListener {
             showSelectBoxDialog()
         }
 
         binding.btnFinishParty.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("Завершить партию?")
-                .setMessage("Завершить партию $partialCode?")
-                .setPositiveButton("Завершить") { _, _ ->
-                    finishParty()
-                }
-                .setNegativeButton("Отмена", null)
-                .show()
+            showFinishPartyDialog()
         }
 
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
@@ -116,18 +117,18 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
             binding.progressBar.visibility = View.VISIBLE
             try {
                 val response = apiService.getBoxesInPartial(partialGuid)
-                Log.d("PartyDetail", "Ответ сервера: код ${response.code()}, тело: ${response.body()}")
+                //Log.d("PartyDetail", "Ответ сервера: код ${response.code()}, тело: ${response.body()}")
                 if (response.isSuccessful) {
                     val boxes = response.body() ?: emptyList()
-                    Log.d("PartyDetail", "Получен: ${boxes}")
+                    //Log.d("PartyDetail", "Получен: ${boxes}")
 
                     boxesAdapter.submitList(boxes)
                     binding.tvInfo.text = "Склад: BMG | Коробок: ${boxes.size}"
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка загрузки", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.error_load, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
@@ -155,7 +156,12 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                     adapter.submitList(response.body() ?: emptyList())
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Ошибка загрузки коробок", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    getString(
+                        R.string.error_load_boxes,
+                        e),
+                    Toast.LENGTH_SHORT)
+                    .show()
             }
         }
         dialog.show()
@@ -182,7 +188,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                 if (response.isSuccessful) {
                     val body = response.body()
                     if (body?.success == true) {
-                        val message = body.message ?: "Коробка добавлена"
+                        val message = body.message ?: R.string.box_added
                         Toast.makeText(requireContext(), "$message", Toast.LENGTH_LONG).show()
                         soundManager.playSuccess()
 
@@ -193,13 +199,18 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                         soundManager.playError()
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
+                    //val errorBody = response.errorBody()?.string() ?: "Нет тела ошибки"
                     //Log.e("AddBox", "Ошибка добавления коробки: код ${response.code()}, тело: $errorBody")
                     Toast.makeText(requireContext(), "Ошибка добавления коробки", Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),
+                    getString(
+                        R.string.net_error,
+                        e),
+                    Toast.LENGTH_SHORT)
+                    .show()
                 //Log.e("AddBox", "Сетевая ошибка при добавлении коробки", e)
 
                 soundManager.playError()
@@ -234,12 +245,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
 
     private fun finishParty() {
         if (isFinishing) return // Защита от дребезга (двойного клика)
-
-        AlertDialog.Builder(requireContext())
-            .setTitle("Завершить партию?")
-            .setMessage("Завершить партию $partialCode?")
-            .setCancelable(false) // Чтобы пользователь не закрыл диалог в момент запроса
-            .setPositiveButton("Завершить") { dialog, _ ->
+        isFinishing = true
 
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
@@ -250,7 +256,7 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                         val response = apiService.sendPartial(request)
 
                         if (response.isSuccessful) {
-                            Toast.makeText(requireContext(), "Партия завершена", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), R.string.part_finished, Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
 
                             // 1. Сначала готовим данные для печати
@@ -276,21 +282,43 @@ private val boxesAdapter = BoxesInPartialAdapter { box ->
                         } else {
                             isFinishing = false
                             binding.progressBar.visibility = View.GONE
-                            Toast.makeText(requireContext(), "Ошибка: ${response.code()}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(),
+                                getString(R.string.server_error,
+                                    response.code()
+                                    ),
+                                Toast.LENGTH_SHORT)
+                                .show()
                             soundManager.playError()
                         }
                     } catch (e: Exception) {
                         isFinishing = false
                         binding.progressBar.visibility = View.GONE
                         Log.e("FinishParty", "Ошибка сети", e)
-                        Toast.makeText(requireContext(), "Сеть ошибка", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(),
+                            getString(
+                                R.string.net_error,
+                                e),
+                            Toast.LENGTH_SHORT)
+                            .show()
                         soundManager.playError()
                     }
                 }
+    }
+
+    private fun showFinishPartyDialog() {
+        if (isFinishing) return
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.finish_party_title)
+            .setMessage(getString(R.string.finish_part_property, partialCode))
+            .setCancelable(true)
+            .setPositiveButton(R.string.finish_part) { _, _ ->
+                finishParty()
             }
-            .setNegativeButton("Отмена", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

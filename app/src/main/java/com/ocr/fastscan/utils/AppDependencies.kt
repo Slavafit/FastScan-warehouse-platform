@@ -27,7 +27,7 @@ object AppDependencies {
         tokenManager = TokenManager(context)
         soundManager = SoundManager(context)
         printHelper = PrintHelper(context)
-        firebaseManager = FirebaseManager(context)
+        firebaseManager = FirebaseManager()
     }
 
     // Вызов этой функции из Activity или Fragment

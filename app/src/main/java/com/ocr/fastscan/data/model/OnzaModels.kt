@@ -262,3 +262,11 @@ data class WeightResponse(
     val raw: String = "",
     val unit: String = "kg"
 )
+
+data class UnpackedOrder(
+    val trackingNumber: String,
+    val clientName: String,
+    val clientCode: String,
+    val grossWeight: Double,
+    val registeredAt: Timestamp
+)

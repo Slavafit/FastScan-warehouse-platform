@@ -38,22 +38,11 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.settings, rootKey)
 
                 // слушатель изменения языка
-                val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
-                prefs.registerOnSharedPreferenceChangeListener { sharedPrefs, key ->
-                    if (key == "language") {
-                        val lang = sharedPrefs.getString("language", "ru") ?: "ru"
-                        // Меняем язык
-                        val locale = Locale(lang)
-                        Locale.setDefault(locale)
-
-                        val config = resources.configuration
-                        config.setLocale(locale)
-                        resources.updateConfiguration(config, resources.displayMetrics)
-
-                        // Перезапуск активности
-                        requireActivity().recreate()
-                    }
+            preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener { _, key ->
+                if (key == "language") {
+                    requireActivity().recreate()   // просто перезапускаем Activity
                 }
+            }
 
             val volWeightPref = findPreference<EditTextPreference>("vol_weight")
             volWeightPref?.setOnPreferenceChangeListener { _, newValue ->

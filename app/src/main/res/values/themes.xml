@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.FastScan" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.FastScan" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <!-- Твой зелёный цвет -->
+        <item name="colorPrimary">#2E7D32</item>
+        <item name="colorPrimaryVariant">#1B5E20</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+
+        <item name="colorSecondary">#2E7D32</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <!-- Статус бар -->
+        <item name="android:statusBarColor">#1B5E20</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+    </style>
+
 </resources>

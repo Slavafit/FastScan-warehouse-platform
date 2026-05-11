@@ -6,31 +6,28 @@
     android:orientation="vertical">
 
     <!-- Заголовок -->
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <TextView
+        android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/unpacked_orders_title"
+        android:textSize="22sp"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/unpacked_orders_title"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tvCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/unpacked_count_default"
-            android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Счётчик (ниже заголовка) -->
+    <TextView
+        android:id="@+id/tvCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:text="@string/unpacked_count_default"
+        android:textSize="16sp"
+        android:textColor="?android:textColorSecondary" />
 
     <!-- Поиск -->
     <com.google.android.material.textfield.TextInputLayout
@@ -47,15 +44,14 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Чипы фильтров -->
+    <!-- Фильтры по дате -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:padding="8dp"
-        app:singleSelection="true"
-        app:selectionRequired="true">
+        android:paddingVertical="8dp"
+        app:singleSelection="true">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipToday"
@@ -97,7 +93,6 @@
             android:padding="8dp"
             android:clipToPadding="false" />
 
-        <!-- Прогресс бар по центру -->
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
@@ -105,7 +100,6 @@
             android:layout_gravity="center"
             android:visibility="gone" />
 
-        <!-- Пустое состояние -->
         <TextView
             android:id="@+id/tvEmptyState"
             android:layout_width="wrap_content"

@@ -1,5 +1,6 @@
 package com.ocr.fastscan
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -17,6 +18,7 @@ import com.ocr.fastscan.ui.ScanFragment
 import com.ocr.fastscan.ui.UnpackedOrdersFragment
 import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.LicenseChecker
+import com.ocr.fastscan.utils.updateLocale
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date
@@ -24,6 +26,15 @@ import java.util.Date
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
+    //функция смены языка
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
+        val lang = prefs.getString("language", "ru") ?: "ru"
+
+        val updatedContext = newBase.updateLocale(lang)
+        super.attachBaseContext(updatedContext)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

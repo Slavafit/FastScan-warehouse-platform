@@ -110,15 +110,14 @@
             android:visibility="gone" />
 
     </FrameLayout>
-
-    <!-- Кнопка печати -->
+    <!-- Универсальная кнопка "Поделиться отчётом" -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/btnPrintReport"
+        android:id="@+id/btnShareReport"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:text="@string/print_report"
-        app:icon="@android:drawable/ic_menu_save" />
+        android:text="@string/share_report"
+        app:icon="@android:drawable/ic_menu_share"/>
 
 </LinearLayout>

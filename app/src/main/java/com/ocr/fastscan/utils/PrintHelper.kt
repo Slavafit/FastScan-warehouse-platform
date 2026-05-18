@@ -18,7 +18,6 @@ import android.widget.Toast
 import java.io.File
 import java.io.FileOutputStream
 import com.ocr.fastscan.data.model.BoxInPartial
-import com.ocr.fastscan.data.model.UnpackedOrder
 import com.ocr.fastscan.ui.MyPrintDocumentAdapter
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -421,109 +420,5 @@ class PrintHelper(private val context: Context) {
 
         // Удаляем файл после печати (опционально)
         pdfFile.deleteOnExit()
-    }
-    //Печать таблицы отчёта НЕЗАКРЫТЫЕ ЗАКАЗЫ
-    fun printUnpackedReport(
-        unpackedOrders: List<UnpackedOrder>,
-        reportDate: String
-    ) {
-        if (unpackedOrders.isEmpty()) {
-            Toast.makeText(context, "Нет данных для печати", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val fileName = "unpacked_${SimpleDateFormat("yyyyMMdd_HHmm").format(Date())}.pdf"
-        val file = File(context.cacheDir, fileName)
-
-        try {
-            val pdfDocument = PdfDocument()
-            val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
-            val page = pdfDocument.startPage(pageInfo)
-            val canvas = page.canvas
-            val paint = Paint()
-            val boldPaint = Paint().apply {
-                textSize = 11f
-                isFakeBoldText = true
-            }
-
-            var y = 50f
-
-            // Заголовок
-            paint.textSize = 20f
-            paint.isFakeBoldText = true
-            canvas.drawText("НЕЗАКРЫТЫЕ ЗАКАЗЫ", 50f, y, paint)
-            y += 30f
-
-            paint.textSize = 12f
-            paint.isFakeBoldText = false
-            canvas.drawText("Дата отчёта: $reportDate", 50f, y, paint)
-            y += 25f
-            canvas.drawText("Всего: ${unpackedOrders.size} заказов", 50f, y, paint)
-            y += 40f
-
-            // Заголовки колонок
-            val col1 = 50f      // Трек-код
-            val col2 = 230f     // Код клиента
-            val col3 = 340f     // Клиент
-            val col4 = 490f     // Вес
-
-            boldPaint.textSize = 11f
-            canvas.drawText("Трек-код", col1, y, boldPaint)
-            canvas.drawText("Код клиента", col2, y, boldPaint)
-            canvas.drawText("Клиент", col3, y, boldPaint)
-            canvas.drawText("Вес", col4, y, boldPaint)
-
-            y += 18f
-            canvas.drawLine(45f, y - 5, 550f, y - 5, paint) // линия под заголовком
-            y += 12f
-
-            paint.textSize = 10f
-            paint.isFakeBoldText = false
-
-            for (order in unpackedOrders) {
-                if (y > 780) break // защита от выхода за пределы страницы
-
-                // Трек-код с переносом
-                val trackLines = splitText(order.trackingNumber, 22) // максимум ~22 символа на строку
-                trackLines.forEachIndexed { index, line ->
-                    canvas.drawText(line, col1, y, paint)
-                    if (index < trackLines.size - 1) y += 14f
-                }
-
-                canvas.drawText(order.clientCode, col2, y, paint)
-                canvas.drawText(order.clientName.take(22), col3, y, paint) // обрезаем длинное имя
-                canvas.drawText(String.format("%.2f", order.grossWeight), col4, y, paint)
-
-                y += 18f
-            }
-
-            pdfDocument.finishPage(page)
-            pdfDocument.writeTo(FileOutputStream(file))
-            pdfDocument.close()
-
-            // Печать
-            val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
-            printManager.print("Незакрытые заказы", MyPrintDocumentAdapter(file), null)
-
-            Toast.makeText(context, "Отчёт отправлен на печать", Toast.LENGTH_SHORT).show()
-
-        } catch (e: Exception) {
-            Log.e("PrintHelper", "Ошибка печати", e)
-            Toast.makeText(context, "Ошибка при создании отчёта", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    /** Разбивает длинный текст на строки */
-    private fun splitText(text: String, maxLength: Int): List<String> {
-        if (text.length <= maxLength) return listOf(text)
-
-        val lines = mutableListOf<String>()
-        var start = 0
-        while (start < text.length) {
-            val end = (start + maxLength).coerceAtMost(text.length)
-            lines.add(text.substring(start, end))
-            start = end
-        }
-        return lines
     }
 }

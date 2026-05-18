@@ -14,24 +14,24 @@
     <string name="licence_email_title">Email for licence</string>
     <string name="licence_email_summary">Enter email, linked with licence</string>
     <string name="licence_status_title">Licence status</string>
-    <string name="licence_status_summary">Check...</string>
+    <string name="licence_status_summary">Check…</string>
     <string name="developer_info_title">👨🏻‍💻 About developer</string>
     <string name="developer_title">Viacheslav Fitlin</string>
     <string name="developer_summary">Telegramm: @Slavafit</string>
 
-    <string name="server_weight_address">Server weight adress</string>
+    <string name="server_weight_address">Server weight address</string>
     <string name="server_weight_address_summary">For example: http://192.168.1.50</string>
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="flashlight_on">Flashlight ON</string>
     <string name="flashlight_off">Flashlight OFF</string>
-    <string name="scan_mode">MODE: Scan...</string>
+    <string name="scan_mode">MODE: Scan…</string>
     <string name="darker">Darker (-)</string>
     <string name="lighter">Lighter (+)</string>
     <string name="send_order">SEND ORDER</string>
     <string name="find_order">Find order info</string>
-    <string name="sending">🚀 Sending...</string>
+    <string name="sending">🚀 Sending…</string>
 
     <string name="scan">Scan</string>
     <string name="boxes">Boxes</string>
@@ -63,7 +63,7 @@
     <string name="save">Save</string>
     <string name="apply">APPLY</string>
     <string name="parties">Parties</string>
-    <string name="scan_or_input">Scan or input...</string>
+    <string name="scan_or_input">Scan or input…</string>
     <string name="generate_track">✨ GENERATE ONZA</string>
 
 //tost
@@ -96,6 +96,7 @@
     <string name="error_load_detal">⚠️ Error loading parts</string>
     <string name="error_load_orders">⚠️ Error loading orders</string>
     <string name="error_load_boxes">⚠️ Error loading boxes %1$s</string>
+    <string name="error_load_data">⚠️ Error loading data</string>
     <string name="all_values_positive">All values must be positive.</string>
     <string name="weight_saved">Dimensions and weight are preserved</string>
     <string name="error_saving_dim">⚠️ Error saving dimensions</string>
@@ -112,9 +113,9 @@
 
 
 
-    <string name="scan_wait">⌛ Waiting scan track...</string>
-    <string name="scan_wait_client">Waiting scan client kode...</string>
-    <string name="hint_scan_kg">Point to customer code (KG...)</string>
+    <string name="scan_wait">⌛ Waiting scan track…</string>
+    <string name="scan_wait_client">Waiting scan client kode…</string>
+    <string name="hint_scan_kg">Point to customer code (KG…)</string>
     <string name="hint_scan_weight">Point to the scale display</string>
     <string name="hint_scan_track">Point to the track barcode</string>
     <string name="weight_kg">⚖️ Weight (kg)</string>
@@ -139,7 +140,7 @@
 
     <!-- fragment of the boxes -->
     <string name="add_new_box">Add new box</string>
-    <string name="new_box_number">A number will be created: ...</string>
+    <string name="new_box_number">A number will be created: …</string>
     <string name="length">Length (cm)</string>
     <string name="width">Width (см)</string>
     <string name="height">Height (см)</string>
@@ -176,15 +177,17 @@
 
     <!-- fragment unclosed -->
     <string name="unclosed">Unclosed</string>
-    <string name="unpacked_orders_title">Unpacked Orders</string>
-    <string name="unpacked_count_default">Unpacked orders: <b>%1$d</b></string>
-    <string name="search_hint">Search by track or client...</string>
+    <string name="unpacked_orders_title">📊 Unpacked Orders</string>
+    <string name="unpacked_count_default">Total orders: <b>%1$d</b></string>
+    <string name="search_hint">Search by track or client…</string>
     <string name="today">Today</string>
     <string name="last_3_days">Last 3 days</string>
     <string name="last_week">Last week</string>
     <string name="all_time">All time</string>
     <string name="print_report">Print Report</string>
     <string name="no_unpacked_orders">No unpacked orders</string>
+    <string name="report_end">The report is generated automatically.</string>
+    <string name="no_data_to_send">❌ No data to send</string>
 
 
 
@@ -193,7 +196,7 @@
     <string name="last_name">Last name</string>
     <string name="search_client_title">🕵🏻 Search by name and surname</string>
     <string name="search">Search</string>
-    <string name="loading_clients">Loading clients...</string>
+    <string name="loading_clients">Loading clients…</string>
     <string name="no_client_found">🙅🏻‍♀️ Client not found</string>
     <string name="clients_found">Multiple clients found</string>
 
@@ -215,14 +218,14 @@
     <!-- Global Search Dialog -->
     <string name="title_find">🕵🏻 Global Search</string>
     <string name="find">Find</string>
-    <string name="finding">Finding %s... </string>
+    <string name="finding">Finding %s… </string>
     <string name="error">Error: %s</string>
     <string name="empty">Empty,</string>
     <string name="no_founded">Empty, Track %s not found</string>
 
     <string name="dialog_title_info">Track info %1$s</string>
     <string name="registration_title">📋 REGISTRATION</string>
-    <string name="client">Клиент</string>
+    <string name="client">Client</string>
     <string name="weight_kg2">Вес: %1$.2f кг</string>
     <string name="reg_date">Date of reg.: %1$s</string>
     <string name="no_registration">❌ No registration data available</string>
@@ -236,7 +239,22 @@
     <string name="not_found">Track %1$s not found</string>
 
 
+    <string-array name="theme_entries">
+        <item>Follow System</item>
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
 
+    <string-array name="theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <string name="theme_title">App Theme</string>
+
+    <string name="share_report">Share Report</string>
+    <string name="share_via">Share via…</string>
 
 
 

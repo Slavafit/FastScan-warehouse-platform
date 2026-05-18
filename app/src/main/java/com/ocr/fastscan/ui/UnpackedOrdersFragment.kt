@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.widget.SearchView
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -19,9 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.*
 import com.ocr.fastscan.R
-import com.ocr.fastscan.utils.PrintHelper
-import java.text.SimpleDateFormat
-
+import android.content.Intent
 
 class UnpackedOrdersFragment : Fragment() {
 
@@ -53,21 +50,16 @@ class UnpackedOrdersFragment : Fragment() {
         binding.etSearch.doOnTextChanged { text, _, _, _ ->
             filterList(text?.toString() ?: "")
         }
-//        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-//            override fun onQueryTextSubmit(query: String?) = false
-//
-//            override fun onQueryTextChange(newText: String?): Boolean {
-//                filterList(newText ?: "")
-//                return true
-//            }
-//        })
+
         // Фильтры по дате
         binding.chipToday.setOnClickListener { loadUnpackedOrders(1) }
         binding.chip3Days.setOnClickListener { loadUnpackedOrders(3) }
         binding.chipWeek.setOnClickListener { loadUnpackedOrders(7) }
         binding.chipAll.setOnClickListener { loadUnpackedOrders(0) }
 
-        binding.btnPrintReport.setOnClickListener { printReport() }
+        binding.btnShareReport.setOnClickListener {
+            shareReport()
+        }
     }
 
     private fun loadUnpackedOrders(days: Int) {
@@ -124,7 +116,7 @@ class UnpackedOrdersFragment : Fragment() {
 
             } catch (e: Exception) {
                 Log.e("UnpackedFragment", "Ошибка загрузки", e)
-                Toast.makeText(requireContext(), "Ошибка загрузки данных", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), R.string.error_load_data, Toast.LENGTH_LONG).show()
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
@@ -145,19 +137,47 @@ class UnpackedOrdersFragment : Fragment() {
         unpackedAdapter.submitList(filteredList)
     }
 
-    private fun printReport() {
+    // ==================== УНИВЕРСАЛЬНАЯ ОТПРАВКА ОТЧЁТА ====================
+    private fun shareReport() {
         if (allUnpackedOrders.isEmpty()) {
-            Toast.makeText(requireContext(), "Нет данных для печати", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.no_data_to_send, Toast.LENGTH_SHORT).show()
             return
         }
 
-        val printHelper = PrintHelper(requireContext())
-        printHelper.printUnpackedReport(
-            unpackedOrders = allUnpackedOrders,
-            reportDate = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
-        )
+        val reportText = buildReportText()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, reportText)
+        }
+
+        startActivity(Intent.createChooser(intent, getString(R.string.share_via)))
     }
 
+    private fun buildReportText(): String {
+        val sb = StringBuilder()
+
+        sb.append(getString(R.string.unpacked_orders_title)).append("\n")
+        // Создаем нужный формат: день.месяц.год часы:минуты
+        val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
+        sb.append(getString(R.string.date, sdf)).append("\n")
+
+        sb.append(
+            getString(R.string.unpacked_count_default, allUnpackedOrders.size)
+        ).append("\n")
+
+        allUnpackedOrders.forEach { order ->
+            sb.append("📦 `${order.trackingNumber}`\n")
+            sb.append("👤 ${order.clientName} (${order.clientCode})\n")
+            sb.append("⚖️ ").append(
+                getString(R.string.weight_format, order.grossWeight)
+            ).append("\n")
+            sb.append("────────────────\n")
+        }
+        sb.append("\n").append(getString(R.string.report_end))
+
+        return sb.toString()
+    }
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

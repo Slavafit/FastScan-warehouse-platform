@@ -4,6 +4,35 @@
     <string name="language_settings">🌍 Язык приложения</string>
     <string name="language">Язык</string>
     <string name="language_summary">Выберите язык приложения</string>
+    <string-array name="language_entries">
+        <item>Русский</item>
+        <item>English</item>
+        <item>Español</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>ru</item>
+        <item>en</item>
+        <item>es</item>
+    </string-array>
+
+    <!-- Темы приложения -->
+    <string name="theme_title">Тема приложения</string>
+    <string-array name="theme_entries">
+        <item>Как в системе</item>
+        <item>Светлая</item>
+        <item>Тёмная</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+
+    <string name="share_report">Поделиться отчётом</string>
+    <string name="share_via">Поделиться через…</string>
 
     <string name="server_settings">💻⚙️ Настройки сервера</string>
     <string name="server_url_title">URL сервера</string>
@@ -21,7 +50,7 @@
     <string name="licence_email_title">Email для лицензии</string>
     <string name="licence_email_summary">Введите email, привязанный к лицензии</string>
     <string name="licence_status_title">Статус лицензии</string>
-    <string name="licence_status_summary">Проверка...</string>
+    <string name="licence_status_summary">Проверка…</string>
 
     <string name="developer_info_title">👨🏻‍💻 О разработчике</string>
     <string name="developer_title">Вячеслав Фитлин</string>
@@ -47,7 +76,7 @@
     <string name="scan_track">Сканировать трек заказа</string>
     <string name="save_sizes">Сохранить размеры</string>
     <string name="print_label">🖨️ Печать лейбла</string>
-    <string name="scan_or_input">Скан или ввод...</string>
+    <string name="scan_or_input">Скан или ввод…</string>
     <string name="generate_track">✨ ГЕНЕРИРОВАТЬ ONZA</string>
 
     <!-- кнопки -->
@@ -58,7 +87,7 @@
     <string name="cancel">Отмена</string>
     <string name="flashlight_on">Фонарик ВКЛ</string>
     <string name="flashlight_off">Фонарик ВЫКЛ</string>
-    <string name="scan_mode">РЕЖИМ: Сканирование...</string>
+    <string name="scan_mode">РЕЖИМ: Сканирование…</string>
     <string name="darker">Темнее (-)</string>
     <string name="lighter">Ярче (+)</string>
 
@@ -66,7 +95,7 @@
     <string name="apply">ПРИМЕНИТЬ</string>
     <string name="send_order">ОТПРАВИТЬ ЗАКАЗ</string>
     <string name="find_order">Найти информацию о заказе</string>
-    <string name="sending">🚀 Отправка...</string>
+    <string name="sending">🚀 Отправка…</string>
 
 
     <!-- tost -->
@@ -99,6 +128,7 @@
     <string name="error_load_detal">⚠️ Ошибка загрузки деталей</string>
     <string name="error_load_orders">⚠️ Ошибка загрузки заказов</string>
     <string name="error_load_boxes">⚠️ Ошибка загрузки коробок %1$s</string>
+    <string name="error_load_data">⚠️ Ошибка загрузки данных</string>
     <string name="all_values_positive">Все значения должны быть положительными</string>
     <string name="weight_saved">Размеры и вес сохранены</string>
     <string name="error_saving_dim">⚠️ Ошибка сохранения размеров</string>
@@ -115,9 +145,9 @@
 
 
     <!-- фрагмент сканирование -->
-    <string name="scan_wait">⌛ Ожидание сканирования...</string>
-    <string name="scan_wait_client">Сканирование кода клиента...</string>
-    <string name="hint_scan_kg">Наведите на код клиента (KG...)</string>
+    <string name="scan_wait">⌛ Ожидание сканирования…</string>
+    <string name="scan_wait_client">Сканирование кода клиента…</string>
+    <string name="hint_scan_kg">Наведите на код клиента (KG…)</string>
     <string name="hint_scan_weight">Наведите на дисплей весов</string>
     <string name="hint_scan_track">Наведите на штрих-код трека</string>
     <string name="weight_kg">⚖️ Вес (кг)</string>
@@ -149,7 +179,7 @@
     <string name="show_all_boxes">👀 Показать все</string>
     <string name="no_boxes">Нет открытых коробок. Создайте новую.</string>
     <string name="add_new_box">Добавить новую коробку</string>
-    <string name="new_box_number">Будет создан номер: ...</string>
+    <string name="new_box_number">Будет создан номер: …</string>
     <string name="length">Длина (см)</string>
     <string name="width">Ширина (см)</string>
     <string name="height">Высота (см)</string>
@@ -185,17 +215,17 @@
 
     <!-- фрагмент незакрытые -->
     <string name="unclosed">Незакрытые</string>
-    <string name="unpacked_orders_title">Незакрытые заказы</string>
-    <string name="unpacked_count_default">Незакрытых заказов: <b>%1$d</b></string>
-    <string name="search_hint">Поиск по треку или клиенту...</string>
+    <string name="unpacked_orders_title">📊 Незакрытые заказы</string>
+    <string name="unpacked_count_default">Всего заказов: <b>%1$d</b></string>
+    <string name="search_hint">Поиск по треку или клиенту…</string>
     <string name="today">Сегодня</string>
     <string name="last_3_days">3 дня</string>
     <string name="last_week">Неделя</string>
     <string name="all_time">Все</string>
     <string name="print_report">Печать отчёта</string>
     <string name="no_unpacked_orders">Нет незакрытых заказов</string>
-
-
+    <string name="report_end">Отчёт сформирован автоматически.</string>
+    <string name="no_data_to_send">❌ Нет данных для отправки</string>
 
 
     <!-- Диалог поиска клиента -->
@@ -203,7 +233,7 @@
     <string name="last_name">Фамилия</string>
     <string name="search_client_title">🕵🏻 Поиск по имени и фамилии</string>
     <string name="search">Поиск</string>
-    <string name="loading_clients">Загрузка клиентов...</string>
+    <string name="loading_clients">Загрузка клиентов…</string>
     <string name="no_client_found">🙅🏻‍♀️ Клиент не найден</string>
     <string name="clients_found">Найдено несколько клиентов</string>
 
@@ -221,10 +251,9 @@
     <string name="weight_limit_negative">✘ Нет, изменить</string>
 
     <!-- Диалог Глобального поиска -->
-
     <string name="title_find">🕵🏻 Глобальный поиск</string>
     <string name="find">Найти</string>
-    <string name="finding">Ищем %s... </string>
+    <string name="finding">Ищем %s… </string>
     <string name="error">Ошибка: %s</string>
     <string name="empty">Пусто,</string>
     <string name="no_founded">Трек %s не найден</string>
@@ -243,6 +272,5 @@
 
     <string name="not_found">Трек %1$s не найден</string>
     <string name="weight_kg2">"Вес: %1$.2f "</string>
-
 
 </resources>

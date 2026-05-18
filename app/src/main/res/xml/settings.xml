@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <PreferenceCategory app:title="@string/language_settings">
+        <!-- Смена языка -->
+    <ListPreference
+            app:key="language"
+            app:title="@string/language_settings"
+            app:summary="%s"
+            app:defaultValue="system"
+            app:entries="@array/language_entries"
+            app:entryValues="@array/language_values"
+            app:useSimpleSummaryProvider="true" />
+        <!-- Смена темы -->
         <ListPreference
-            android:key="language"
-            android:title="@string/language"
-            android:entries="@array/language_entries"
-            android:entryValues="@array/language_values"
-            android:defaultValue="ru"
-            android:negativeButtonText="@string/cancel"
-            android:positiveButtonText="@string/ok" />
-        <!--android:summary="@string/language_summary"-->
+            app:key="theme"
+            app:title="@string/theme_title"
+            app:summary="%s"
+            app:defaultValue="system"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:useSimpleSummaryProvider="true" />
 
-    </PreferenceCategory>
     <PreferenceCategory app:title="@string/server_settings">
 
         <EditTextPreference

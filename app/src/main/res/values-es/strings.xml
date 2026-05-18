@@ -106,6 +106,7 @@
     <string name="error_load_detal">⚠️ Error al cargar las piezas</string>
     <string name="error_load_orders">⚠️ Error al cargar los pedidos</string>
     <string name="error_load_boxes">⚠️ Error al cargar las cajas %1$s</string>
+    <string name="error_load_data">⚠️ Error al cargar los datos</string>
     <string name="all_values_positive">Todos los valores deben ser positivos.</string>
     <string name="weight_saved">Las dimensiones y el peso se conservan</string>
     <string name="error_saving_dim">⚠️ Dimensiones de guardado de errores</string>
@@ -178,8 +179,8 @@
 
     <!-- fragment unclosed -->
     <string name="unclosed">Sin cerrar</string>
-    <string name="unpacked_orders_title">Pedidos sin empaquetar</string>
-    <string name="unpacked_count_default">Pedidos sin empaquetar: <b>%1$d</b></string>
+    <string name="unpacked_orders_title">📊 Pedidos sin empaquetar</string>
+    <string name="unpacked_count_default">Pedidos totales: <b>%1$d</b></string>
     <string name="search_hint">Buscar por tracking o cliente...</string>
     <string name="today">Hoy</string>
     <string name="last_3_days">Últimos 3 días</string>
@@ -187,6 +188,9 @@
     <string name="all_time">Todo el tiempo</string>
     <string name="print_report">Imprimir reporte</string>
     <string name="no_unpacked_orders">No hay pedidos sin empaquetar</string>
+    <string name="report_end">El informe se genera automáticamente.</string>
+    <string name="no_data_to_send">❌ No hay datos para enviar</string>
+
 
 
 
@@ -235,6 +239,23 @@
 
     <string name="not_found">Número de seguimiento %1$s no se encontró</string>
     <string name="weight_kg2">"Вес: %1$.2f "</string>
+
+    <string-array name="theme_entries">
+        <item>Seguir sistema</item>
+        <item>Claro</item>
+        <item>Oscuro</item>
+    </string-array>
+
+    <string-array name="theme_values">
+        <item>system</item>
+        <item>light</item>
+        <item>dark</item>
+    </string-array>
+
+    <string name="theme_title">Tema de la aplicación</string>
+
+    <string name="share_report">Compartir reporte</string>
+    <string name="share_via">Compartir vía...</string>
 
 
 </resources>

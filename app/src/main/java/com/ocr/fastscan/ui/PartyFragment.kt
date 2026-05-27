@@ -1,25 +1,24 @@
 package com.ocr.fastscan.ui
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.ocr.fastscan.R
-import com.ocr.fastscan.databinding.FragmentPartyBinding
-import com.ocr.fastscan.utils.AppDependencies
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import android.app.AlertDialog
-import android.util.Log
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.ocr.fastscan.databinding.DialogCreatePartyBinding
-import kotlinx.coroutines.launch
+import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
+import com.ocr.fastscan.databinding.DialogCreatePartyBinding
+import com.ocr.fastscan.databinding.FragmentPartyBinding
+import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
 
 class PartyFragment : Fragment() {
@@ -72,6 +71,8 @@ class PartyFragment : Fragment() {
 
             try {
                 val response = apiService.getOpenPartials()
+                if (_binding == null) return@launch
+                
                 if (response.isSuccessful) {
                     val parties = response.body() ?: emptyList()
                     binding.tvNoParties.visibility = if (parties.isEmpty()) View.VISIBLE else View.GONE
@@ -81,75 +82,74 @@ class PartyFragment : Fragment() {
                     binding.tvNoParties.visibility = View.VISIBLE
                 }
             } catch (e: CancellationException) {
-                // Игнорируем отмену корутины
                 throw e
             } catch (e: Exception) {
-                Log.e("CreateParty", "Ошибка сети", e)
+                Log.e("PartyFragment", "Load error", e)
                 binding.tvNoParties.text = getString(R.string.net_error)
                 binding.tvNoParties.visibility = View.VISIBLE
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
 
     private fun showCreatePartyDialog() {
         val dialogBinding = DialogCreatePartyBinding.inflate(layoutInflater)
-
         val generatedCode = "NPX" + SimpleDateFormat("MMddHH", Locale.getDefault()).format(Date()) + (100000..999999).random()
 
         dialogBinding.etPartialCode.setText(generatedCode)
         dialogBinding.etPartialName.requestFocus()
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
-            //.setTitle("Новая партия")
-            .setPositiveButton(R.string.create,) { _, _ ->
+            .setPositiveButton(R.string.create, null) // Устанавливаем null, чтобы переопределить поведение ниже
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
                 val inputName = dialogBinding.etPartialName.text.toString().trim()
                 if (inputName.isEmpty()) {
-                    Toast.makeText(requireContext(),
-                        getString(R.string.input_part_name),
-                        Toast.LENGTH_SHORT)
-                        .show()
-                    return@setPositiveButton
-                }
-                // Формируем финальное имя: если цифры 123, станет KG123
-                val finalName = if (inputName.startsWith("KG ", ignoreCase = true)) {
-                    inputName.uppercase()
-                } else {
-                    "KG $inputName"
+                    Toast.makeText(requireContext(), getString(R.string.input_part_name), Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
 
+                // Формируем имя с префиксом KG
+                val finalName = if (inputName.startsWith("KG", ignoreCase = true)) {
+                    if (inputName.startsWith("KG ", ignoreCase = true)) inputName.uppercase()
+                    else "KG " + inputName.substring(2).trim().uppercase()
+                } else {
+                    "KG $inputName".uppercase()
+                }
+
+                button.isEnabled = false // Блокируем кнопку на время запроса
+                
                 viewLifecycleOwner.lifecycleScope.launch {
                     try {
                         val request = PartialCreateRequest(generatedCode, finalName)
-                        //Log.d("CreateParty", "Отправляем: $request")
-
                         val response = apiService.createPartial(request)
-                        //Log.d("CreateParty", "Код сервера: ${response.code()}")
-                        //Log.d("CreateParty", "Тело ответа: ${response.body()}")
 
-                        if (response.isSuccessful) {    // Проверка по коду 200 OK, игнорируя опечатку "seccess")))
+                        if (response.isSuccessful) {
                             Toast.makeText(requireContext(), R.string.part_created, Toast.LENGTH_SHORT).show()
                             soundManager.playSuccess()
-                            delay(300)  // Ждем, пока база на сервере обновится
+                            dialog.dismiss()
+                            delay(300)
                             loadParties()
                         } else {
-                            Toast.makeText(
-                                requireContext(),
-                                getString(R.string.error_code, response.code()),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            button.isEnabled = true
+                            Toast.makeText(requireContext(), getString(R.string.error_code, response.code()), Toast.LENGTH_SHORT).show()
                             soundManager.playError()
                         }
                     } catch (e: Exception) {
+                        button.isEnabled = true
                         Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
                         soundManager.playError()
                     }
                 }
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        }
+        dialog.show()
     }
 
     override fun onDestroyView() {

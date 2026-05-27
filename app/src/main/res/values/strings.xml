@@ -67,6 +67,7 @@
     <string name="finish_party_title">Завершить партию</string>
     <string name="create">Создать</string>
     <string name="box_created">Коробка создана %s</string>
+    <string name="box_added_format">Коробка %s добавлена</string>
     <string name="login_succes">✅ Успешный вход</string>
     <string name="login_not_filled">Логин или пароль не заполнены</string>
     <string name="token_error">Ошибка: токен не получен</string>
@@ -140,6 +141,8 @@
     <string name="error_firebase">Не удалось сохранить в Firebase: %1$s</string>
     <string name="part_finished">Партия завершена</string>
     <string name="delete_box">Удаление коробки временно недоступно</string>
+    <string name="error_load_boxes_short">Ошибка загрузки списка коробок</string>
+    <string name="error_adding_box">Ошибка добавления коробки в партию</string>
 
 
 

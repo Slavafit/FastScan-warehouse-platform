@@ -20,7 +20,6 @@ import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.LicenseChecker
 import com.ocr.fastscan.utils.updateLocale
 import com.ocr.fastscan.utils.ThemeHelper
-import com.ocr.fastscan.utils.LanguageHelper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date

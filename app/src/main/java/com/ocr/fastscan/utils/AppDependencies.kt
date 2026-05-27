@@ -20,13 +20,13 @@ object AppDependencies {
     lateinit var printHelper: PrintHelper
     lateinit var firebaseManager: FirebaseManager
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    //private val scope = CoroutineScope(Dispatchers.IO)
 
     fun init(context: Context) {
         apiService = NetworkModule.createService(context)
         tokenManager = TokenManager(context)
         soundManager = SoundManager(context)
-        printHelper = PrintHelper(context)
+        //printHelper = PrintHelper(context)
         firebaseManager = FirebaseManager()
     }
 
@@ -66,7 +66,7 @@ object AppDependencies {
                     } else {
                         Toast.makeText(context,
                             context.getString(
-                                R.string.net_error,
+                                R.string.net_error_code,
                                 response.code()),
                             Toast.LENGTH_SHORT).show()
                         Log.e("Auth", "Неуспешный ответ сервера: ${response.code()}")

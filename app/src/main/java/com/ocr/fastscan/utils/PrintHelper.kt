@@ -1,6 +1,8 @@
 package com.ocr.fastscan.utils
 
+import android.app.Activity
 import android.content.Context
+import android.print.PrintManager
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -12,7 +14,6 @@ import android.print.PageRange
 import android.print.PrintAttributes
 import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
-import android.print.PrintManager
 import android.util.Log
 import android.widget.Toast
 import java.io.File
@@ -23,15 +24,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class PrintHelper(private val context: Context) {
+class PrintHelper(private val activity: Activity) {
+
+    private val context: Context = activity
 
     fun printLabel(
+        printManager: PrintManager,
         trackingNumber: String,
         clientCode: String,
         client: String,
         weight: String
     ) {
-        val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        //val printManager = getPrintManager()
+        //val printManager = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
         val jobName = "Onza_Label_$trackingNumber"
 
         printManager.print(jobName, object : PrintDocumentAdapter() {
@@ -84,6 +89,7 @@ class PrintHelper(private val context: Context) {
         }, null)
     }
     fun printBoxLabel(
+        printManager: PrintManager,   // ← принимаем снаружи
         trackingNumber: String,
         weight: String,
         last4: String,
@@ -92,11 +98,13 @@ class PrintHelper(private val context: Context) {
         width: String,
         height: String
     ) {
-        val printManager = context.getSystemService(Context.PRINT_SERVICE) as? PrintManager
-        if (printManager == null) {
-            Log.e("PrintHelper", "PrintManager недоступен")
-            return
-        }
+
+//        val printManager = activity.getSystemService(Context.PRINT_SERVICE) as? PrintManager
+//        if (printManager == null) {
+//            Log.e("PrintHelper", "PrintManager недоступен")
+//            Toast.makeText(context, "Система печати недоступна", Toast.LENGTH_SHORT).show()
+//            return
+//        }
 
         val jobName = "Этикетка $trackingNumber"
 
@@ -162,7 +170,7 @@ class PrintHelper(private val context: Context) {
             }
         }, null)
     }
-
+    //печать этикетки коробки
     private fun drawLabelBox(
         canvas: Canvas,
         trackingNumber: String,
@@ -241,7 +249,7 @@ class PrintHelper(private val context: Context) {
         //Штрих-код
         canvas.drawBitmap(barcodeBmp, padding, y, barcodePaint)
     }
-
+    //генерация этикеткм
     private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {
         val paint = Paint().apply {
             color = Color.BLACK
@@ -281,45 +289,7 @@ class PrintHelper(private val context: Context) {
 
 
     }
-    private fun drawLabelBox(canvas: Canvas, trackingCode: String, weight: String, last4: String, ) {
-        val paint = Paint().apply {
-            color = Color.BLACK
-            isAntiAlias = true
-        }
 
-        // 1. Штрих-код
-        // Рисуем чуть выше (y = 40f), чтобы сэкономить место.
-        // Занимает пространство от 40 до 160 по вертикали (40 + 120).
-        val barcodeBmp = BarcodeUtils.generateBarcode(trackingCode, 300, 100)
-        canvas.drawBitmap(barcodeBmp, 20f, 30f, paint)
-
-        // 2. Полный трек-номер прямо под штрих-кодом
-        paint.textSize = 25f
-        paint.isFakeBoldText = false
-        // Рисуем на уровне 185 (ровно под штрих-кодом). Сдвинули X на 40, чтобы текст был центричнее.
-        canvas.drawText(trackingCode, 20f, 180f, paint)
-
-        // 3. Линия разделения
-        paint.strokeWidth = 2f // Делаем линию чуть толще для термопринтера
-        // Растягиваем линию от 20 до 380, чтобы она была ровно по ширине штрих-кода (20 + 360 = 380)
-        canvas.drawLine(20f, 210f, 380f, 210f, paint)
-
-        // 4. Последние 4 цифры (Крупно)
-        paint.textSize = 50f
-        paint.isFakeBoldText = true // Включаем жирный шрифт для акцента
-        // X=110 сдвигает цифры ближе к центру, Y=280 дает отступ от линии
-        canvas.drawText(last4, 90f, 280f, paint)
-
-        // 5. Вес
-        paint.textSize = 25f // Чуть крупнее для склада
-        paint.isFakeBoldText = false // Возвращаем обычный шрифт
-        canvas.drawText("Weight: $weight kg", 20f, 340f, paint)
-        // 7. Штрих-код
-        // Рисуем чуть выше (y = 40f), чтобы сэкономить место.
-        // Занимает пространство от 40 до 160 по вертикали (40 + 120).
-        val barcodeBmp2 = BarcodeUtils.generateBarcode(trackingCode, 300, 10)
-        canvas.drawBitmap(barcodeBmp2, 20f, 0f, paint)
-    }
     //function print party
     fun printParty(
         partialCode: String,
@@ -414,7 +384,8 @@ class PrintHelper(private val context: Context) {
         }
 
         // Печать через системный PrintManager
-        val printManager = context.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        //val printManager = getPrintManager()
+        val printManager = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
         val jobName = "Партия $partialCode - $partialName"
         printManager.print(jobName, MyPrintDocumentAdapter(pdfFile), null)
 

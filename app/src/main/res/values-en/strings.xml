@@ -49,6 +49,7 @@
 
     <string name="create">Create</string>
     <string name="box_created">Box created %s</string>
+    <string name="box_added_format">Box %s added</string>
     <string name="login_succes">✅ Successful login</string>
     <string name="login_not_filled">Login or password is not filled in</string>
     <string name="token_error">Error: token not received</string>
@@ -108,6 +109,8 @@
     <string name="error_firebase">Failed to save to Firebase: %1$s</string>
     <string name="part_finished">Part finished</string>
     <string name="delete_box">Box removal is temporarily unavailable.</string>
+    <string name="error_load_boxes_short">Error loading box list</string>
+    <string name="error_adding_box">Error adding box to batch</string>
 
 
 
@@ -173,7 +176,7 @@
     <string name="error_code">Error creating code %d</string>
     <string name="date">Date: %1$s</string>
     <string name="no_date">no date</string>
-    <string name="box_added">La caja añadida</string>
+    <string name="box_added">The box was added</string>
 
     <!-- fragment unclosed -->
     <string name="unclosed">Unclosed</string>

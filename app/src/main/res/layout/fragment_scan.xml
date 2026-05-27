@@ -1,227 +1,238 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-        <RelativeLayout
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp">
+            android:orientation="vertical"
+            android:padding="16dp">
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="FastScan Pro"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"/>
+
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_preferences"
+                    app:tint="#444444" />
+            </RelativeLayout>
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tracking_code" android:textStyle="bold" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <EditText android:id="@+id/etTracking"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/scan_or_input" />
+                <ImageButton android:id="@+id/btnScanTrack" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
+                <ImageButton android:id="@+id/btnPrint" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_save" android:visibility="gone" />
+            </LinearLayout>
+
+            <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/generate_track" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
+
+            <Space android:layout_width="match_parent" android:layout_height="12dp" />
+
+            <TextView android:id="@+id/tvClientName" android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:text="@string/scan_wait" android:textColor="#666666" android:textSize="18sp" android:textStyle="bold" android:gravity="center" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/box_info" android:textStyle="bold" android:gravity="center" android:layout_marginTop="4dp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <CheckBox
+                    android:id="@+id/cbWithBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/save_box"
+                    android:enabled="false" />
+
+                <CheckBox
+                    android:id="@+id/cbShoesBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/shoe_box"
+                    android:layout_marginStart="24dp"
+                    android:enabled="false" />
+
+                <CheckBox
+                    android:id="@+id/cbBagBox"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/bag_box"
+                    android:layout_marginStart="24dp"
+                    android:enabled="false" />
+
+            </LinearLayout>
+            <Space android:layout_width="match_parent" android:layout_height="10dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/client_code" android:textStyle="bold" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <EditText android:id="@+id/etClientCode"
+                    android:inputType="textCapCharacters"
+                    android:imeOptions="actionDone"
+                    android:singleLine="true"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="KG123456" />
+                <ImageButton
+                    android:id="@+id/btnScanKg"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@android:drawable/ic_menu_camera"/>
+                <ImageButton
+                    android:id="@+id/btnSearchClient"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    android:contentDescription="@string/search_client" />
+            </LinearLayout>
+
+            <Space android:layout_width="match_parent" android:layout_height="16dp" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/weight_kg" android:textStyle="bold" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:baselineAligned="false">
+
+                <EditText
+                    android:id="@+id/etWeight"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="0,00"
+                    android:inputType="numberDecimal" />
+
+                <ImageButton
+                    android:id="@+id/btnScanWeight"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="2dp"
+                    android:src="@android:drawable/ic_dialog_dialer"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnVolumeCalc"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="2dp"
+                    android:padding="0dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/ic_baseline_calculate_24"
+                    app:iconSize="48dp"
+                    app:iconGravity="textStart"
+                    app:iconTint="?attr/colorPrimary" />
+            </LinearLayout>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="FastScan Pro"
-                android:textSize="22sp"
+                android:text="@string/dimensions"
                 android:textStyle="bold"
-                android:textColor="#333333"/>
+                android:layout_marginTop="8dp"/>
 
-            <ImageButton
-                android:id="@+id/btnSettings"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@android:drawable/ic_menu_preferences"
-                app:tint="#444444" />
-        </RelativeLayout>
-
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tracking_code" android:textStyle="bold" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/etTracking"
-                android:imeOptions="actionDone"
-                android:singleLine="true"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/scan_or_input" />
-            <ImageButton android:id="@+id/btnScanTrack" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
-            <ImageButton android:id="@+id/btnPrint" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_save" android:visibility="gone" />
-        </LinearLayout>
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/etLength"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="L"
+                    android:focusable="false"
+                    android:longClickable="false"
+                    android:cursorVisible="false"
+                    android:background="@android:drawable/edit_text"
+                    android:alpha="0.8" />
+                <EditText
+                    android:id="@+id/etWidth"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="W"
+                    android:layout_marginHorizontal="4dp"
+                    android:focusable="false"
+                    android:longClickable="false"
+                    android:cursorVisible="false"
+                    android:background="@android:drawable/edit_text"
+                    android:alpha="0.8" />
 
-        <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/generate_track" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
+                <EditText
+                    android:id="@+id/etHeight"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:hint="H"
+                    android:focusable="false"
+                    android:longClickable="false"
+                    android:cursorVisible="false"
+                    android:background="@android:drawable/edit_text"
+                    android:alpha="0.8" />
 
-        <Space android:layout_width="match_parent" android:layout_height="12dp" />
+            </LinearLayout>
+            <Space android:layout_width="match_parent" android:layout_height="32dp" />
 
-        <TextView android:id="@+id/tvClientName" android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/scan_wait" android:textColor="#666666" android:textSize="18sp" android:textStyle="bold" android:gravity="center" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:text="@string/send_order"
+                android:textSize="18sp"
+                app:cornerRadius="12dp"
+                android:backgroundTint="#2E7D32" />
 
-    <!-- Блок с чекбоксами на одной линии -->
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/box_info" android:textStyle="bold" android:gravity="center" android:layout_marginTop="4dp"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <CheckBox
-            android:id="@+id/cbWithBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/save_box"
-            android:enabled="false" />
-
-        <CheckBox
-            android:id="@+id/cbShoesBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/shoe_box"
-            android:layout_marginStart="24dp"
-            android:enabled="false" />
-
-        <CheckBox
-            android:id="@+id/cbBagBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bag_box"
-            android:layout_marginStart="24dp"
-            android:enabled="false" />
-
-    </LinearLayout>
-        <Space android:layout_width="match_parent" android:layout_height="10dp" />
-
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/client_code" android:textStyle="bold" />
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-            <EditText android:id="@+id/etClientCode"
-                android:inputType="textCapCharacters"
-                android:imeOptions="actionDone"
-                android:singleLine="true"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGlobalSearch"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="KG123456" />
-            <ImageButton
-                android:id="@+id/btnScanKg"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_camera"/>
-            <!--  КНОПКА ПОИСКА -->
-            <ImageButton
-                android:id="@+id/btnSearchClient"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_menu_search"
-                android:contentDescription="@string/search_client" />
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/find_order"
+                app:icon="@android:drawable/ic_menu_search" />
+
         </LinearLayout>
+    </ScrollView>
 
-        <Space android:layout_width="match_parent" android:layout_height="16dp" />
-
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/weight_kg" android:textStyle="bold" />
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="bottom"
-        android:baselineAligned="false">
-
-        <EditText
-            android:id="@+id/etWeight"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="0,00"
-            android:inputType="numberDecimal" />
-
-        <ImageButton
-            android:id="@+id/btnScanWeight"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginBottom="2dp"
-            android:src="@android:drawable/ic_dialog_dialer"/>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnVolumeCalc"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginBottom="2dp"
-            android:padding="0dp"
-            android:insetLeft="0dp"
-            android:insetTop="0dp"
-            android:insetRight="0dp"
-            android:insetBottom="0dp"
-            app:icon="@drawable/ic_baseline_calculate_24"
-            app:iconSize="48dp"
-            app:iconGravity="textStart"
-            app:iconTint="?attr/colorPrimary" />
-    </LinearLayout>
-    <TextView
+    <ProgressBar
+        android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/dimensions"
-        android:textStyle="bold"
-        android:layout_marginTop="8dp"/>
+        android:layout_gravity="center"
+        android:visibility="gone" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <EditText
-            android:id="@+id/etLength"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="L"
-            android:focusable="false"
-            android:longClickable="false"
-            android:cursorVisible="false"
-            android:background="@android:drawable/edit_text"
-            android:alpha="0.8" />
-        <EditText
-            android:id="@+id/etWidth"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="W"
-            android:layout_marginHorizontal="4dp"
-            android:focusable="false"
-            android:longClickable="false"
-            android:cursorVisible="false"
-            android:background="@android:drawable/edit_text"
-            android:alpha="0.8" />
-
-        <EditText
-            android:id="@+id/etHeight"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:hint="H"
-            android:focusable="false"
-            android:longClickable="false"
-            android:cursorVisible="false"
-            android:background="@android:drawable/edit_text"
-            android:alpha="0.8" />
-
-    </LinearLayout>
-        <Space android:layout_width="match_parent" android:layout_height="32dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:text="@string/send_order"
-            android:textSize="18sp"
-            app:cornerRadius="12dp"
-            android:backgroundTint="#2E7D32" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnGlobalSearch"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:text="@string/find_order"
-            app:icon="@android:drawable/ic_menu_search" />
-
-        <Button android:id="@+id/btnLogout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="LOGOUT"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
-    </LinearLayout>
+</FrameLayout>

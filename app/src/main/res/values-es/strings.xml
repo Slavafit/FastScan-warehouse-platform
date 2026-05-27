@@ -50,6 +50,7 @@
 
     <string name="create">Crear</string>
     <string name="box_created">Caja creada %s</string>
+    <string name="box_added_format">Caja %s añadida</string>
     <string name="login_succes">✅ Inicio de sesión exitoso</string>
     <string name="login_not_filled">El nombre de usuario o la contraseña no se han introducido.</string>
     <string name="token_error">Error: No se recibió el token</string>
@@ -118,6 +119,8 @@
     <string name="error_firebase">No se pudo guardar en Firebase: %1$s</string>
     <string name="part_finished">La parte terminada</string>
     <string name="delete_box">Eliminar la caja no está disponible temporalmente.</string>
+    <string name="error_load_boxes_short">Error al cargar la lista de cajas</string>
+    <string name="error_adding_box">Error al agregar la caja al lote</string>
 
 
 
@@ -175,7 +178,7 @@
     <string name="error_code">Error al crear el código %d</string>
     <string name="date">Fecha: %1$s</string>
     <string name="no_date">sin fecha</string>
-    <string name="box_added">Box added</string>
+    <string name="box_added">La caja fue añadida</string>
 
     <!-- fragment unclosed -->
     <string name="unclosed">Sin cerrar</string>

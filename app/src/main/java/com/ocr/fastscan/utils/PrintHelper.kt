@@ -16,17 +16,27 @@ import android.print.PrintDocumentAdapter
 import android.print.PrintDocumentInfo
 import android.util.Log
 import android.widget.Toast
-import java.io.File
-import java.io.FileOutputStream
+import androidx.preference.PreferenceManager
 import com.ocr.fastscan.data.model.BoxInPartial
 import com.ocr.fastscan.ui.MyPrintDocumentAdapter
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.net.Socket
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.*
 
 class PrintHelper(private val activity: Activity) {
 
     private val context: Context = activity
+    private val scope = CoroutineScope(Dispatchers.IO + Job())
+
+    // ВЕРТИКАЛЬНЫЕ РАЗМЕРЫ (100мм ширина x 150мм высота)
+    // 1 мм = 2.834 pts
+    private val LABEL_WIDTH_PTS = 283  // 100 мм
+    private val LABEL_HEIGHT_PTS = 425 // 150 мм
 
     fun printLabel(
         printManager: PrintManager,
@@ -35,61 +45,35 @@ class PrintHelper(private val activity: Activity) {
         client: String,
         weight: String
     ) {
-        //val printManager = getPrintManager()
-        //val printManager = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
-        val jobName = "Onza_Label_$trackingNumber"
-
-        printManager.print(jobName, object : PrintDocumentAdapter() {
-            override fun onLayout(
-                oldAttributes: PrintAttributes?,
-                newAttributes: PrintAttributes,
-                cancellationSignal: CancellationSignal?,
-                callback: LayoutResultCallback,
-                extras: Bundle?
-            ) {
-                if (cancellationSignal?.isCanceled == true) {
-                    callback.onLayoutCancelled()
-                    return
-                }
-
-                // Описываем документ (1 страница, размер 100x150мм)
-                val info = PrintDocumentInfo.Builder(jobName)
-                    .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
-                    .setPageCount(1)
-                    .build()
-                callback.onLayoutFinished(info, true)
-            }
-
-            override fun onWrite(
-                pages: Array<out PageRange>?,
-                destination: ParcelFileDescriptor,
-                cancellationSignal: CancellationSignal?,
-                callback: WriteResultCallback
-            ) {
-                val pdfDocument = PdfDocument()
-                // 100мм x 150мм переводим в пункты (1/72 дюйма)
-                // 100 мм ~ 283 pts, 150 мм ~ 425 pts
-                val pageInfo = PdfDocument.PageInfo.Builder(283, 425, 1).create()
-                val page = pdfDocument.startPage(pageInfo)
-                val canvas = page.canvas
-
+        val printerIp = getPrinterIp()
+        if (printerIp.isNotEmpty()) {
+            // Прямая печать ZPL (Вертикальная 100x150)
+            val zpl = """
+                ^XA
+                ^CI28
+                ^CF0,40
+                ^FO80,40^FDONZA ESPAÑA^FS
+                ^BY3,3,100
+                ^FO80,100^BCN,100,Y,N,N^FD$trackingNumber^FS
+                ^FO80,280^GB600,3,3^FS
+                ^CF0,50
+                ^FO80,320^FDClient: $clientCode^FS
+                ^CF0,35
+                ^FO80,380^FDName: $client^FS
+                ^CF0,80
+                ^FO80,480^FDWeight: $weight kg^FS
+                ^XZ
+            """.trimIndent()
+            sendToPrinter(printerIp, zpl)
+        } else {
+            executeSystemPrint("Label_$trackingNumber", trackingNumber) { canvas ->
                 drawLabelContent(canvas, trackingNumber, clientCode, client, weight)
-
-                pdfDocument.finishPage(page)
-
-                try {
-                    pdfDocument.writeTo(FileOutputStream(destination.fileDescriptor))
-                } catch (e: Exception) {
-                    callback.onWriteFailed(e.message)
-                } finally {
-                    pdfDocument.close()
-                }
-                callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
             }
-        }, null)
+        }
     }
+
     fun printBoxLabel(
-        printManager: PrintManager,   // ← принимаем снаружи
+        printManager: PrintManager,
         trackingNumber: String,
         weight: String,
         last4: String,
@@ -98,298 +82,234 @@ class PrintHelper(private val activity: Activity) {
         width: String,
         height: String
     ) {
+        val printerIp = getPrinterIp()
+        val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
+        
+        if (printerIp.isNotEmpty()) {
+            // Прямая печать ZPL для Zebra
+            // QR-код (^BQN,2,10) и Партия (^A0N,120,120) увеличены
+            // Разделение веса и размеров увеличено
+            val zpl = """
+                ^XA
+                ^CI28
+                ^CF0,50
+                ^FO80,40^FDOnza España^FS
+                ^BY3,3,120
+                ^FO80,110^BCN,120,Y,N,N^FD$trackingNumber^FS
+                ^FO80,330^A0N,80,80^FD$last4^FS
+                ^FO80,420^GB600,3,3^FS
+                ^CF0,30
+                ^FO80,440^FDPrinted in Málaga: $dateStr^FS
+                ^FO80,480^GB600,3,3^FS
+                ^FO80,510^A0N,120,120^FD$partialName^FS
+                ^CF0,50
+                ^FO80,660^FDWeight: $weight kg^FS
+                ^FO80,760^FDSizes: ${length}x${width}x$height cm^FS
+                ^FO80,840^BQN,2,10^FDQA$trackingNumber^FS
+                ^XZ
+            """.trimIndent()
+            sendToPrinter(printerIp, zpl)
+        } else {
+            executeSystemPrint("Box_$trackingNumber", trackingNumber) { canvas ->
+                drawLabelBox(canvas, trackingNumber, weight, last4, partialName, length, width, height)
+            }
+        }
+    }
 
-//        val printManager = activity.getSystemService(Context.PRINT_SERVICE) as? PrintManager
-//        if (printManager == null) {
-//            Log.e("PrintHelper", "PrintManager недоступен")
-//            Toast.makeText(context, "Система печати недоступна", Toast.LENGTH_SHORT).show()
-//            return
-//        }
+    fun printTestLabel() {
+        val printerIp = getPrinterIp()
+        if (printerIp.isEmpty()) {
+            Toast.makeText(context, "IP принтера не указан", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        val jobName = "Этикетка $trackingNumber"
+        val testZpl = """
+            ^XA
+            ^CI28
+            ^CF0,60
+            ^FO80,50^FDTEST PRINT^FS
+            ^FO80,120^FDZebra TPC 9100^FS
+            ^BY3,3,100
+            ^FO80,200^BCN,100,Y,N,N^FD12345678^FS
+            ^CF0,40
+            ^FO80,350^FDIP: $printerIp^FS
+            ^FO80,400^FDStatus: OK^FS
+            ^XZ
+        """.trimIndent()
+        
+        sendToPrinter(printerIp, testZpl)
+    }
+
+    private fun getPrinterIp(): String {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return prefs.getString("printer_ip", "192.168.1.168") ?: "192.168.1.168"
+    }
+
+    private fun sendToPrinter(ip: String, data: String) {
+        scope.launch {
+            try {
+                val socket = Socket(ip, 9100)
+                socket.soTimeout = 5000
+                val out: OutputStream = socket.getOutputStream()
+                out.write(data.toByteArray(Charsets.UTF_8))
+                out.flush()
+                socket.close()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Печать отправлена на Zebra ($ip)", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Ошибка Zebra: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    private fun executeSystemPrint(jobName: String, track: String, drawBlock: (Canvas) -> Unit) {
+        val printManager = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
+        val attributes = PrintAttributes.Builder()
+            .setMediaSize(PrintAttributes.MediaSize("Label_100x150", "Label 100x150mm", 3937, 5905))
+            .setResolution(PrintAttributes.Resolution("res1", "300dpi", 300, 300))
+            .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+            .build()
 
         printManager.print(jobName, object : PrintDocumentAdapter() {
-
-            override fun onLayout(
-                oldAttributes: PrintAttributes?,
-                newAttributes: PrintAttributes?,
-                cancellationSignal: CancellationSignal?,
-                callback: LayoutResultCallback,
-                extras: Bundle?
-            ) {
-                if (cancellationSignal?.isCanceled == true) {
-                    callback.onLayoutCancelled()
-                    return
-                }
-
-                // Настраиваем атрибуты печати
-                val attributes = PrintAttributes.Builder()
-                    .setMediaSize(PrintAttributes.MediaSize.ISO_A6.asPortrait()) // или CUSTOM размер
-                    //.setResolution(PrintAttributes.Resolution(300, "300dpi", 300, 300))
-                    .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
-                    .build()
-
-                val info = PrintDocumentInfo.Builder(jobName)
-                    .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
-                    .setPageCount(1)
-                    .build()
-
-                callback.onLayoutFinished(info, true)
+            override fun onLayout(old: PrintAttributes?, new: PrintAttributes, sig: CancellationSignal?, cb: LayoutResultCallback, ex: Bundle?) {
+                cb.onLayoutFinished(PrintDocumentInfo.Builder(jobName).setPageCount(1).build(), true)
             }
 
-            override fun onWrite(
-                pages: Array<out PageRange>?,
-                destination: ParcelFileDescriptor,
-                cancellationSignal: CancellationSignal?,
-                callback: WriteResultCallback
-            ) {
-                if (cancellationSignal?.isCanceled == true) {
-                    callback.onWriteCancelled()
-                    return
-                }
-
-                val pdfDocument = PdfDocument()
-                val pageInfo = PdfDocument.PageInfo.Builder(283, 425, 1).create() // 100×150 мм
-                val page = pdfDocument.startPage(pageInfo)
-                val canvas = page.canvas
-
-                drawLabelBox(canvas, trackingNumber, weight, last4, partialName, length, width, height)
-
-                pdfDocument.finishPage(page)
-
+            override fun onWrite(pages: Array<out PageRange>?, dest: ParcelFileDescriptor, sig: CancellationSignal?, cb: WriteResultCallback) {
+                val pdf = PdfDocument()
+                val page = pdf.startPage(PdfDocument.PageInfo.Builder(LABEL_WIDTH_PTS, LABEL_HEIGHT_PTS, 1).create())
+                drawBlock(page.canvas)
+                pdf.finishPage(page)
                 try {
-                    FileOutputStream(destination.fileDescriptor).use { output ->
-                        pdfDocument.writeTo(output)
-                    }
-                    callback.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
+                    pdf.writeTo(FileOutputStream(dest.fileDescriptor))
+                    cb.onWriteFinished(arrayOf(PageRange.ALL_PAGES))
                 } catch (e: Exception) {
-                    callback.onWriteFailed(e.message)
+                    cb.onWriteFailed(e.message)
                 } finally {
-                    pdfDocument.close()
+                    pdf.close()
                 }
             }
-        }, null)
+        }, attributes)
     }
-    //печать этикетки коробки
-    private fun drawLabelBox(
-        canvas: Canvas,
-        trackingNumber: String,
-        weight: String,
-        last4: String,
-        partialName: String,
-        length: String,
-        width: String,
-        height: String
-    ) {
 
-        val padding = 20f // Отступ от краев этикетки в пикселях
-        val usableWidth = canvas.width - (padding * 2) // Доступная ширина для самого кода
-        var y = 30f
-        val paint = Paint().apply {
-            color = Color.BLACK
-            isAntiAlias = true
-        }
-        val barcodePaint = Paint().apply {
-            isAntiAlias = false
-            isFilterBitmap = false
-        }
-
-        // Заголовок
-        paint.textSize = 18f
+    private fun drawLabelBox(canvas: Canvas, track: String, weight: String, last4: String, partial: String, l: String, w: String, h: String) {
+        val paint = Paint().apply { color = Color.BLACK; isAntiAlias = true }
+        val padding = 28f // ~1 см
+        var y = 25f
+        
+        paint.textSize = 16f
         paint.isFakeBoldText = true
-        canvas.drawText("Onza España", padding + 10f, y, paint)
+        canvas.drawText("Onza España", padding, y, paint)
         y += 30f
 
-        //Штрих-код (генерируем Bitmap и рисуем)
-        val barcodeHeight = 100
-        // Генерируем код ровно под ширину этикетки минус отступы
-        val barcodeBmp = BarcodeUtils.generateBarcode(trackingNumber, usableWidth.toInt(), barcodeHeight)
-        // Рисуем строго по центру
-        canvas.drawBitmap(barcodeBmp, padding, y, barcodePaint)
-        y += (barcodeHeight + 20f)
+        val barcodeBmp = BarcodeUtils.generateBarcode(track, (LABEL_WIDTH_PTS - padding * 2).toInt(), 50)
+        canvas.drawBitmap(barcodeBmp, padding, y, null)
+        y += 65f
 
+        paint.textSize = 12f
+        paint.isFakeBoldText = false
+        canvas.drawText(track, padding, y, paint)
+        y += 40f
 
-        // Трек-номер
+        paint.textSize = 45f 
+        paint.isFakeBoldText = true
+        canvas.drawText(last4, padding, y, paint)
+        y += 10f
+        
+        canvas.drawLine(padding, y, LABEL_WIDTH_PTS - padding, y, paint)
+        y += 18f
+
+        val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
+        paint.textSize = 10f
+        paint.isFakeBoldText = false
+        canvas.drawText("Printed: $dateStr", padding, y, paint)
+        y += 10f
+        
+        canvas.drawLine(padding, y, LABEL_WIDTH_PTS - padding, y, paint)
+        y += 40f
+
+        // Код партии крупнее
+        paint.textSize = 45f
+        paint.isFakeBoldText = true
+        canvas.drawText(partial, padding, y, paint)
+        y += 55f
+
+        // Вес и размеры разделены больше
         paint.textSize = 18f
-        paint.isFakeBoldText = false // Обычный шрифт для длинного номера
-        canvas.drawText(trackingNumber, padding + 50f, y, paint)
-        y += 70f
+        paint.isFakeBoldText = false
+        canvas.drawText("Weight: $weight kg", padding, y, paint)
+        y += 40f
+        canvas.drawText("Sizes: $l x $w x $h cm", padding, y, paint)
+        
+        // Крупный QR-код в самом низу
+        val qrSize = 90
+        val qrBmp = BarcodeUtils.generateQRCode(track, qrSize)
+        canvas.drawBitmap(qrBmp, padding, LABEL_HEIGHT_PTS - qrSize - 10f, null)
+    }
 
-        // Последние 4 цифры крупно
+    private fun drawLabelContent(canvas: Canvas, track: String, code: String, client: String, weight: String) {
+        val paint = Paint().apply { color = Color.BLACK; isAntiAlias = true }
+        val padding = 28f
+        var y = 45f
+
+        paint.textSize = 22f
+        paint.isFakeBoldText = true
+        canvas.drawText("ONZA ESPAÑA - ORDER", padding, y, paint)
+        y += 40f
+
+        val barcodeBmp = BarcodeUtils.generateBarcode(track, (LABEL_WIDTH_PTS - padding * 2).toInt(), 80)
+        canvas.drawBitmap(barcodeBmp, padding, y, null)
+        y += 110f
+
+        paint.textSize = 18f
+        paint.isFakeBoldText = false
+        canvas.drawText("Track: $track", padding, y, paint)
+        y += 60f
+        
+        paint.textSize = 35f
+        paint.isFakeBoldText = true
+        canvas.drawText(code, padding, y, paint)
+        y += 40f
+        
+        paint.textSize = 18f
+        paint.isFakeBoldText = false
+        canvas.drawText(client, padding, y, paint)
+        y += 80f
+
         paint.textSize = 40f
         paint.isFakeBoldText = true
-        canvas.drawText(last4, padding + 90f, y, paint)
-        y += 40f
-
-
-        // Партия
-        paint.textSize = 30f
-        paint.isFakeBoldText = false
-        canvas.drawText("Part: $partialName", padding + 40f, y, paint)
-        y += 40f
-
-        // Вес
-        paint.textSize = 16f
-        paint.isFakeBoldText = false
-        canvas.drawText("Weight: $weight kg", padding + 40f, y, paint)
-        y += 40f
-
-        // Размеры
-        paint.textSize = 12f
-        paint.isFakeBoldText = false
-        canvas.drawText("Box dimensions: $length X $height X $width", padding + 40f, y, paint)
-        y += 20f
-
-        // Дата печати
-        val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
-        paint.textSize = 12f
-        paint.isFakeBoldText = false
-        canvas.drawText("Printed: $dateStr", padding + 40f, y, paint)
-        y += 5f
-        //Штрих-код
-        canvas.drawBitmap(barcodeBmp, padding, y, barcodePaint)
-    }
-    //генерация этикеткм
-    private fun drawLabelContent(canvas: Canvas, track: String, clientCode: String, client: String, weight: String) {
-        val paint = Paint().apply {
-            color = Color.BLACK
-            textSize = 14f
-            isAntiAlias = true
-        }
-
-        // 1. Заголовок
-        paint.textSize = 24f
-        paint.isFakeBoldText = true
-        canvas.drawText("ONZA ESPAÑA", 20f, 40f, paint)
-
-        // 2. Штрих-код (генерируем Bitmap и рисуем)
-        val barcodeBmp = BarcodeUtils.generateBarcode(track, 240, 80)
-        canvas.drawBitmap(barcodeBmp, 20f, 60f, paint)
-
-        // 3. Текст под штрих-кодом
-        paint.textSize = 16f
-        paint.isFakeBoldText = false
-        canvas.drawText(track, 70f, 160f, paint)
-
-        // Линия разделения
-        canvas.drawLine(20f, 180f, 260f, 180f, paint)
-
-        // 4. Данные клиента
-        paint.textSize = 20f
-        paint.isFakeBoldText = true
-        canvas.drawText("Client Code: $clientCode", 20f, 220f, paint)
-
-        paint.textSize = 20f
-        paint.isFakeBoldText = true
-        canvas.drawText("Client: $client", 20f, 270f, paint)
-
-        // 5. Вес
-        paint.textSize = 25f
-        canvas.drawText("Weight: $weight kg", 20f, 320f, paint)
-
-
+        canvas.drawText("$weight kg", padding, y, paint)
     }
 
-    //function print party
-    fun printParty(
-        partialCode: String,
-        partialName: String,
-        warehouseName: String,
-        dateCreated: String,
-        boxes: List<BoxInPartial>
-    )
-    {
-        //Log.e("PrintHelper", "Передаём в печать -> partialCode: $partialCode, partialName: $partialName")
-        if (boxes.isEmpty()) {
-            Log.w("PrintHelper", "Нет коробок для печати")
-            return
-        }
-
+    fun printParty(partialCode: String, partialName: String, warehouseName: String, dateCreated: String, boxes: List<BoxInPartial>) {
+        if (boxes.isEmpty()) return
         val document = PdfDocument()
-        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create()
         val page = document.startPage(pageInfo)
         val canvas = page.canvas
+        val paint = Paint().apply { color = Color.BLACK; textSize = 14f }
 
-        val paint = Paint()
-        paint.color = Color.BLACK
-
-        var y = 40f
-
-        // Заголовок
-        paint.textSize = 18f
-        paint.isFakeBoldText = true
-        canvas.drawText("Партия: $partialCode ($partialName)", 40f, y, paint)
-        y += 30f
-        //Log.e("PrintHelper", "Партия -> partialCode: $partialCode, partialName: $partialName")
-
-        paint.textSize = 12f
-        paint.isFakeBoldText = false
-        canvas.drawText("Склад: $warehouseName | Создано: $dateCreated | Коробок: ${boxes.size}", 40f, y, paint)
+        var y = 50f
+        canvas.drawText("REPORT: $partialName ($partialCode)", 50f, y, paint)
         y += 40f
-
-        // Заголовок таблицы
-        paint.isFakeBoldText = true
-        canvas.drawText("Трек                                Размеры         Вес        Объёмный", 40f, y, paint)
-        y += 20f
-        paint.isFakeBoldText = false
-
-        // Строки таблицы
         for (box in boxes) {
-            val line = String.format(
-                "%-20s %-15s %-8.1f кг  %-10.2f кг",
-                box.tracking_code.take(20),
-                "${box.width}×${box.height}×${box.length}",
-                box.gross_weight,
-                box.v_weight,
-                //box.orderCount
-            )
-            canvas.drawText(line, 40f, y, paint)
+            canvas.drawText("${box.tracking_code} | ${box.gross_weight} kg | ${box.length}x${box.width}x${box.height}", 50f, y, paint)
             y += 20f
-
-            if (y > 800) break  // одна страница пока
+            if (y > 800) break
         }
-
-        // Сумма внизу
-        val totalGross = boxes.sumOf { it.gross_weight }
-        val totalV = boxes.sumOf { it.v_weight }
-        //val totalOrders = boxes.sumOf { it.orderCount }
-
-        y += 20f
-        paint.isFakeBoldText = true
-        canvas.drawText("Итого:", 40f, y, paint)
-        canvas.drawText("Коробок: ${boxes.size}", 300f, y, paint)
-        y += 20f
-        canvas.drawText("Общий вес: %.2f кг".format(totalGross), 300f, y, paint)
-        y += 20f
-        canvas.drawText("Объёмный вес: %.2f кг".format(totalV), 300f, y, paint)
-        y += 20f
-        //canvas.drawText("Всего заказов: $totalOrders", 300f, y, paint)
-
         document.finishPage(page)
-
-        // Сохраняем временный файл
-        val fileName = "party_${partialName.replace(" ", "-")}.pdf"
-        val pdfFile = File(context.cacheDir, fileName)
-
+        val file = File(context.cacheDir, "report.pdf")
         try {
-            FileOutputStream(pdfFile).use { output ->
-                document.writeTo(output)
-            }
-            //Log.d("PrintHelper", "PDF создан: ${pdfFile.absolutePath}")
+            FileOutputStream(file).use { document.writeTo(it) }
+            val pm = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
+            pm.print("Report_$partialCode", MyPrintDocumentAdapter(file), null)
         } catch (e: Exception) {
-            Log.e("PrintHelper", "Ошибка создания PDF", e)
-            return
+            Log.e("PrintHelper", "Report error", e)
         } finally {
             document.close()
         }
-
-        // Печать через системный PrintManager
-        //val printManager = getPrintManager()
-        val printManager = activity.getSystemService(Context.PRINT_SERVICE) as PrintManager
-        val jobName = "Партия $partialCode - $partialName"
-        printManager.print(jobName, MyPrintDocumentAdapter(pdfFile), null)
-
-        // Удаляем файл после печати (опционально)
-        pdfFile.deleteOnExit()
     }
 }

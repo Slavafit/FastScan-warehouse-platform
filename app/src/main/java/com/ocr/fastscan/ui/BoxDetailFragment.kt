@@ -99,7 +99,6 @@ class BoxDetailFragment : Fragment() {
         setupClickListeners()
         setupSizeListeners()
 
-        // Загружаем всё параллельно для скорости
         loadBoxInfo()
         loadOrdersInBox()
         loadPartialName()
@@ -131,33 +130,34 @@ class BoxDetailFragment : Fragment() {
 
     private fun loadOrdersInBox() {
         viewLifecycleOwner.lifecycleScope.launch {
-            binding.progressBar.visibility = View.VISIBLE
+            _binding?.progressBar?.visibility = View.VISIBLE
             try {
                 val response = apiService.getOrderDetailsBox(boxTracking)
+                if (_binding == null || !isAdded) return@launch
+
                 if (response.isSuccessful && response.body() != null) {
                     val orders = response.body()!!
                     ordersAdapter.submitList(orders)
 
-                    // Считаем сумму весов заказов
                     val totalGrossWeight = orders.sumOf { it.grossWeight ?: 0.0 }
-                    binding.tvGrossWeight.text = getString(R.string.weight_total, totalGrossWeight)
-                    binding.tvOrderCount.text = getString(R.string.orders_count, orders.size)
+                    _binding?.tvGrossWeight?.text = getString(R.string.weight_total, totalGrossWeight)
+                    _binding?.tvOrderCount?.text = getString(R.string.orders_count, orders.size)
                 } else {
-                    Toast.makeText(requireContext(), R.string.error_load_orders, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.error_load_orders, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
+                if (isAdded) Toast.makeText(context, getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
 
     private fun calculateVWeight(): Double {
-        val length = binding.etLength.text.toString().toIntOrNull() ?: 70
-        val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
-        val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
-        val divider = requireContext().getVolWeightDivider()
+        val length = _binding?.etLength?.text?.toString()?.toIntOrNull() ?: 70
+        val width = _binding?.etWidth?.text?.toString()?.toIntOrNull() ?: 45
+        val height = _binding?.etHeight?.text?.toString()?.toIntOrNull() ?: 50
+        val divider = context?.getVolWeightDivider() ?: 6000.0
         return (length * width * height) / divider
     }
 
@@ -173,7 +173,7 @@ class BoxDetailFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            binding.progressBar.visibility = View.VISIBLE
+            _binding?.progressBar?.visibility = View.VISIBLE
             try {
                 val request = BoxRequest(
                     guid = boxGuid,
@@ -186,16 +186,18 @@ class BoxDetailFragment : Fragment() {
                     vWeight = calculateVWeight()
                 )
                 val response = apiService.createOrUpdateBox(request)
+                if (_binding == null || !isAdded) return@launch
+
                 if (response.isSuccessful && response.body()?.success == true) {
-                    Toast.makeText(requireContext(), R.string.weight_saved, Toast.LENGTH_SHORT).show()
-                    loadBoxInfo() // Перезагружаем инфо о коробке после сохранения
+                    Toast.makeText(context, R.string.weight_saved, Toast.LENGTH_SHORT).show()
+                    loadBoxInfo()
                 } else {
-                    Toast.makeText(requireContext(), R.string.error_saving_dim, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.error_saving_dim, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
+                if (isAdded) Toast.makeText(context, getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -203,7 +205,7 @@ class BoxDetailFragment : Fragment() {
     private fun setupSizeListeners() {
         val watcher = object : TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) {
-                binding.tvVWeight.text = getString(R.string.volume_weight, calculateVWeight())
+                _binding?.tvVWeight?.text = getString(R.string.volume_weight, calculateVWeight())
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -218,14 +220,16 @@ class BoxDetailFragment : Fragment() {
             try {
                 val request = RemoveOrderRequest(orderGuid)
                 val response = apiService.removeOrderFromBox(request)
+                if (_binding == null || !isAdded) return@launch
+                
                 if (response.isSuccessful) {
-                    Toast.makeText(requireContext(), R.string.order_deleted, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.order_deleted, Toast.LENGTH_SHORT).show()
                     loadOrdersInBox()
                 } else {
-                    Toast.makeText(requireContext(), R.string.error_deleting, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.error_deleting, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
+                if (isAdded) Toast.makeText(context, getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -269,7 +273,7 @@ class BoxDetailFragment : Fragment() {
             Toast.makeText(requireContext(), R.string.sent_for_printing, Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Log.e("printHelper", "Ошибка печати", e)
-            Toast.makeText(requireContext(), getString(R.string.error_printing, e.localizedMessage), Toast.LENGTH_LONG).show()
+            if (isAdded) Toast.makeText(requireContext(), getString(R.string.error_printing, e.localizedMessage), Toast.LENGTH_LONG).show()
             soundManager.playError()
         }
     }
@@ -278,25 +282,28 @@ class BoxDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val searchResponse = apiService.searchOrder(tcode)
+                if (_binding == null || !isAdded) return@launch
+
                 if (!searchResponse.isSuccessful || searchResponse.body().isNullOrEmpty()) {
                     val msg = if (!searchResponse.isSuccessful) getString(R.string.search_error, searchResponse.code()) else getString(R.string.order_not_found)
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                     return@launch
                 }
 
                 val order = searchResponse.body()!![0]
                 val orderGuid = order.guid ?: run {
-                    Toast.makeText(requireContext(), R.string.no_GUID, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.no_GUID, Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                     return@launch
                 }
 
                 val addRequest = BoxOrderRequest(order = orderGuid, box = boxGuid, desc = "España BMG")
                 val addResponse = apiService.addOrderToBox(addRequest)
+                if (_binding == null || !isAdded) return@launch
 
                 if (addResponse.isSuccessful) {
-                    Toast.makeText(requireContext(), getString(R.string.order_added), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.order_added), Toast.LENGTH_SHORT).show()
                     soundManager.playSuccess()
                     loadOrdersInBox()
 
@@ -312,11 +319,11 @@ class BoxDetailFragment : Fragment() {
                         Log.e("AddOrder", "Firebase error", e)
                     })
                 } else {
-                    Toast.makeText(requireContext(), getString(R.string.server_error, addResponse.code()), Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, getString(R.string.server_error, addResponse.code()), Toast.LENGTH_LONG).show()
                     soundManager.playError()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_LONG).show()
+                if (isAdded) Toast.makeText(context, getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_LONG).show()
                 soundManager.playError()
             }
         }
@@ -324,28 +331,26 @@ class BoxDetailFragment : Fragment() {
 
     private fun loadBoxInfo() {
         viewLifecycleOwner.lifecycleScope.launch {
-            binding.progressBar.visibility = View.VISIBLE
+            _binding?.progressBar?.visibility = View.VISIBLE
             try {
                 val response = apiService.getBoxes(tCode = boxTracking)
-                if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
-                    val box = response.body()!![0]
-                    binding.tvBoxNumber.text = getString(R.string.box, boxTracking)
-                    
-                    // Заполняем поля ввода
-                    binding.etLength.setText(box.length?.toString() ?: "70")
-                    binding.etWidth.setText(box.width?.toString() ?: "45")
-                    binding.etHeight.setText(box.height?.toString() ?: "50")
-                    binding.etGrossWeight.setText(box.grossWeight?.toString() ?: "0.0")
+                if (_binding == null || !isAdded) return@launch
 
-                    // Обновляем объемный вес
-                    binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: calculateVWeight())
+                if (response.isSuccessful && response.body()?.isNotEmpty() == true) {
+                    val box = response.body()!![0]
+                    _binding?.tvBoxNumber?.text = getString(R.string.box, boxTracking)
+                    _binding?.etLength?.setText(box.length?.toString() ?: "70")
+                    _binding?.etWidth?.setText(box.width?.toString() ?: "45")
+                    _binding?.etHeight?.setText(box.height?.toString() ?: "50")
+                    _binding?.etGrossWeight?.setText(box.grossWeight?.toString() ?: "0.0")
+                    _binding?.tvVWeight?.text = getString(R.string.volume_weight, box.vWeight ?: calculateVWeight())
                 } else {
-                    Toast.makeText(requireContext(), R.string.error_load_detal, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.error_load_detal, Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
+                if (isAdded) Toast.makeText(context, R.string.net_error_short, Toast.LENGTH_SHORT).show()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -354,6 +359,8 @@ class BoxDetailFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val response = apiService.getOpenPartials()
+                if (_binding == null || !isAdded) return@launch
+
                 if (response.isSuccessful) {
                     val parties = response.body() ?: emptyList()
                     if (parties.isNotEmpty()) {

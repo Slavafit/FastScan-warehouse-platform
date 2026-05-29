@@ -14,6 +14,7 @@ import com.ocr.fastscan.utils.LicenseChecker
 import com.ocr.fastscan.utils.saveVolWeightDivider
 import com.ocr.fastscan.utils.ThemeHelper
 import com.ocr.fastscan.utils.LanguageHelper
+import com.ocr.fastscan.utils.PrintHelper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -38,6 +39,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference<ListPreference>("theme")?.setOnPreferenceChangeListener { _, newValue ->
             val theme = newValue as String
             ThemeHelper.applyTheme(theme)
+            true
+        }
+
+        // Тест печати
+        findPreference<Preference>("test_print")?.setOnPreferenceClickListener {
+            val printHelper = PrintHelper(requireActivity())
+            printHelper.printTestLabel()
             true
         }
 
@@ -129,16 +137,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             "Ошибка проверки статуса"
         }
     }
-    private fun restartAppCompletely() {
-        val intent = Intent(requireActivity(), MainActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_CLEAR_TASK)
-        }
 
-        requireActivity().finishAffinity()
-        startActivity(intent)
-    }
     // Полный перезапуск приложения
     private fun restartApplicationSafely() {
         val intent = requireActivity().intent

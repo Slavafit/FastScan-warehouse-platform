@@ -45,6 +45,12 @@
     <string name="server_weight_address">Адрес сервера весов</string>
     <string name="server_weight_address_summary">Например: http://192.168.1.50</string>
 
+    <string name="printer_settings">🖨️ Настройки принтера</string>
+    <string name="printer_ip_title">IP адрес принтера (Zebra)</string>
+    <string name="printer_ip_summary">Например: 192.168.1.168</string>
+    <string name="test_print">Тест печати</string>
+    <string name="test_print_summary">Отправить пробную этикетку на принтер</string>
+
 
     <string name="licence_title">📃 Лицензия</string>
     <string name="licence_email_title">Email для лицензии</string>

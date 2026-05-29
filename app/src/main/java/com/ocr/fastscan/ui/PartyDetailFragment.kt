@@ -213,6 +213,7 @@ class PartyDetailFragment : Fragment() {
         var totalWeight = 0.0
         boxes.forEachIndexed { index, box ->
             sb.append("${index + 1}. 📦 `${box.tracking_code}`\n")
+            sb.append("   📏 Размеры: ${box.length} × ${box.width} × ${box.height} см\n")
             sb.append("   ⚖️ Вес: ${String.format("%.2f", box.gross_weight)} кг\n")
             totalWeight += box.gross_weight
         }

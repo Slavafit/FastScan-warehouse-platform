@@ -27,7 +27,6 @@
             app:title="@string/server_url_title"
             app:useSimpleSummaryProvider="true"
             android:summary="@string/server_url_summary"/>
-        <!--app:defaultValue="https://onza-api.ibm.kg" />-->
 
         <EditTextPreference
             app:key="login"
@@ -56,6 +55,21 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/printer_settings">
+        <EditTextPreference
+            app:key="printer_ip"
+            app:title="@string/printer_ip_title"
+            app:summary="@string/printer_ip_summary"
+            app:defaultValue="192.168.1.168"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="text"/>
+
+        <Preference
+            app:key="test_print"
+            app:title="@string/test_print"
+            app:summary="@string/test_print_summary" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/licence_title">
         <EditTextPreference
             android:key="user_email"
@@ -75,4 +89,3 @@
             android:summary="@string/developer_summary"/>
     </PreferenceCategory>
 </PreferenceScreen>
-

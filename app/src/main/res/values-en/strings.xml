@@ -20,7 +20,19 @@
     <string name="developer_summary">Telegramm: @Slavafit</string>
 
     <string name="server_weight_address">Server weight address</string>
-    <string name="server_weight_address_summary">For example: http://192.168.1.50</string>
+    <string name="server_weight_address_summary">For example: 192.168.1.50</string>
+    <string name="printer_settings">🖨️ Printer Settings</string>
+    <string name="printer_ip_title">Printer IP (Zebra)</string>
+    <string name="printer_ip_summary">For example: 192.168.1.168</string>
+    <string name="printer_width_title">Width (mm)</string>
+    <string name="printer_width_summary">By default: 100 mm</string>
+    <string name="printer_height_title">Height (mm)</string>
+    <string name="printer_height_summary">By default: 150 mm</string>
+    <string name="test_print">Test print</string>
+    <string name="test_print_summary">Send a sample label to the printer</string>
+    <string name="test_print_result">🚀 Sent to printer %1$s</string>
+    <string name="test_print_error">⚠️ Error connecting to printer: %1$s</string>
+    <string name="printer_ip_error">Printer IP not specified</string>
 
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>

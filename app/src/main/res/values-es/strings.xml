@@ -3,9 +3,7 @@
     <string name="language_settings">🌍 Idioma de apicacion</string>
     <string name="language">Idioma</string>
     <string name="language_summary">idioma de app</string>
-
     <string name="app_name">FastScan Pro</string>
-
     <string name="server_settings">💻⚙️ Configuración del servidor</string>
     <string name="server_url_title">URL del servidor</string>
     <string name="server_url_summary">Por defecto: https://onza-api.ibm.kg</string>
@@ -14,14 +12,24 @@
     <string name="vol_weight_title">Peso volumétrico</string>
     <string name="vol_weight_summary">Por defecto: 6000</string>
     <string name="server_weight_address">Dirección de peso del servidor</string>
-    <string name="server_weight_address_summary">Por ejemplo: http://192.168.1.50</string>
-
+    <string name="server_weight_address_summary">Por ejemplo: 192.168.1.50</string>
+    <string name="printer_settings">🖨️ Configuración de la impresora</string>
+    <string name="printer_ip_title">IP de la impresora (Zebra)</string>
+    <string name="printer_ip_summary">Por ejemplo: 192.168.1.168</string>
+    <string name="printer_width_title">Ancho (mm)</string>
+    <string name="printer_width_summary">Por defecto: 100 mm</string>
+    <string name="printer_height_title">Altura (mm)</string>
+    <string name="printer_height_summary">Por defecto: 150 mm</string>
+    <string name="test_print">Prueba de impresión</string>
+    <string name="test_print_summary">Enviar una muestra de etiqueta a la impresora</string>
+    <string name="test_print_result">🚀 Enviado a la impresora %1$s</string>
+    <string name="test_print_error">⚠️ Error al conectar a la impresora: %1$s</string>
+    <string name="printer_ip_error">IP de la impresora no especificada</string>
     <string name="licence_title">📃 Licencia</string>
     <string name="licence_email_title">Email para licencia</string>
     <string name="licence_email_summary">Introduce el email asociado a la licencia</string>
     <string name="licence_status_title">Estado de la licencia</string>
     <string name="licence_status_summary">Comprobando...</string>
-
     <string name="developer_info_title">👨🏻‍💻 Acerca del desarrollador</string>
     <string name="developer_title">Viacheslav Fitlin</string>
     <string name="developer_summary">Telegram: @Slavafit</string>
@@ -161,8 +169,6 @@
     <string name="weight_total">Weight total: %1$.2f kg</string>
 
 
-
-
     <!--   fragment of the party -->
     <string name="part_title">Lote</string>
     <string name="part">Lote %1$s</string>
@@ -193,10 +199,6 @@
     <string name="no_unpacked_orders">No hay pedidos sin empaquetar</string>
     <string name="report_end">El informe se genera automáticamente.</string>
     <string name="no_data_to_send">❌ No hay datos para enviar</string>
-
-
-
-
 
     <!-- Client search dialog-->
     <string name="first_name">Nombre</string>

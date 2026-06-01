@@ -2,7 +2,7 @@
 <string name="app_name">FastScan</string>
 
     <string name="language_settings">🌍 Язык приложения</string>
-    <string name="language">Язык</string>
+    <string name="language">Language</string>
     <string name="language_summary">Выберите язык приложения</string>
     <string-array name="language_entries">
         <item>Русский</item>
@@ -42,15 +42,21 @@
 
     <string name="vol_weight_title">Коэффициент объемного веса</string>
     <string name="vol_weight_summary">По умолчанию: 6000</string>
-    <string name="server_weight_address">Адрес сервера весов</string>
-    <string name="server_weight_address_summary">Например: http://192.168.1.50</string>
+    <string name="server_weight_address">IP адрес весов</string>
+    <string name="server_weight_address_summary">Например: 192.168.1.50</string>
 
     <string name="printer_settings">🖨️ Настройки принтера</string>
     <string name="printer_ip_title">IP адрес принтера (Zebra)</string>
     <string name="printer_ip_summary">Например: 192.168.1.168</string>
+    <string name="printer_width_title">Ширина бумаги (мм)</string>
+    <string name="printer_width_summary">По умолчанию: 100 мм</string>
+    <string name="printer_height_title">Высота бумаги (мм)</string>
+    <string name="printer_height_summary">По умолчанию: 150 мм</string>
     <string name="test_print">Тест печати</string>
     <string name="test_print_summary">Отправить пробную этикетку на принтер</string>
-
+    <string name="test_print_result">🚀 Отправлено на принтер %1$s</string>
+    <string name="test_print_error">⚠️ Ошибка связи с принтером: %1$s</string>"
+    <string name="printer_ip_error">IP принтера не указан</string>
 
     <string name="licence_title">📃 Лицензия</string>
     <string name="licence_email_title">Email для лицензии</string>

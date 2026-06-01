@@ -64,6 +64,22 @@
             app:useSimpleSummaryProvider="true"
             android:inputType="text"/>
 
+        <EditTextPreference
+            app:key="printer_width"
+            app:title="@string/printer_width_title"
+            app:summary="@string/printer_width_summary"
+            app:defaultValue="100"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="number"/>
+
+        <EditTextPreference
+            app:key="printer_height"
+            app:title="@string/printer_height_title"
+            app:summary="@string/printer_height_summary"
+            app:defaultValue="150"
+            app:useSimpleSummaryProvider="true"
+            android:inputType="number"/>
+
         <Preference
             app:key="test_print"
             app:title="@string/test_print"

@@ -123,14 +123,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val email = prefs.getString("user_email", "")?.trim()
 
         if (email.isNullOrBlank()) {
-            return "Email не указан"
+            return getString(R.string.license_email_missing)
         }
 
         val checker = LicenseChecker(email)
         val isValid = checker.isLicenseValid(requireContext())
 
         if (!isValid) {
-            return "Лицензия истекла или не активна"
+            return getString(R.string.license_expired_or_inactive)
         }
 
         return try {
@@ -138,19 +138,19 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val doc = db.collection("licenses").document(email).get().await()
 
             val expirationDate = doc.getTimestamp("expiration_date")?.toDate()
-                ?: return "Дата истечения не указана"
+                ?: return getString(R.string.license_expiration_missing)
 
             val daysLeft = ((expirationDate.time - Date().time) / (1000 * 60 * 60 * 24)).toInt()
             val formattedDate = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(expirationDate)
 
             when {
-                daysLeft <= 0 -> "Лицензия истекла"
-                daysLeft <= 7 -> "Истекает через $daysLeft дней! (до $formattedDate)"
-                else -> "Активна до $formattedDate (осталось $daysLeft дней)"
+                daysLeft <= 0 -> getString(R.string.license_expired_status)
+                daysLeft <= 7 -> getString(R.string.license_expires_soon_status, daysLeft, formattedDate)
+                else -> getString(R.string.license_active_until_status, formattedDate, daysLeft)
             }
         } catch (e: Exception) {
             Log.e("Settings", "Ошибка при чтении лицензии", e)
-            "Ошибка проверки статуса"
+            getString(R.string.license_check_error)
         }
     }
 

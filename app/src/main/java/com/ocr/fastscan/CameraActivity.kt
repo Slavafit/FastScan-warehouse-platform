@@ -156,7 +156,7 @@ class CameraActivity : AppCompatActivity() {
         if (allPermissionsGranted()) {
             startCamera()
         } else {
-            Toast.makeText(this, "Нужен доступ к камере", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.camera_permission_required, Toast.LENGTH_SHORT).show()
             finish()
         }
     }

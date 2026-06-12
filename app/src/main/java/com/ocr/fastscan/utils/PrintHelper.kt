@@ -28,7 +28,7 @@ class PrintHelper(private val activity: Activity) {
     ) {
         val printerIp = getPrinterIp()
         if (printerIp.isEmpty()) {
-            showToast(R.string.printer_ip_error.toString())
+            showToast(context.getString(R.string.printer_ip_error))
             return
         }
 
@@ -71,7 +71,7 @@ class PrintHelper(private val activity: Activity) {
     ) {
         val printerIp = getPrinterIp()
         if (printerIp.isEmpty()) {
-            showToast(R.string.printer_ip_error.toString())
+            showToast(context.getString(R.string.printer_ip_error))
             return
         }
 
@@ -111,7 +111,7 @@ class PrintHelper(private val activity: Activity) {
     fun printTestLabel() {
         val printerIp = getPrinterIp()
         if (printerIp.isEmpty()) {
-            showToast(R.string.printer_ip_error.toString())
+            showToast(context.getString(R.string.printer_ip_error))
             return
         }
 

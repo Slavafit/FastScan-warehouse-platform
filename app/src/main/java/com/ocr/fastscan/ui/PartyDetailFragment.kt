@@ -7,15 +7,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogSelectBoxBinding
 import com.ocr.fastscan.databinding.FragmentPartyDetailBinding
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -90,7 +87,7 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     private fun loadBoxDetails() {
-        viewLifecycleOwner.lifecycleScope.launch {
+        launchOnViewLifecycle {
             binding.progressBar.visibility = View.VISIBLE
             try {
                 val response = apiService.getBoxesInPartial(partialGuid)
@@ -120,21 +117,21 @@ class PartyDetailFragment : BaseFragment() {
         dialogBinding.rvOpenBoxes.layoutManager = LinearLayoutManager(requireContext())
         dialogBinding.rvOpenBoxes.adapter = adapter
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        launchOnViewLifecycle {
             try {
                 val response = apiService.getOpenBoxes()
                 if (response.isSuccessful) {
                     adapter.submitList(response.body() ?: emptyList())
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), R.string.error_load_boxes_short, Toast.LENGTH_SHORT).show()
+                showToast(R.string.error_load_boxes_short)
             }
         }
         dialog.show()
     }
 
     private fun addBoxToParty(box: BoxInPartial) {
-        viewLifecycleOwner.lifecycleScope.launch {
+        launchOnViewLifecycle {
             binding.progressBar.visibility = View.VISIBLE
             try {
                 val request = AddBoxRequest(
@@ -153,7 +150,7 @@ class PartyDetailFragment : BaseFragment() {
                     soundManager.playSuccess()
                     loadBoxDetails()
                 } else {
-                    Toast.makeText(requireContext(), R.string.error_adding_box, Toast.LENGTH_SHORT).show()
+                    showToast(R.string.error_adding_box)
                     soundManager.playError()
                 }
             } catch (e: Exception) {
@@ -168,7 +165,7 @@ class PartyDetailFragment : BaseFragment() {
         if (isFinishing) return
         isFinishing = true
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        launchOnViewLifecycle {
             binding.progressBar.visibility = View.VISIBLE
             try {
                 val request = SendPartialRequest(partial = partialGuid)
@@ -176,7 +173,7 @@ class PartyDetailFragment : BaseFragment() {
 
                 if (response.isSuccessful) {
                     soundManager.playSuccess()
-                    Toast.makeText(requireContext(), R.string.part_finished, Toast.LENGTH_SHORT).show()
+                    showToast(R.string.part_finished)
 
                     // Вместо печати формируем текст и делимся
                     sharePartyReport()
@@ -185,7 +182,7 @@ class PartyDetailFragment : BaseFragment() {
                     parentFragmentManager.popBackStack()
                 } else {
                     isFinishing = false
-                    Toast.makeText(requireContext(), getString(R.string.server_error, response.code()), Toast.LENGTH_SHORT).show()
+                    showToast(getString(R.string.server_error, response.code()))
                     soundManager.playError()
                 }
             } catch (e: Exception) {

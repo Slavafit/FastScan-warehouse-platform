@@ -55,6 +55,7 @@ class ScanFragment : BaseFragment() {
     private var currentWidth: Int = 0
     private var currentHeight: Int = 0
     private var currentOrderDimensions: OrderDimensions? = null
+    private var isFetchingWeight = false
 
     private var cachedReceivers: List<ReceiverItem>? = null
 
@@ -239,6 +240,7 @@ class ScanFragment : BaseFragment() {
                         binding.cbShoesBox.isChecked = first.shoesBox == 1
                         binding.cbBagBox.isChecked = first.bagBox == 1
                         soundManager.playSuccess()
+                        fetchWeightFromServer()
                     } else {
                         binding.tvClientName.text = getString(R.string.client_not_found)
                         binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
@@ -400,6 +402,8 @@ class ScanFragment : BaseFragment() {
     }
 
     private fun fetchWeightFromServer() {
+        if (isFetchingWeight) return
+        isFetchingWeight = true
         binding.btnScanWeight.isEnabled = false
         binding.progressBar.visibility = View.VISIBLE
         lifecycleScope.launch {
@@ -409,10 +413,11 @@ class ScanFragment : BaseFragment() {
                     binding.etWeight.setText(weightStr)
                     soundManager.playSuccess()
                 } else {
-                    Toast.makeText(requireContext(), "Ошибка получения веса", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), R.string.weight_fetch_error, Toast.LENGTH_SHORT).show()
                     soundManager.playError()
                 }
             } finally {
+                isFetchingWeight = false
                 binding.btnScanWeight.isEnabled = true
                 binding.progressBar.visibility = View.GONE
             }

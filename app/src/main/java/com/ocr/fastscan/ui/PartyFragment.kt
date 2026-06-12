@@ -6,15 +6,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogCreatePartyBinding
 import com.ocr.fastscan.databinding.FragmentPartyBinding
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
@@ -60,13 +57,13 @@ class PartyFragment : BaseFragment() {
     }
 
     private fun loadParties() {
-        viewLifecycleOwner.lifecycleScope.launch {
+        launchOnViewLifecycle {
             binding.progressBar.visibility = View.VISIBLE
             binding.tvNoParties.visibility = View.GONE
 
             try {
                 val response = apiService.getOpenPartials()
-                if (_binding == null) return@launch
+                if (_binding == null) return@launchOnViewLifecycle
                 
                 if (response.isSuccessful) {
                     val parties = response.body() ?: emptyList()
@@ -106,7 +103,7 @@ class PartyFragment : BaseFragment() {
             button.setOnClickListener {
                 val inputName = dialogBinding.etPartialName.text.toString().trim()
                 if (inputName.isEmpty()) {
-                    Toast.makeText(requireContext(), getString(R.string.input_part_name), Toast.LENGTH_SHORT).show()
+                    showToast(getString(R.string.input_part_name))
                     return@setOnClickListener
                 }
 
@@ -115,25 +112,25 @@ class PartyFragment : BaseFragment() {
 
                 button.isEnabled = false // Блокируем кнопку на время запроса
                 
-                viewLifecycleOwner.lifecycleScope.launch {
+                launchOnViewLifecycle {
                     try {
                         val request = PartialCreateRequest(generatedCode, finalName)
                         val response = apiService.createPartial(request)
 
                         if (response.isSuccessful) {
-                            Toast.makeText(requireContext(), R.string.part_created, Toast.LENGTH_SHORT).show()
+                            showToast(R.string.part_created)
                             soundManager.playSuccess()
                             dialog.dismiss()
                             delay(300)
                             loadParties()
                         } else {
                             button.isEnabled = true
-                            Toast.makeText(requireContext(), getString(R.string.error_code, response.code()), Toast.LENGTH_SHORT).show()
+                            showToast(getString(R.string.error_code, response.code()))
                             soundManager.playError()
                         }
                     } catch (e: Exception) {
                         button.isEnabled = true
-                        Toast.makeText(requireContext(), R.string.net_error_short, Toast.LENGTH_SHORT).show()
+                        showToast(R.string.net_error_short)
                         soundManager.playError()
                     }
                 }

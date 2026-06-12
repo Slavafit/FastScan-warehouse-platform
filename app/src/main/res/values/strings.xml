@@ -63,6 +63,20 @@
     <string name="licence_email_summary">Введите email, привязанный к лицензии</string>
     <string name="licence_status_title">Статус лицензии</string>
     <string name="licence_status_summary">Проверка…</string>
+    <string name="settings_required_message">Введите логин, пароль и email в настройках</string>
+    <string name="license_expired_or_inactive">Лицензия истекла или не активна</string>
+    <string name="license_expired_toast">Лицензия истекла!</string>
+    <string name="license_days_left_toast">Осталось %1$d дней до окончания лицензии!</string>
+    <string name="license_active_days_left_toast">Лицензия активна (осталось %1$d дней)</string>
+    <string name="license_email_missing">Email не указан</string>
+    <string name="license_expiration_missing">Дата истечения не указана</string>
+    <string name="license_expired_status">Лицензия истекла</string>
+    <string name="license_expires_soon_status">Истекает через %1$d дней! (до %2$s)</string>
+    <string name="license_active_until_status">Активна до %1$s (осталось %2$d дней)</string>
+    <string name="license_check_error">Ошибка проверки статуса</string>
+    <string name="camera_permission_required">Нужен доступ к камере</string>
+    <string name="weight_fetch_error">Ошибка получения веса</string>
+    <string name="track_copied">Трек скопирован: %1$s</string>
 
     <string name="developer_info_title">👨🏻‍💻 О разработчике</string>
     <string name="developer_title">Вячеслав Фитлин</string>

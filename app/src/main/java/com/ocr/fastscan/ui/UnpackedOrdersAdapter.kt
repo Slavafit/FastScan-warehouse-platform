@@ -44,7 +44,7 @@ class UnpackedOrdersAdapter : ListAdapter<UnpackedOrder, UnpackedOrdersAdapter.V
             val clip = ClipData.newPlainText("Трек-код", text)
             clipboard.setPrimaryClip(clip)
 
-            Toast.makeText(context, "Трек скопирован: $text", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.track_copied, text), Toast.LENGTH_SHORT).show()
         }
     }
 

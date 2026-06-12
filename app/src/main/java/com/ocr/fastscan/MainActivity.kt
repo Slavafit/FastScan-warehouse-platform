@@ -18,7 +18,7 @@ import com.ocr.fastscan.ui.ScanFragment
 import com.ocr.fastscan.ui.UnpackedOrdersFragment
 import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.LicenseChecker
-import com.ocr.fastscan.utils.updateLocale
+import com.ocr.fastscan.utils.LanguageHelper
 import com.ocr.fastscan.utils.ThemeHelper
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -32,11 +32,12 @@ class MainActivity : AppCompatActivity() {
     override fun attachBaseContext(newBase: Context) {
         // Сначала читаем настройки
         val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
-        val lang = prefs.getString("language", "system") ?: "system"
+        val lang = prefs.getString("language", LanguageHelper.SYSTEM_LANGUAGE)
+            ?: LanguageHelper.SYSTEM_LANGUAGE
         val theme = prefs.getString("theme", "system") ?: "system"
 
         // Применяем язык
-        val updatedContext = newBase.updateLocale(lang)
+        val updatedContext = LanguageHelper.applyLanguage(newBase, lang)
 
         // Применяем тему (важно делать до super)
         ThemeHelper.applyTheme(theme)
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         val email = prefs.getString("user_email", "")?.trim() ?: ""
 
         if (login.isBlank() || password.isBlank() || email.isBlank()) {
-            Toast.makeText(this, "Введите логин, пароль и email в настройках", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.settings_required_message, Toast.LENGTH_LONG).show()
             startActivity(Intent(this, SettingsActivity::class.java))
             finish()
             return
@@ -92,14 +93,14 @@ class MainActivity : AppCompatActivity() {
                 val daysLeft = ((expirationDate.time - Date().time) / (1000 * 60 * 60 * 24)).toInt()
 
                 val message = when {
-                    daysLeft <= 0 -> "Лицензия истекла!"
-                    daysLeft <= 7 -> "Осталось $daysLeft дней до окончания лицензии!"
-                    else -> "Лицензия активна (осталось $daysLeft дней)"
+                    daysLeft <= 0 -> getString(R.string.license_expired_toast)
+                    daysLeft <= 7 -> getString(R.string.license_days_left_toast, daysLeft)
+                    else -> getString(R.string.license_active_days_left_toast, daysLeft)
                 }
 
                 Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(this@MainActivity, "Лицензия истекла или не активна", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@MainActivity, R.string.license_expired_or_inactive, Toast.LENGTH_LONG).show()
                 finish()
             }
         }

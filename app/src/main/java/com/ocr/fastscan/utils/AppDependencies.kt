@@ -59,8 +59,9 @@ object AppDependencies {
                                 (R.string.login_succes),
                                 Toast.LENGTH_SHORT)
                                 .show()
-                            //Log.d("Auth", "Авто-логин успешен. Токен сохранён.")
+                            Log.d("Auth", "Авто-логин успешен. Токен сохранён.")
                         } else {
+                            Log.e("Auth", "Неуспешный вход: ${response.code()}")
                             Toast.makeText(context, R.string.token_error, Toast.LENGTH_SHORT).show()
                         }
                     } else {

@@ -66,9 +66,16 @@ class MainActivity : AppCompatActivity() {
         // Авто-логин и проверка лицензии
         lifecycleScope.launch {
             val token = AppDependencies.tokenManager.getToken()
+            //val token = AppDependencies.tokenManager.clear()
+
+            AppDependencies.performAutoLogin(this@MainActivity)
 
             if (token.isNullOrEmpty()) {
+                Log.d("Auth", "Токен отсутствует → авто-логин")
                 AppDependencies.performAutoLogin(this@MainActivity)
+            } else {
+                Log.d("Auth", "Токен найден")
+                // Можно добавить проверку валидности токена позже
             }
 
             val checker = LicenseChecker(email)

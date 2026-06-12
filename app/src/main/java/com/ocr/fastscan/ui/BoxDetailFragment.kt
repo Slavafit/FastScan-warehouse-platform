@@ -257,10 +257,9 @@ class BoxDetailFragment : Fragment() {
 
         try {
             val act = requireActivity()
-            val printManager = act.getSystemService(android.print.PrintManager::class.java)
+            //val printManager = act.getSystemService(android.print.PrintManager::class.java)
             val printHelper = PrintHelper(act)
             printHelper.printBoxLabel(
-                printManager,
                 trimmedTracking,
                 weightClean,
                 last4,

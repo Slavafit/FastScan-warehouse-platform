@@ -16,31 +16,38 @@ class TokenManager(private val appContext: Context) {
             putString("refresh_token", refreshToken)
             apply()
         }
+        Log.d("TokenManager", "Токены сохранены. Access: ${accessToken.take(15)}...")
     }
 
     fun getToken(): String? = prefs.getString("bearer_token", null)
 
     fun getRefreshToken(): String? = prefs.getString("refresh_token", null)
 
-    fun clear() = prefs.edit().clear().apply()
+    fun clear() {
+        prefs.edit().clear().apply()
+        Log.d("TokenManager", "Все токены очищены")
+    }
 
     // Исправленный метод обновления токена
     suspend fun refreshToken(): Boolean {
         val refresh = getRefreshToken() ?: return false
-        val apiService = NetworkModule.createService(appContext)
-        try {
-            // Отправляем текущий refresh_token на сервер
+        Log.d("TokenManager", "Попытка обновления токена...")
+        return try {
+            val apiService = NetworkModule.createService(appContext)
             val res = apiService.refresh(mapOf("refresh_token" to refresh))
 
-            // ПРОВЕРКА: используем accessToken и refreshToken из нового ответа
             if (res.isSuccessful && res.body()?.accessToken != null) {
                 val body = res.body()!!
                 saveTokens(body.accessToken!!, body.refreshToken ?: "")
-                return true
+                Log.d("TokenManager", "Токен успешно обновлён")
+                true
+            } else {
+                Log.e("TokenManager", "Неуспешный refresh: ${res.code()}")
+                false
             }
         } catch (e: Exception) {
-            Log.e("RefreshError", "Refresh failed: ${e.message}")
+            Log.e("TokenManager", "Ошибка при refreshToken", e)
+            false
         }
-        return false
     }
 }

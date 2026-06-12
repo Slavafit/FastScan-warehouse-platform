@@ -44,7 +44,7 @@ class ScanFragment : Fragment() {
     }
     private var currentReceiverGuid: String? = null
     private val apiService by lazy { AppDependencies.apiService }
-    private val tokenManager by lazy { AppDependencies.tokenManager }
+    //private val tokenManager by lazy { AppDependencies.tokenManager }
     private val soundManager by lazy { AppDependencies.soundManager }
     private val searchOrder by lazy { SearchOrder(this) }
     private val printHelper by lazy { PrintHelper(requireActivity()) }
@@ -123,9 +123,8 @@ class ScanFragment : Fragment() {
         }
 
         binding.btnPrint.setOnClickListener {
-            val printManager = requireActivity().getSystemService(android.print.PrintManager::class.java)
+            //val printManager = requireActivity().getSystemService(android.print.PrintManager::class.java)
             printHelper.printLabel(
-                printManager,
                 binding.etTracking.text.toString(),
                 binding.etClientCode.text.toString(),
                 binding.tvClientName.text.toString(),

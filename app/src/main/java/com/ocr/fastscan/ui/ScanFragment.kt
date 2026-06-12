@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.ocr.fastscan.R
 import com.ocr.fastscan.SettingsActivity
 import com.ocr.fastscan.data.model.*
+import com.ocr.fastscan.data.ReceiverCacheRepository
 import com.ocr.fastscan.data.SenderManager
 import com.ocr.fastscan.databinding.FragmentScanBinding
 import com.ocr.fastscan.utils.*
@@ -57,7 +58,9 @@ class ScanFragment : BaseFragment() {
     private var currentOrderDimensions: OrderDimensions? = null
     private var isFetchingWeight = false
 
-    private var cachedReceivers: List<ReceiverItem>? = null
+    private val receiverCacheRepository by lazy {
+        ReceiverCacheRepository(requireContext(), apiService)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -379,12 +382,7 @@ class ScanFragment : BaseFragment() {
     }
 
     private suspend fun getCachedOrLoadReceivers(): List<ReceiverItem> {
-        cachedReceivers?.let { return it }
-        val response = apiService.getAllReceivers()
-        if (response.isSuccessful) {
-            cachedReceivers = response.body() ?: emptyList()
-            return cachedReceivers!!
-        } else throw Exception("Server error")
+        return receiverCacheRepository.getReceivers()
     }
 
     private fun showMultipleResultsDialog(results: List<ReceiverItem>) {

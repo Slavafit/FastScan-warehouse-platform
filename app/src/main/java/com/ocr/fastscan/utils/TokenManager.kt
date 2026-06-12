@@ -33,12 +33,12 @@ class TokenManager(private val appContext: Context) {
         val refresh = getRefreshToken() ?: return false
         Log.d("TokenManager", "Попытка обновления токена...")
         return try {
-            val apiService = NetworkModule.createService(appContext)
+            val apiService = NetworkModule.createService(appContext, includeAuth = false)
             val res = apiService.refresh(mapOf("refresh_token" to refresh))
 
             if (res.isSuccessful && res.body()?.accessToken != null) {
                 val body = res.body()!!
-                saveTokens(body.accessToken!!, body.refreshToken ?: "")
+                saveTokens(body.accessToken!!, body.refreshToken ?: refresh)
                 Log.d("TokenManager", "Токен успешно обновлён")
                 true
             } else {

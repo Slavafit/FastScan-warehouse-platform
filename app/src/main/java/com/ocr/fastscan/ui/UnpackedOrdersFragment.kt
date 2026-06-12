@@ -8,25 +8,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.UnpackedOrder
 import com.ocr.fastscan.databinding.FragmentUnpackedOrdersBinding
-import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
-class UnpackedOrdersFragment : Fragment() {
+class UnpackedOrdersFragment : BaseFragment() {
 
     private var _binding: FragmentUnpackedOrdersBinding? = null
     private val binding get() = _binding!!
 
-    private val firebaseManager by lazy { AppDependencies.firebaseManager }
     private val unpackedAdapter = UnpackedOrdersAdapter()
 
     private var allUnpackedOrders = listOf<UnpackedOrder>()

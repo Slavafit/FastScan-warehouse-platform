@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.ocr.fastscan.R
 import com.ocr.fastscan.SettingsActivity
@@ -30,7 +29,7 @@ import kotlinx.coroutines.withContext
 
 import com.ocr.fastscan.databinding.DialogSearchClientBinding
 
-class ScanFragment : Fragment() {
+class ScanFragment : BaseFragment() {
 
     private var _binding: FragmentScanBinding? = null
     private val binding get() = _binding!!
@@ -43,15 +42,12 @@ class ScanFragment : Fragment() {
         }
     }
     private var currentReceiverGuid: String? = null
-    private val apiService by lazy { AppDependencies.apiService }
-    //private val tokenManager by lazy { AppDependencies.tokenManager }
-    private val soundManager by lazy { AppDependencies.soundManager }
     private val searchOrder by lazy { SearchOrder(this) }
     private val printHelper by lazy { PrintHelper(requireActivity()) }
     private val senderManager by lazy {
         SenderManager(
-            apiService = AppDependencies.apiService,
-            firebaseManager = AppDependencies.firebaseManager,
+            apiService = apiService,
+            firebaseManager = firebaseManager,
             context = requireContext()
         )
     }

@@ -38,6 +38,11 @@
             app:title="@string/password_title"
             app:useSimpleSummaryProvider="true" />
 
+        <Preference
+            app:key="clear_token"
+            app:title="@string/clear_token_title"
+            app:summary="@string/clear_token_summary" />
+
         <EditTextPreference
             app:key="vol_weight"
             app:title="@string/vol_weight_title"

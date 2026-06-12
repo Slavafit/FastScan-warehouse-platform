@@ -31,7 +31,10 @@ class PartiesAdapter(
             val context = binding.root.context
 
             binding.tvPartialCode.text = context.getString(R.string.track_code, party.partial_code)
-            binding.tvPartialName.text = context.getString(R.string.part_name, party.partial_name)
+            binding.tvPartialName.text = context.getString(
+                R.string.part_name,
+                PartyNumberFormatter.display(party.partial_name)
+            )
             binding.tvWarehouse.text = context.getString(R.string.country, party.warehouse_name)
             binding.tvBoxCount.text = context.getString(R.string.boxes_count, party.boxCount)
 

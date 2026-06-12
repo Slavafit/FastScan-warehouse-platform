@@ -65,6 +65,9 @@
     <string name="login_succes">✅ Successful login</string>
     <string name="login_not_filled">Login or password is not filled in</string>
     <string name="token_error">Error: token not received</string>
+    <string name="clear_token_title">Delete token</string>
+    <string name="clear_token_summary">Clear access and refresh tokens</string>
+    <string name="clear_token_confirm">Delete saved tokens?</string>
 
 
 

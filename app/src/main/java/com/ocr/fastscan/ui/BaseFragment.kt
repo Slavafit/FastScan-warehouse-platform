@@ -13,10 +13,17 @@ import com.ocr.fastscan.utils.TokenManager
  */
 abstract class BaseFragment : Fragment() {
 
-    protected val apiService: OnzaApiService by lazy { AppDependencies.apiService }
-    protected val firebaseManager: FirebaseManager by lazy { AppDependencies.firebaseManager }
-    protected val soundManager: SoundManager by lazy { AppDependencies.soundManager }
-    protected val tokenManager: TokenManager by lazy { AppDependencies.tokenManager }
+    protected val apiService: OnzaApiService
+        get() = AppDependencies.apiService
+
+    protected val firebaseManager: FirebaseManager
+        get() = AppDependencies.firebaseManager
+
+    protected val soundManager: SoundManager
+        get() = AppDependencies.soundManager
+
+    protected val tokenManager: TokenManager
+        get() = AppDependencies.tokenManager
 
     // Здесь можно будет позже добавить общие методы (toast, hideKeyboard и т.д.)
 }

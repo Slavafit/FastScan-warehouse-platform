@@ -14,6 +14,7 @@ plugins {
 
     // Версия Kotlin. Должна быть совместима с версией Android Studio
     id 'org.jetbrains.kotlin.android' version '1.9.22' apply false
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
 dependencyResolutionManagement {

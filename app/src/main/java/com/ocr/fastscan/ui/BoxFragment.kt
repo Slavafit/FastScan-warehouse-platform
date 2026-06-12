@@ -6,12 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.databinding.FragmentBoxBinding
-import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.DialogUtils
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -20,8 +18,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import java.util.TimeZone
 
-class BoxFragment : Fragment() {
-    private val apiService by lazy { AppDependencies.apiService }
+class BoxFragment : BaseFragment() {
     private var _binding: FragmentBoxBinding? = null
     private val binding get() = _binding!!
     

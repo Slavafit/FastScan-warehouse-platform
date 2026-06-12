@@ -13,9 +13,9 @@ import kotlinx.coroutines.runBlocking
 
 
 object NetworkModule {
-    fun createService(context: Context): OnzaApiService {
+    fun createService(context: Context, includeAuth: Boolean = true): OnzaApiService {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val baseUrl = prefs.getString("api_url", "https://onza-api.ibm.kg")
+        val baseUrl = normalizeBaseUrl(prefs.getString("api_url", "https://onza-api.ibm.kg"))
         val tokenManager = TokenManager(context)
 
         // Добавляет Bearer токен в каждый запрос
@@ -26,6 +26,7 @@ object NetworkModule {
             if (response.code == 401) {  // Обработка 401
                 runBlocking {  // FIX: runBlocking для suspend refreshToken
                     if (tokenManager.refreshToken()) {
+                        response.close()
                         request = request.newBuilder().addHeader("Authorization", "Bearer ${tokenManager.getToken()}").build()
                         response = chain.proceed(request)
                     }
@@ -38,18 +39,25 @@ object NetworkModule {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
-        val client = OkHttpClient.Builder()
-            .addInterceptor(authInterceptor)
+        val clientBuilder = OkHttpClient.Builder()
             .addInterceptor(logging)
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .build()
+
+        if (includeAuth) {
+            clientBuilder.addInterceptor(authInterceptor)
+        }
 
         return Retrofit.Builder()
             .baseUrl(baseUrl)
-            .client(client)
+            .client(clientBuilder.build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(OnzaApiService::class.java)
+    }
+
+    private fun normalizeBaseUrl(rawUrl: String?): String {
+        val trimmed = rawUrl?.trim().orEmpty().ifBlank { "https://onza-api.ibm.kg" }
+        return if (trimmed.endsWith("/")) trimmed else "$trimmed/"
     }
 }

@@ -83,6 +83,9 @@
     <string name="login_succes">✅ Успешный вход</string>
     <string name="login_not_filled">Логин или пароль не заполнены</string>
     <string name="token_error">Ошибка: токен не получен</string>
+    <string name="clear_token_title">Удалить токен</string>
+    <string name="clear_token_summary">Очистить access и refresh токены</string>
+    <string name="clear_token_confirm">Удалить сохранённые токены?</string>
 
 
 

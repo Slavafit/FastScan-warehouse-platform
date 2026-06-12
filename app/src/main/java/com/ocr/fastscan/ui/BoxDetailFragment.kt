@@ -7,13 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Timestamp
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.FragmentBoxDetailBinding
-import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.launch
 import android.text.TextWatcher
 import android.util.Log
@@ -22,14 +20,10 @@ import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.ScanUtils
 import com.ocr.fastscan.utils.getVolWeightDivider
 
-class BoxDetailFragment : Fragment() {
+class BoxDetailFragment : BaseFragment() {
 
     private var _binding: FragmentBoxDetailBinding? = null
     private val binding get() = _binding!!
-
-    private val apiService by lazy { AppDependencies.apiService }
-    private val firebaseManager by lazy { AppDependencies.firebaseManager }
-    private val soundManager by lazy { AppDependencies.soundManager }
 
     private var boxGuid: String = ""
     private var boxCodeid: String = ""

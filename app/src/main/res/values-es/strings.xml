@@ -62,6 +62,9 @@
     <string name="login_succes">✅ Inicio de sesión exitoso</string>
     <string name="login_not_filled">El nombre de usuario o la contraseña no se han introducido.</string>
     <string name="token_error">Error: No se recibió el token</string>
+    <string name="clear_token_title">Eliminar token</string>
+    <string name="clear_token_summary">Borrar tokens de acceso y actualización</string>
+    <string name="clear_token_confirm">¿Eliminar los tokens guardados?</string>
 
 
 

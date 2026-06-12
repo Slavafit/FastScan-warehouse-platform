@@ -8,32 +8,29 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogSelectBoxBinding
 import com.ocr.fastscan.databinding.FragmentPartyDetailBinding
-import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class PartyDetailFragment : Fragment() {
+class PartyDetailFragment : BaseFragment() {
 
     private var _binding: FragmentPartyDetailBinding? = null
     private val binding get() = _binding!!
 
-    private val apiService by lazy { AppDependencies.apiService }
-    private val soundManager by lazy { AppDependencies.soundManager }
-    
     private var partialGuid: String = ""
     private var partialCode: String = ""
     private var partialName: String = ""
     private var isFinishing = false
+    private val displayPartyNumber: String
+        get() = PartyNumberFormatter.display(partialName).ifBlank { partialCode }
 
     private val boxesAdapter = BoxesInPartialAdapter { box ->
         val detailFragment = BoxDetailFragment.newInstance(
@@ -79,7 +76,8 @@ class PartyDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Отображаем красивое имя (например KG 120), если оно есть, иначе код
-        binding.tvTitle.text = if (partialName.startsWith("KG")) partialName else "Партия $partialCode"
+        binding.tvTitle.text = getString(R.string.part, displayPartyNumber)
+        binding.btnFinishParty.text = getString(R.string.finish_part_property, displayPartyNumber)
         
         binding.rvBoxes.layoutManager = LinearLayoutManager(requireContext())
         binding.rvBoxes.adapter = boxesAdapter
@@ -204,7 +202,7 @@ class PartyDetailFragment : Fragment() {
         if (boxes.isEmpty()) return
 
         val sb = StringBuilder()
-        sb.append("📋 ОТЧЕТ ПО ПАРТИИ: $partialName\n")
+        sb.append("📋 ОТЧЕТ ПО ПАРТИИ: $displayPartyNumber\n")
         sb.append("🆔 Код: $partialCode\n")
         sb.append("📅 Дата: ${SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())}\n")
         sb.append("📦 Коробок: ${boxes.size}\n")
@@ -232,7 +230,7 @@ class PartyDetailFragment : Fragment() {
     private fun showFinishPartyDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.finish_party_title)
-            .setMessage("Вы уверены, что хотите завершить партию $partialName?")
+            .setMessage(getString(R.string.finish_part_property, displayPartyNumber))
             .setPositiveButton(R.string.finish_part) { _, _ -> finishParty() }
             .setNegativeButton(R.string.cancel, null)
             .show()

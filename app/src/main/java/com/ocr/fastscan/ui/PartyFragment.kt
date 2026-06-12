@@ -7,27 +7,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogCreatePartyBinding
 import com.ocr.fastscan.databinding.FragmentPartyBinding
-import com.ocr.fastscan.utils.AppDependencies
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.cancellation.CancellationException
 
-class PartyFragment : Fragment() {
+class PartyFragment : BaseFragment() {
 
     private var _binding: FragmentPartyBinding? = null
     private val binding get() = _binding!!
-
-    private val apiService by lazy { AppDependencies.apiService }
-    private val soundManager by lazy { AppDependencies.soundManager }
 
     private val partiesAdapter = PartiesAdapter { partial ->
         val detailFragment = PartyDetailFragment.newInstance(
@@ -116,12 +111,7 @@ class PartyFragment : Fragment() {
                 }
 
                 // Формируем имя с префиксом KG
-                val finalName = if (inputName.startsWith("KG", ignoreCase = true)) {
-                    if (inputName.startsWith("KG ", ignoreCase = true)) inputName.uppercase()
-                    else "KG " + inputName.substring(2).trim().uppercase()
-                } else {
-                    "KG $inputName".uppercase()
-                }
+                val finalName = PartyNumberFormatter.normalize(inputName)
 
                 button.isEnabled = false // Блокируем кнопку на время запроса
                 

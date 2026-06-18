@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bottom_nav_active">#2E7D32</color>
     <color name="bottom_nav_inactive">#757575</color>
+    <color name="box_card_highlight">#E8F5E9</color>
 </resources>

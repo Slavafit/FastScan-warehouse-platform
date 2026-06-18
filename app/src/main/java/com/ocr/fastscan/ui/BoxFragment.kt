@@ -58,7 +58,10 @@ class BoxFragment : BaseFragment() {
                 onSuccess = { trackingCode ->
                     viewLifecycleOwner.lifecycleScope.launch {
                         delay(300)
-                        loadBoxes(isOpenOnly = !isShowingAllBoxes)
+                        loadBoxes(
+                            isOpenOnly = !isShowingAllBoxes,
+                            highlightTrackingCode = trackingCode
+                        )
                         Toast.makeText(requireContext(), getString(R.string.box_added_format, trackingCode), Toast.LENGTH_SHORT).show()
                     }
                 },
@@ -82,7 +85,10 @@ class BoxFragment : BaseFragment() {
         loadBoxes(isOpenOnly = true)
     }
 
-    private fun loadBoxes(isOpenOnly: Boolean = true) {
+    private fun loadBoxes(
+        isOpenOnly: Boolean = true,
+        highlightTrackingCode: String? = null
+    ) {
         if (isLoading) return
         isLoading = true
 
@@ -99,7 +105,21 @@ class BoxFragment : BaseFragment() {
                     val boxes = response.body()!!.map { box ->
                         box.copy(dateCreated = formatBoxDate(box.dateCreated))
                     }
-                    boxesAdapter.submitList(boxes)
+                    boxesAdapter.submitList(boxes) {
+                        if (highlightTrackingCode != null) {
+                            val newBoxPosition = boxes.indexOfFirst {
+                                it.trackingCode == highlightTrackingCode
+                            }
+                            if (newBoxPosition >= 0 && _binding != null) {
+                                boxesAdapter.highlightBox(highlightTrackingCode)
+                                binding.rvBoxes.scrollToPosition(newBoxPosition)
+                                binding.rvBoxes.postDelayed(
+                                    { boxesAdapter.clearHighlight(highlightTrackingCode) },
+                                    NEW_BOX_HIGHLIGHT_DURATION_MS
+                                )
+                            }
+                        }
+                    }
 
                     val baseText = if (isOpenOnly) getString(R.string.open_boxes) else getString(R.string.all_boxes)
                     binding.tvTitle.text = "$baseText (${boxes.size})"
@@ -141,5 +161,9 @@ class BoxFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private companion object {
+        const val NEW_BOX_HIGHLIGHT_DURATION_MS = 2500L
     }
 }

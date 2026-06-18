@@ -14,6 +14,7 @@ class OcrAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val resultStabilizer = ScanResultStabilizer()
 
     override fun analyze(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image ?: run { imageProxy.close(); return }
@@ -33,7 +34,7 @@ class OcrAnalyzer(
                     val pattern = Pattern.compile("KG\\s*(\\d{4,6})")
                     val matcher = pattern.matcher(rawText)
                     if (matcher.find()) {
-                        onResult("KG" + matcher.group(1))
+                        resultStabilizer.add("KG" + matcher.group(1))?.let(onResult)
                     }
                 }
                 .addOnCompleteListener { imageProxy.close() }

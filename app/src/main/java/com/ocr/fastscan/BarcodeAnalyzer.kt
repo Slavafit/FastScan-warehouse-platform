@@ -11,6 +11,7 @@ class BarcodeAnalyzer(
 ) : ImageAnalysis.Analyzer {
 
     private val scanner = BarcodeScanning.getClient()
+    private val resultStabilizer = ScanResultStabilizer()
 
     override fun analyze(p0: ImageProxy) {
 
@@ -25,7 +26,7 @@ class BarcodeAnalyzer(
             .addOnSuccessListener { list ->
                 if (list.isNotEmpty()) {
                     val code = list[0].rawValue ?: ""
-                    onResult(code)
+                    resultStabilizer.add(code)?.let(onResult)
                 }
             }
             .addOnCompleteListener {

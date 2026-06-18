@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Активная вкладка (выбрана) -->
-    <item android:color="#2E7D32" android:state_checked="true" />  <!-- зелёный, как у тебя в кнопке Submit -->
+    <item android:color="@color/bottom_nav_active" android:state_checked="true" />
 
     <!-- Неактивная вкладка -->
-    <item android:color="#757575" />  <!-- серый -->
+    <item android:color="@color/bottom_nav_inactive" />
 
 </selector>

@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="app_primary">#81C784</color>
+    <color name="app_primary_dark">#2E7D32</color>
+    <color name="app_on_primary">#102313</color>
+    <color name="app_background">#121412</color>
+    <color name="app_surface">#242724</color>
+    <color name="app_text_primary">#F2F4F2</color>
+    <color name="app_text_secondary">#C2C8C3</color>
+    <color name="app_icon_tint">#E0E4E1</color>
+    <color name="card_stroke">#59615B</color>
+    <color name="card_stroke_highlight">#81C784</color>
+    <color name="bottom_nav_active">#81C784</color>
+    <color name="bottom_nav_inactive">#B8BDB9</color>
     <color name="box_card_highlight">#234B2A</color>
 </resources>

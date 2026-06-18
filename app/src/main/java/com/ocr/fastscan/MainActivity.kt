@@ -20,6 +20,7 @@ import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.LicenseChecker
 import com.ocr.fastscan.utils.LanguageHelper
 import com.ocr.fastscan.utils.ThemeHelper
+import com.ocr.fastscan.utils.normalizeEmail
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Date
@@ -55,7 +56,11 @@ class MainActivity : AppCompatActivity() {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val login = prefs.getString("login", "")?.trim() ?: ""
         val password = prefs.getString("password", "")?.trim() ?: ""
-        val email = prefs.getString("user_email", "")?.trim() ?: ""
+        val storedEmail = prefs.getString("user_email", "").orEmpty()
+        val email = storedEmail.normalizeEmail()
+        if (storedEmail != email) {
+            prefs.edit().putString("user_email", email).apply()
+        }
 
         if (login.isBlank() || password.isBlank() || email.isBlank()) {
             Toast.makeText(this, R.string.settings_required_message, Toast.LENGTH_LONG).show()

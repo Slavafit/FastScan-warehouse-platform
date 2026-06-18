@@ -4,15 +4,22 @@
     <style name="Theme.FastScan" parent="Theme.Material3.DayNight.NoActionBar">
 
         <!-- Твой зелёный цвет -->
-        <item name="colorPrimary">#2E7D32</item>
-        <item name="colorPrimaryVariant">#1B5E20</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorPrimaryVariant">@color/app_primary_dark</item>
+        <item name="colorOnPrimary">@color/app_on_primary</item>
 
-        <item name="colorSecondary">#2E7D32</item>
-        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSecondary">@color/app_primary</item>
+        <item name="colorOnSecondary">@color/app_on_primary</item>
+        <item name="colorSurface">@color/app_surface</item>
+        <item name="colorOnSurface">@color/app_text_primary</item>
+        <item name="colorOnSurfaceVariant">@color/app_text_secondary</item>
+        <item name="colorOutline">@color/card_stroke</item>
+        <item name="android:colorBackground">@color/app_background</item>
+        <item name="android:windowBackground">@color/app_background</item>
+        <item name="android:navigationBarColor">@color/app_surface</item>
 
         <!-- Статус бар -->
-        <item name="android:statusBarColor">#1B5E20</item>
+        <item name="android:statusBarColor">@color/app_primary_dark</item>
         <item name="android:windowLightStatusBar">false</item>
 
     </style>

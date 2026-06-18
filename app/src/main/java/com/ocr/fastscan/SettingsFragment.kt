@@ -18,6 +18,7 @@ import com.ocr.fastscan.utils.ThemeHelper
 import com.ocr.fastscan.utils.LanguageHelper
 import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.AppDependencies
+import com.ocr.fastscan.utils.normalizeEmail
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -78,7 +79,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         findPreference<EditTextPreference>("user_email")?.let { emailPref ->
-            val currentEmail = emailPref.text?.trim() ?: ""
+            emailPref.setOnBindEditTextListener { editText ->
+                editText.filters = editText.filters + android.text.InputFilter { source, _, _, _, _, _ ->
+                    val normalized = source.toString().lowercase(Locale.ROOT)
+                    if (normalized == source.toString()) null else normalized
+                }
+            }
+
+            val currentEmail = emailPref.text.orEmpty().normalizeEmail()
+            if (emailPref.text != currentEmail) {
+                emailPref.text = currentEmail
+            }
             emailPref.summary = if (currentEmail.isEmpty()) {
                 "Введите email, привязанный к лицензии"
             } else {
@@ -86,13 +97,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
             emailPref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-                val newEmail = newValue.toString().trim()
+                val newEmail = newValue.toString().normalizeEmail()
+                emailPref.text = newEmail
                 emailPref.summary = if (newEmail.isEmpty()) {
                     "Введите email, привязанный к лицензии"
                 } else {
                     newEmail
                 }
-                true
+                false
             }
         }
 
@@ -120,9 +132,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private suspend fun getLicenseStatus(): String {
         val prefs = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        val email = prefs.getString("user_email", "")?.trim()
+        val email = prefs.getString("user_email", "").orEmpty().normalizeEmail()
 
-        if (email.isNullOrBlank()) {
+        if (email.isBlank()) {
             return getString(R.string.license_email_missing)
         }
 

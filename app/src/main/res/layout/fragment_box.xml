@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:text="@string/no_boxes"
         android:textSize="18sp"
-        android:textColor="#757575"
+        android:textColor="@color/app_text_secondary"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

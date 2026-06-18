@@ -34,6 +34,11 @@ class BoxesAdapter(
             }
             binding.root.setCardBackgroundColor(backgroundColor)
             binding.root.cardElevation = dp(if (isHighlighted) 10f else 3f)
+            binding.root.strokeColor = ContextCompat.getColor(
+                context,
+                if (isHighlighted) R.color.card_stroke_highlight else R.color.card_stroke
+            )
+            binding.root.strokeWidth = dp(if (isHighlighted) 2f else 1f).toInt()
 
             binding.root.setOnClickListener { onClick(box) }
         }

@@ -12,7 +12,7 @@ class LicenseChecker(private val userId: String) {
 
 
     suspend fun isLicenseValid(context: Context): Boolean {
-        val email = userId.trim()  // userId = email из настроек
+        val email = userId.normalizeEmail()
         if (email.isEmpty()) {
             //Log.d("LicenseCheck", "Email пустой")
             return false

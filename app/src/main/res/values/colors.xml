@@ -7,7 +7,17 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="app_primary">#2E7D32</color>
+    <color name="app_primary_dark">#1B5E20</color>
+    <color name="app_on_primary">#FFFFFF</color>
+    <color name="app_background">#FAFAFA</color>
+    <color name="app_surface">#FFFFFF</color>
+    <color name="app_text_primary">#212121</color>
+    <color name="app_text_secondary">#616161</color>
+    <color name="app_icon_tint">#424242</color>
+    <color name="card_stroke">#D7DDD8</color>
+    <color name="card_stroke_highlight">#2E7D32</color>
     <color name="bottom_nav_active">#2E7D32</color>
-    <color name="bottom_nav_inactive">#757575</color>
+    <color name="bottom_nav_inactive">#616161</color>
     <color name="box_card_highlight">#E8F5E9</color>
 </resources>

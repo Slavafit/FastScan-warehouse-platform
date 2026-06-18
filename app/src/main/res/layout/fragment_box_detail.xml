@@ -145,8 +145,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:text="@string/save"
-                    android:backgroundTint="#2E7D32"
-                    android:textColor="#FFFFFF" />
+                    android:backgroundTint="@color/app_primary"
+                    android:textColor="@color/app_on_primary" />
             </LinearLayout>
         </LinearLayout>
 

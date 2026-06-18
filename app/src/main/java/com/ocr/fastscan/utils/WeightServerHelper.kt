@@ -19,8 +19,8 @@ object WeightServerHelper {
      */
     suspend fun getWeight(context: Context): String? {
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
-        val baseUrl = prefs.getString("weight_server_url", "http://192.168.1.169")?.trim()
-            ?: "http://192.168.1.169"
+        val baseUrl = prefs.getString("weight_server_url", "http://192.168.1.50")?.trim()
+            ?: "http://192.168.1.50"
 
         val url = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
 

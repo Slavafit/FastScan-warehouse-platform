@@ -1,15 +1,51 @@
+# Android Studio / IntelliJ IDEA
+.idea/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+*.ipr
+*.iws
+out/
+
+# Gradle
+.gradle/
+**/build/
+gradle/gradle-daemon-jvm.properties
+
+# Local machine configuration
 local.properties
+gradlew-local.ps1
+
+# Android build tools
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing credentials
+*.jks
+*.keystore
+keystore.properties
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Generated compiler metadata
+*.tsbuildinfo
+
+# Local copies
+*.copy
+*.copy.*
+* copy.*
+
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini

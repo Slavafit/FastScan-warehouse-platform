@@ -4,6 +4,10 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.media.ToneGenerator
 import android.media.AudioManager
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import com.ocr.fastscan.R
 
@@ -39,7 +43,10 @@ class SoundManager(private val context: Context) {
     }
 
     fun playSuccess() = playMediaPlayer(successPlayer, ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 400)
-    fun playError()   = playMediaPlayer(errorPlayer,   ToneGenerator.TONE_SUP_ERROR, 600)
+    fun playError() {
+        playMediaPlayer(errorPlayer, ToneGenerator.TONE_SUP_ERROR, 600)
+        vibrateError()
+    }
     fun playPrint()   = playMediaPlayer(printPlayer,   ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 300)
     fun playScanBeep()= playMediaPlayer(scanPlayer,    ToneGenerator.TONE_PROP_BEEP, 150)
     fun playWarning() = playMediaPlayer(warningPlayer, ToneGenerator.TONE_SUP_ERROR, 500)  // исправлено
@@ -57,6 +64,28 @@ class SoundManager(private val context: Context) {
             }
         } catch (e: Exception) {
             Log.e("SoundManager", "Ошибка воспроизведения звука", e)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun vibrateError() {
+        try {
+            val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                context.getSystemService(VibratorManager::class.java)?.defaultVibrator
+            } else {
+                context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            }
+
+            if (vibrator?.hasVibrator() != true) return
+
+            val pattern = longArrayOf(0, 100, 70, 160)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+            } else {
+                vibrator.vibrate(pattern, -1)
+            }
+        } catch (e: Exception) {
+            Log.e("SoundManager", "Error playing vibration", e)
         }
     }
 

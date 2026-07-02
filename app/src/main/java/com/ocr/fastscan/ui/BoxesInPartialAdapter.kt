@@ -1,8 +1,8 @@
 package com.ocr.fastscan.ui
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ocr.fastscan.data.model.BoxInPartial
@@ -11,7 +11,7 @@ import com.ocr.fastscan.R
 
 class BoxesInPartialAdapter(
     private val onLongClick: (BoxInPartial) -> Unit
-) : ListAdapter<BoxInPartial, BoxesInPartialAdapter.ViewHolder>(BoxDiffCallback()) {
+) : ListAdapter<BoxInPartial, BoxesInPartialAdapter.ViewHolder>(BoxInPartialDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemBoxInPartialBinding.inflate(
@@ -25,8 +25,6 @@ class BoxesInPartialAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val box = getItem(position)
         holder.bind(box)
-        //Log.d("onBindViewHolder", "получено: $box")
-
     }
 
     inner class ViewHolder(private val binding: ItemBoxInPartialBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -41,19 +39,20 @@ class BoxesInPartialAdapter(
                 true
             }
         }
-        // Вспомогательная функция — должна быть в конце класса
+
         private fun getString(resId: Int, vararg formatArgs: Any): String {
             return itemView.context.getString(resId, *formatArgs)
         }
     }
 }
 
-//class BoxDiffCallback : DiffUtil.ItemCallback<BoxInPartial>() {
-//    override fun areItemsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial): Boolean {
-//        return oldItem.guid == newItem.guid
-//    }
-//
-//    override fun areContentsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial): Boolean {
-//        return oldItem == newItem
-//    }
-//}
+class BoxInPartialDiffCallback : DiffUtil.ItemCallback<BoxInPartial>() {
+    override fun areItemsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial): Boolean {
+        // Используем комбинацию guid и tracking_code для максимальной точности
+        return oldItem.guid == newItem.guid && oldItem.tracking_code == newItem.tracking_code
+    }
+
+    override fun areContentsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial): Boolean {
+        return oldItem == newItem
+    }
+}

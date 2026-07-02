@@ -26,6 +26,10 @@ class PartyDetailFragment : BaseFragment() {
     private var partialCode: String = ""
     private var partialName: String = ""
     private var isFinishing = false
+
+    // Храним актуальный список коробок отдельно от адаптера
+    private var currentBoxes: List<BoxInPartial> = emptyList()
+
     private val displayPartyNumber: String
         get() = PartyNumberFormatter.display(partialName).ifBlank { partialCode }
 
@@ -72,7 +76,6 @@ class PartyDetailFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Отображаем красивое имя (например KG 120), если оно есть, иначе код
         binding.tvTitle.text = getString(R.string.part, displayPartyNumber)
         binding.btnFinishParty.text = getString(R.string.finish_part_property, displayPartyNumber)
         
@@ -93,8 +96,10 @@ class PartyDetailFragment : BaseFragment() {
                 val response = apiService.getBoxesInPartial(partialGuid)
                 if (response.isSuccessful) {
                     val boxes = response.body() ?: emptyList()
+                    currentBoxes = boxes // Сохраняем список
                     boxesAdapter.submitList(boxes)
                     binding.tvInfo.text = "Склад: BMG | Коробок: ${boxes.size}"
+                    Log.d("PartyDetail", "Loaded ${boxes.size} boxes for report")
                 }
             } catch (e: Exception) {
                 Log.e("PartyDetail", "Load boxes error", e)
@@ -175,7 +180,6 @@ class PartyDetailFragment : BaseFragment() {
                     soundManager.playSuccess()
                     showToast(R.string.part_finished)
 
-                    // Вместо печати формируем текст и делимся
                     sharePartyReport()
                     
                     delay(800) 
@@ -195,8 +199,11 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     private fun sharePartyReport() {
-        val boxes = boxesAdapter.currentList
-        if (boxes.isEmpty()) return
+        val boxes = currentBoxes // Используем наш надежный список
+        if (boxes.isEmpty()) {
+            Log.w("PartyDetail", "Report attempt with empty boxes list")
+            return
+        }
 
         val sb = StringBuilder()
         sb.append("📋 ОТЧЕТ ПО ПАРТИИ: $displayPartyNumber\n")
@@ -207,7 +214,7 @@ class PartyDetailFragment : BaseFragment() {
 
         var totalWeight = 0.0
         boxes.forEachIndexed { index, box ->
-            sb.append("${index + 1}. 📦 `${box.tracking_code}`\n")
+            sb.append("${index + 1}. 📦 ${box.tracking_code}\n")
             sb.append("   📏 Размеры: ${box.length} × ${box.width} × ${box.height} см\n")
             sb.append("   ⚖️ Вес: ${String.format("%.2f", box.gross_weight)} кг\n")
             totalWeight += box.gross_weight

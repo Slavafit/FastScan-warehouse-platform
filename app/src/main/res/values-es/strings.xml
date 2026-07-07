@@ -146,6 +146,7 @@
     <string name="delete_box">Eliminar la caja no está disponible temporalmente.</string>
     <string name="error_load_boxes_short">Error al cargar la lista de cajas</string>
     <string name="error_adding_box">Error al agregar la caja al lote</string>
+    <string name="dimensions_cleared">Dimensiones eliminadas</string>
 
 
 
@@ -202,6 +203,12 @@
     <string name="date">Fecha: %1$s</string>
     <string name="no_date">sin fecha</string>
     <string name="box_added">La caja fue añadida</string>
+    <string name="show_all">Mostrar todo</string>
+    <string name="in_work">En trabajo</string>
+    <string name="restore_party_title">¿Restaurar al trabajo?</string>
+    <string name="restore_party_message">¿Está seguro de que desea restaurar el lote %1$s al trabajo?</string>
+    <string name="party_restored">Lote restaurado al trabajo</string>
+    <string name="finished_label"> (Finalizado)</string>
 
     <!-- fragment unclosed -->
     <string name="unclosed">Sin cerrar</string>

@@ -209,7 +209,7 @@ data class BoxInPartial(
     val warehouse_name: String
 )
 
-// Ответ на создание партии
+// Ответ на создание/обновление партии
 data class PartialCreateResponse(
     val success: Boolean
 )
@@ -245,6 +245,13 @@ data class UpdatedCodeResult(
 data class PartialCreateRequest(
     val partial_code: String,
     val partial_name: String
+)
+
+data class PartialUpdateRequest(
+    val guid: String,
+    val partial_code: String,
+    val partial_name: String,
+    val status: Int
 )
 
 data class SendPartialRequest(

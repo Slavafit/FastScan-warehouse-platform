@@ -95,7 +95,11 @@ class BoxDetailFragment : BaseFragment() {
 
         loadBoxInfo()
         loadOrdersInBox()
-        loadPartialName()
+        
+        // Загружаем имя партии только если оно не передано или является дефолтным
+        if (partialName == "KG" || partialName == "España" || partialName.isBlank()) {
+            loadPartialName()
+        }
     }
 
     private fun setupClickListeners() {
@@ -251,7 +255,6 @@ class BoxDetailFragment : BaseFragment() {
 
         try {
             val act = requireActivity()
-            //val printManager = act.getSystemService(android.print.PrintManager::class.java)
             val printHelper = PrintHelper(act)
             printHelper.printBoxLabel(
                 trimmedTracking,
@@ -351,14 +354,17 @@ class BoxDetailFragment : BaseFragment() {
     private fun loadPartialName() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = apiService.getOpenPartials()
+                // Загружаем только открытые партии (typePartial = 0)
+                val response = apiService.getPartials(0)
                 if (_binding == null || !isAdded) return@launch
 
                 if (response.isSuccessful) {
                     val parties = response.body() ?: emptyList()
                     if (parties.isNotEmpty()) {
-                        partialName = parties.first().partial_name.trim()
-                        Log.d("BoxDetail", "Загружено имя партии: $partialName")
+                        // Сортируем по дате убыванию, чтобы взять самую свежую
+                        val latestParty = parties.sortedByDescending { it.date_created }.first()
+                        partialName = latestParty.partial_name.trim()
+                        Log.d("BoxDetail", "Загружено актуальное имя партии: $partialName")
                     }
                 }
             } catch (e: Exception) {

@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string name="app_name">FastScan</string>
+    <string name="app_name">FastScan</string>
 
     <string name="language_settings">🌍 Язык приложения</string>
     <string name="language">Language</string>
@@ -55,7 +56,7 @@
     <string name="test_print">Тест печати</string>
     <string name="test_print_summary">Отправить пробную этикетку на принтер</string>
     <string name="test_print_result">🚀 Отправлено на принтер %1$s</string>
-    <string name="test_print_error">⚠️ Ошибка связи с принтером: %1$s</string>"
+    <string name="test_print_error">⚠️ Ошибка связи с принтером: %1$s</string>
     <string name="printer_ip_error">IP принтера не указан</string>
 
     <string name="licence_title">📃 Лицензия</string>
@@ -172,6 +173,7 @@
     <string name="delete_box">Удаление коробки временно недоступно</string>
     <string name="error_load_boxes_short">Ошибка загрузки списка коробок</string>
     <string name="error_adding_box">Ошибка добавления коробки в партию</string>
+    <string name="dimensions_cleared">Размеры удалены</string>
 
 
 
@@ -244,6 +246,12 @@
     <string name="date">Дата: %1$s</string>
     <string name="no_date">Нет даты</string>
     <string name="box_added">Коробка добавлена</string>
+    <string name="show_all">Показать все</string>
+    <string name="in_work">В работе</string>
+    <string name="restore_party_title">Вернуть в работу?</string>
+    <string name="restore_party_message">Вы уверены, что хотите вернуть партию %1$s в работу?</string>
+    <string name="party_restored">Партия возвращена в работу</string>
+    <string name="finished_label"> (Завершена)</string>
 
     <!-- фрагмент незакрытые -->
     <string name="unclosed">Незакрытые</string>

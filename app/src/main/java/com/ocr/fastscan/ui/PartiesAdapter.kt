@@ -13,7 +13,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class PartiesAdapter(
-    private val onClick: (Partial) -> Unit
+    private val onClick: (Partial) -> Unit,
+    private val onLongClick: (Partial) -> Unit
 ) : ListAdapter<Partial, PartiesAdapter.PartyViewHolder>(PartyDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PartyViewHolder {
@@ -38,26 +39,34 @@ class PartiesAdapter(
             binding.tvWarehouse.text = context.getString(R.string.country, party.warehouse_name)
             binding.tvBoxCount.text = context.getString(R.string.boxes_count, party.boxCount)
 
-            val dateCreated = formatBoxDate(context, party.date_created)  // ← форматируем
+            val dateCreated = formatBoxDate(context, party.date_created)
             binding.tvDate.text = context.getString(R.string.date, dateCreated)
+
+            // Визуальное отличие завершенной партии
+            if (party.status != 0) {
+                binding.root.alpha = 0.6f
+                binding.tvPartialName.append(context.getString(R.string.finished_label))
+            } else {
+                binding.root.alpha = 1.0f
+            }
 
             binding.root.setOnClickListener {
                 onClick(party)
             }
+            
+            binding.root.setOnLongClickListener {
+                onLongClick(party)
+                true
+            }
         }
     }
-    //формат даты Результат: "23.02.2026 17:14"
-    private fun formatBoxDate(context: Context, isoDate: String?): String {
-        if (isoDate.isNullOrBlank())
-        {
-            return context.getString(R.string.no_date)
-        }
 
+    private fun formatBoxDate(context: Context, isoDate: String?): String {
+        if (isoDate.isNullOrBlank()) return context.getString(R.string.no_date)
         try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
             inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
             val date = inputFormat.parse(isoDate) ?: return context.getString(R.string.no_date)
-
             val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
             return outputFormat.format(date)
         } catch (e: Exception) {

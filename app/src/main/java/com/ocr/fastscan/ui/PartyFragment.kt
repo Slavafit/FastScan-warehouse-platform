@@ -21,18 +21,27 @@ class PartyFragment : BaseFragment() {
     private var _binding: FragmentPartyBinding? = null
     private val binding get() = _binding!!
 
-    private val partiesAdapter = PartiesAdapter { partial ->
-        val detailFragment = PartyDetailFragment.newInstance(
-            partial.guid,
-            partial.codeid,
-            partial.partial_code,
-            partial.partial_name
-        )
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, detailFragment)
-            .addToBackStack(null)
-            .commit()
-    }
+    private var showAll = false
+
+    private val partiesAdapter = PartiesAdapter(
+        onClick = { partial ->
+            val detailFragment = PartyDetailFragment.newInstance(
+                partial.guid,
+                partial.codeid,
+                partial.partial_code,
+                partial.partial_name
+            )
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, detailFragment)
+                .addToBackStack(null)
+                .commit()
+        },
+        onLongClick = { partial ->
+            if (partial.status != 0) {
+                showRestorePartyDialog(partial)
+            }
+        }
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,7 +62,22 @@ class PartyFragment : BaseFragment() {
             showCreatePartyDialog()
         }
 
+        binding.btnToggleFilter.setOnClickListener {
+            showAll = !showAll
+            updateFilterButton()
+            loadParties()
+        }
+
+        updateFilterButton()
         loadParties()
+    }
+
+    private fun updateFilterButton() {
+        binding.btnToggleFilter.text = if (showAll) {
+            getString(R.string.in_work)
+        } else {
+            getString(R.string.show_all)
+        }
     }
 
     private fun loadParties() {
@@ -62,25 +86,70 @@ class PartyFragment : BaseFragment() {
             binding.tvNoParties.visibility = View.GONE
 
             try {
-                val response = apiService.getOpenPartials()
+                val typeParam = if (showAll) null else 0
+                val response = apiService.getPartials(typeParam)
+                
                 if (_binding == null) return@launchOnViewLifecycle
                 
                 if (response.isSuccessful) {
                     val parties = response.body() ?: emptyList()
-                    binding.tvNoParties.visibility = if (parties.isEmpty()) View.VISIBLE else View.GONE
-                    partiesAdapter.submitList(parties)
+                    
+                    // Сортировка: самые новые сверху
+                    val sortedParties = parties.sortedByDescending { it.date_created }
+                    
+                    binding.tvNoParties.visibility = if (sortedParties.isEmpty()) View.VISIBLE else View.GONE
+                    binding.tvNoParties.text = if (showAll) "Партий не найдено" else getString(R.string.no_open_parties)
+                    partiesAdapter.submitList(sortedParties)
                 } else {
                     binding.tvNoParties.text = getString(R.string.error_load)
                     binding.tvNoParties.visibility = View.VISIBLE
                 }
-            } catch (e: CancellationException) {
-                throw e
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 Log.e("PartyFragment", "Load error", e)
                 binding.tvNoParties.text = getString(R.string.net_error)
                 binding.tvNoParties.visibility = View.VISIBLE
             } finally {
                 _binding?.progressBar?.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun showRestorePartyDialog(party: Partial) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.restore_party_title)
+            .setMessage(getString(R.string.restore_party_message, PartyNumberFormatter.display(party.partial_name)))
+            .setPositiveButton(R.string.ok) { _, _ ->
+                restoreParty(party)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun restoreParty(party: Partial) {
+        launchOnViewLifecycle {
+            binding.progressBar.visibility = View.VISIBLE
+            try {
+                val request = PartialUpdateRequest(
+                    guid = party.guid,
+                    partial_code = party.partial_code,
+                    partial_name = party.partial_name,
+                    status = 0
+                )
+                val response = apiService.updatePartial(request)
+                if (response.isSuccessful) {
+                    showToast(R.string.party_restored)
+                    soundManager.playSuccess()
+                    loadParties()
+                } else {
+                    showToast(getString(R.string.server_error, response.code()))
+                    soundManager.playError()
+                }
+            } catch (e: Exception) {
+                showToast(R.string.net_error_short)
+                soundManager.playError()
+            } finally {
+                binding.progressBar.visibility = View.GONE
             }
         }
     }
@@ -94,7 +163,7 @@ class PartyFragment : BaseFragment() {
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.create, null) // Устанавливаем null, чтобы переопределить поведение ниже
+            .setPositiveButton(R.string.create, null) 
             .setNegativeButton(R.string.cancel, null)
             .create()
 
@@ -107,10 +176,9 @@ class PartyFragment : BaseFragment() {
                     return@setOnClickListener
                 }
 
-                // Формируем имя с префиксом KG
                 val finalName = PartyNumberFormatter.normalize(inputName)
 
-                button.isEnabled = false // Блокируем кнопку на время запроса
+                button.isEnabled = false
                 
                 launchOnViewLifecycle {
                     try {

@@ -111,11 +111,25 @@ class ScanFragment : BaseFragment() {
             DialogUtils.showVolumeDialog(requireContext()) { result ->
                 currentOrderDimensions = result
                 binding.etWeight.setText("%.2f".format(result.grossWeight))
+                
+                // Отображаем размеры в UI
                 currentLength = result.length
                 currentWidth  = result.width
                 currentHeight = result.height
+                
+                binding.etLength.setText(currentLength.toString())
+                binding.etWidth.setText(currentWidth.toString())
+                binding.etHeight.setText(currentHeight.toString())
             }
         }
+
+        // Добавляем возможность удаления размеров долгим нажатием
+        binding.btnVolumeCalc.setOnLongClickListener {
+            clearDimensions()
+            Toast.makeText(requireContext(), R.string.dimensions_cleared, Toast.LENGTH_SHORT).show()
+            true
+        }
+
         binding.btnGenerateOnza.setOnClickListener {
             val generated = "ONZA${System.currentTimeMillis().toString().takeLast(8)}"
             binding.etTracking.setText(generated)
@@ -123,7 +137,6 @@ class ScanFragment : BaseFragment() {
         }
 
         binding.btnPrint.setOnClickListener {
-            //val printManager = requireActivity().getSystemService(android.print.PrintManager::class.java)
             printHelper.printLabel(
                 binding.etTracking.text.toString(),
                 binding.etClientCode.text.toString(),
@@ -141,6 +154,16 @@ class ScanFragment : BaseFragment() {
         binding.btnSearchClient.setOnClickListener {
             showSearchClientDialog()
         }
+    }
+
+    private fun clearDimensions() {
+        currentLength = 0
+        currentWidth = 0
+        currentHeight = 0
+        currentOrderDimensions = null
+        binding.etLength.text?.clear()
+        binding.etWidth.text?.clear()
+        binding.etHeight.text?.clear()
     }
 
     private fun setupClientCodeInput() {
@@ -208,9 +231,16 @@ class ScanFragment : BaseFragment() {
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
                     binding.etClientCode.setText(details.clientCode ?: "")
                     binding.etWeight.setText(details.grossWeight?.toString() ?: "")
+                    
+                    // Обновляем UI и внутренние переменные
+                    currentLength = details.length ?: 0
+                    currentWidth = details.width ?: 0
+                    currentHeight = details.height ?: 0
+                    
                     binding.etLength.setText(details.length?.toString() ?: "")
                     binding.etWidth.setText(details.width?.toString() ?: "")
                     binding.etHeight.setText(details.height?.toString() ?: "")
+                    
                     binding.cbWithBox.isChecked = details.withBox == "1"
                     currentReceiverGuid = details.userGuid
                     soundManager.playSuccess()
@@ -218,6 +248,7 @@ class ScanFragment : BaseFragment() {
                     binding.tvClientName.text = getString(R.string.track_not_found)
                     binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
                     ScanUtils.clearFields(binding, requireContext())
+                    clearDimensions()
                 }
             } catch (e: Exception) {
                 Log.e("FetchInfo", "Error: ${e.message}")
@@ -315,6 +346,7 @@ class ScanFragment : BaseFragment() {
                 soundManager.playSent()
                 Toast.makeText(requireContext(), getString(R.string.order_saved), Toast.LENGTH_SHORT).show()
                 ScanUtils.clearFieldsAll(binding, requireContext())
+                clearDimensions() // Сбрасываем размеры после отправки
                 currentReceiverGuid = null
                 binding.btnSubmit.isEnabled = true
             },

@@ -50,13 +50,17 @@ interface OnzaApiService {
     @HTTP(method = "DELETE", path = "/api/order/box-order", hasBody = true)
     suspend fun removeOrderFromBox(@Body request: RemoveOrderRequest): Response<RemoveOrderResponse>
 
-    // Список открытых партий
-    @GET("/api/order/partial?typePartial=0")
-    suspend fun getOpenPartials(): Response<List<Partial>>
+    // Список партий. typePartial=0 для открытых, null для всех
+    @GET("/api/order/partial")
+    suspend fun getPartials(@Query("typePartial") type: Int? = null): Response<List<Partial>>
 
     // Создать партию
     @POST("/api/order/partial")
     suspend fun createPartial(@Body request: PartialCreateRequest): Response<PartialCreateResponse>
+
+    // Обновить партию (смена статуса и т.д.)
+    @POST("/api/order/partial")
+    suspend fun updatePartial(@Body request: PartialUpdateRequest): Response<PartialCreateResponse>
 
     // Отправить партию
     @POST("/api/order/send-partial")

@@ -13,7 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.UnpackedOrder
 import com.ocr.fastscan.databinding.FragmentUnpackedOrdersBinding
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -27,6 +29,8 @@ class UnpackedOrdersFragment : BaseFragment() {
     private val unpackedAdapter = UnpackedOrdersAdapter()
 
     private var allUnpackedOrders = listOf<UnpackedOrder>()
+    private var loadJob: Job? = null
+    private var filterJob: Job? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentUnpackedOrdersBinding.inflate(inflater, container, false)
@@ -56,10 +60,12 @@ class UnpackedOrdersFragment : BaseFragment() {
     }
 
     private fun loadUnpackedOrders(days: Int) {
-        binding.progressBar.visibility = View.VISIBLE
-        binding.tvEmptyState.visibility = View.GONE
+        val currentBinding = _binding ?: return
+        currentBinding.progressBar.visibility = View.VISIBLE
+        currentBinding.tvEmptyState.visibility = View.GONE
 
-        lifecycleScope.launch {
+        loadJob?.cancel()
+        loadJob = viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val cutoffDate = if (days > 0) {
                     Calendar.getInstance().apply {
@@ -99,15 +105,16 @@ class UnpackedOrdersFragment : BaseFragment() {
                 allUnpackedOrders = processedOrders
 
                 // 3. Обновление UI
-                if (_binding != null) {
-                    unpackedAdapter.submitList(allUnpackedOrders)
-                    binding.tvCount.text = getString(R.string.unpacked_count_default, allUnpackedOrders.size)
-                    binding.tvEmptyState.visibility = if (allUnpackedOrders.isEmpty()) View.VISIBLE else View.GONE
-                }
+                val activeBinding = _binding ?: return@launch
+                unpackedAdapter.submitList(allUnpackedOrders)
+                activeBinding.tvCount.text = getString(R.string.unpacked_count_default, allUnpackedOrders.size)
+                activeBinding.tvEmptyState.visibility = if (allUnpackedOrders.isEmpty()) View.VISIBLE else View.GONE
 
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("UnpackedFragment", "Load error", e)
-                Toast.makeText(requireContext(), R.string.error_load_data, Toast.LENGTH_LONG).show()
+                context?.let { Toast.makeText(it, R.string.error_load_data, Toast.LENGTH_LONG).show() }
             } finally {
                 _binding?.progressBar?.visibility = View.GONE
             }
@@ -115,7 +122,8 @@ class UnpackedOrdersFragment : BaseFragment() {
     }
 
     private fun filterList(query: String) {
-        lifecycleScope.launch(Dispatchers.Default) {
+        filterJob?.cancel()
+        filterJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
             val filteredList = if (query.isBlank()) {
                 allUnpackedOrders
             } else {
@@ -127,17 +135,18 @@ class UnpackedOrdersFragment : BaseFragment() {
             }
 
             withContext(Dispatchers.Main) {
-                if (_binding != null) {
+                _binding?.let { activeBinding ->
                     unpackedAdapter.submitList(filteredList)
-                    binding.tvEmptyState.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
+                    activeBinding.tvEmptyState.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
                 }
             }
         }
     }
 
     private fun shareReport() {
+        val currentContext = context ?: return
         if (allUnpackedOrders.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.no_data_to_send, Toast.LENGTH_SHORT).show()
+            Toast.makeText(currentContext, R.string.no_data_to_send, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -167,6 +176,9 @@ class UnpackedOrdersFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
+        loadJob?.cancel()
+        filterJob?.cancel()
+        _binding?.rvUnpacked?.adapter = null
         super.onDestroyView()
         _binding = null
     }

@@ -236,7 +236,7 @@ class BoxDetailFragment : BaseFragment() {
         val length = binding.etLength.text.toString().toIntOrNull()
         val width = binding.etWidth.text.toString().toIntOrNull()
         val height = binding.etHeight.text.toString().toIntOrNull()
-        val fullWeightText = binding.tvGrossWeight.text.toString()
+        val fullWeightText = binding.etGrossWeight.text.toString()
 
         val weightClean = fullWeightText
             .replace(Regex("[^0-9,.]"), "")
@@ -244,7 +244,7 @@ class BoxDetailFragment : BaseFragment() {
             .trim()
 
         val weightValue = weightClean.toDoubleOrNull()
-        if (weightValue == null) {
+        if (weightValue == null || weightValue <= 0.0) {
             Toast.makeText(requireContext(), R.string.incorrect_weight, Toast.LENGTH_SHORT).show()
             soundManager.playError()
             return

@@ -50,7 +50,7 @@ class PrintHelper(private val activity: Activity) {
             ^CF0,35
             ^FO80,380^FDName: $client^FS
             ^CF0,80
-            ^FO80,480^FDWeight: $weight kg^FS
+            ^FO80,480^FDGross weight: $weight kg^FS
             ^XZ
         """.trimIndent()
         
@@ -95,7 +95,7 @@ class PrintHelper(private val activity: Activity) {
             ^FO80,480^GB600,3,3^FS
             ^FO80,510^A0N,120,120^FD$partialName^FS
             ^CF0,50
-            ^FO80,660^FDWeight: $weight kg^FS
+            ^FO80,660^FDGross weight: $weight kg^FS
             ^CF0,50
             ^FO80,760^FDSizes: ${length}x${width}x$height cm^FS
             ^FO80,840^BQN,2,10^FDQA$trackingNumber^FS

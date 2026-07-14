@@ -7,6 +7,7 @@ out/
 
 # Gradle
 .gradle/
+.kotlin/
 **/build/
 gradle/gradle-daemon-jvm.properties
 

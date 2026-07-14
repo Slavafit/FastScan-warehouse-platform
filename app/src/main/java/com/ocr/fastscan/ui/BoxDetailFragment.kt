@@ -18,7 +18,10 @@ import android.util.Log
 import com.ocr.fastscan.R
 import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.ScanUtils
+import com.ocr.fastscan.utils.getBoxTareWeight
 import com.ocr.fastscan.utils.getVolWeightDivider
+import com.ocr.fastscan.utils.saveBoxTareWeight
+import java.util.Locale
 
 class BoxDetailFragment : BaseFragment() {
 
@@ -29,6 +32,7 @@ class BoxDetailFragment : BaseFragment() {
     private var boxCodeid: String = ""
     private var boxTracking: String = ""
     private var partialName: String = ""
+    private var ordersGrossWeight: Double = 0.0
 
     private val ordersAdapter = OrdersAdapter { order: OrderDetails ->
         removeOrderFromBox(order.guid ?: "")
@@ -48,6 +52,8 @@ class BoxDetailFragment : BaseFragment() {
     }
 
     companion object {
+        private const val DEFAULT_BOX_TARE_WEIGHT = 0.8
+
         fun newInstance(
             boxGuid: String,
             boxCodeid: String,
@@ -89,6 +95,7 @@ class BoxDetailFragment : BaseFragment() {
 
         binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOrders.adapter = ordersAdapter
+        binding.etBoxTareWeight.setText(formatWeight(requireContext().getBoxTareWeight()))
 
         setupClickListeners()
         setupSizeListeners()
@@ -137,9 +144,10 @@ class BoxDetailFragment : BaseFragment() {
                     val orders = response.body()!!
                     ordersAdapter.submitList(orders)
 
-                    val totalGrossWeight = orders.sumOf { it.grossWeight ?: 0.0 }
-                    _binding?.tvGrossWeight?.text = getString(R.string.weight_total, totalGrossWeight)
+                    ordersGrossWeight = orders.sumOf { it.grossWeight ?: 0.0 }
+                    _binding?.tvGrossWeight?.text = getString(R.string.weight_total, ordersGrossWeight)
                     _binding?.tvOrderCount?.text = getString(R.string.orders_count, orders.size)
+                    updateGrossWeightFromOrdersAndBox()
                 } else {
                     Toast.makeText(context, R.string.error_load_orders, Toast.LENGTH_SHORT).show()
                 }
@@ -163,7 +171,8 @@ class BoxDetailFragment : BaseFragment() {
         val length = binding.etLength.text.toString().toIntOrNull() ?: 70
         val width = binding.etWidth.text.toString().toIntOrNull() ?: 45
         val height = binding.etHeight.text.toString().toIntOrNull() ?: 50
-        val weight = binding.etGrossWeight.text.toString().toDoubleOrNull() ?: 0.0
+        val weight = parseWeight(binding.etGrossWeight.text.toString()) ?: 0.0
+        val boxTareWeight = parseWeight(binding.etBoxTareWeight.text.toString()) ?: requireContext().getBoxTareWeight()
 
         if (length <= 0 || width <= 0 || height <= 0) {
             Toast.makeText(requireContext(), R.string.all_values_positive, Toast.LENGTH_SHORT).show()
@@ -187,6 +196,7 @@ class BoxDetailFragment : BaseFragment() {
                 if (_binding == null || !isAdded) return@launch
 
                 if (response.isSuccessful && response.body()?.success == true) {
+                    requireContext().saveBoxTareWeight(boxTareWeight)
                     Toast.makeText(context, R.string.weight_saved, Toast.LENGTH_SHORT).show()
                     loadBoxInfo()
                 } else {
@@ -211,6 +221,22 @@ class BoxDetailFragment : BaseFragment() {
         binding.etLength.addTextChangedListener(watcher)
         binding.etWidth.addTextChangedListener(watcher)
         binding.etHeight.addTextChangedListener(watcher)
+
+        binding.etBoxTareWeight.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                updateGrossWeightFromOrdersAndBox()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+    }
+
+    private fun updateGrossWeightFromOrdersAndBox() {
+        val activeBinding = _binding ?: return
+        val boxTareWeight = parseWeight(activeBinding.etBoxTareWeight.text.toString())
+            ?: context?.getBoxTareWeight()
+            ?: DEFAULT_BOX_TARE_WEIGHT
+        activeBinding.etGrossWeight.setText(formatWeight(ordersGrossWeight + boxTareWeight))
     }
 
     private fun removeOrderFromBox(orderGuid: String) {
@@ -238,17 +264,14 @@ class BoxDetailFragment : BaseFragment() {
         val height = binding.etHeight.text.toString().toIntOrNull()
         val fullWeightText = binding.etGrossWeight.text.toString()
 
-        val weightClean = fullWeightText
-            .replace(Regex("[^0-9,.]"), "")
-            .replace(",", ".")
-            .trim()
+        val weightValue = parseWeight(fullWeightText)
 
-        val weightValue = weightClean.toDoubleOrNull()
         if (weightValue == null || weightValue <= 0.0) {
             Toast.makeText(requireContext(), R.string.incorrect_weight, Toast.LENGTH_SHORT).show()
             soundManager.playError()
             return
         }
+        val weightClean = formatWeight(weightValue)
 
         val trimmedTracking = boxTracking.trim()
         val last4 = if (trimmedTracking.isNotEmpty()) trimmedTracking.takeLast(4).padStart(4, '0') else "0000"
@@ -338,7 +361,10 @@ class BoxDetailFragment : BaseFragment() {
                     _binding?.etLength?.setText(box.length?.toString() ?: "70")
                     _binding?.etWidth?.setText(box.width?.toString() ?: "45")
                     _binding?.etHeight?.setText(box.height?.toString() ?: "50")
-                    _binding?.etGrossWeight?.setText(box.grossWeight?.toString() ?: "0.0")
+                    if (_binding?.etBoxTareWeight?.text.isNullOrBlank()) {
+                        _binding?.etBoxTareWeight?.setText(formatWeight(requireContext().getBoxTareWeight()))
+                    }
+                    updateGrossWeightFromOrdersAndBox()
                     _binding?.tvVWeight?.text = getString(R.string.volume_weight, box.vWeight ?: calculateVWeight())
                 } else {
                     Toast.makeText(context, R.string.error_load_detal, Toast.LENGTH_SHORT).show()
@@ -371,6 +397,18 @@ class BoxDetailFragment : BaseFragment() {
                 Log.e("BoxDetail", "Load partial error", e)
             }
         }
+    }
+
+    private fun parseWeight(value: String): Double? {
+        return value
+            .replace(Regex("[^0-9,.]"), "")
+            .replace(",", ".")
+            .trim()
+            .toDoubleOrNull()
+    }
+
+    private fun formatWeight(value: Double): String {
+        return String.format(Locale.US, "%.2f", value)
     }
 
     override fun onDestroyView() {

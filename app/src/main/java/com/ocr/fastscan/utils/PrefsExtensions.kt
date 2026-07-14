@@ -15,3 +15,16 @@ fun Context.saveVolWeightDivider(value: Double) {
         .putString("vol_weight", value.toString())
         .apply()
 }
+
+fun Context.getBoxTareWeight(): Double {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    val valueStr = prefs.getString("box_tare_weight", "0.8") ?: "0.8"
+    return valueStr.replace(',', '.').toDoubleOrNull() ?: 0.8
+}
+
+fun Context.saveBoxTareWeight(value: Double) {
+    PreferenceManager.getDefaultSharedPreferences(this)
+        .edit()
+        .putString("box_tare_weight", value.toString())
+        .apply()
+}

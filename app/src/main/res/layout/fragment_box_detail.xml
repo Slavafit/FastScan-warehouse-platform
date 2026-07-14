@@ -130,12 +130,23 @@
                 android:gravity="center_vertical">
 
                 <EditText
-                    android:id="@+id/etGrossWeight"
+                    android:id="@+id/etBoxTareWeight"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:selectAllOnFocus="true"
-                    android:hint="@string/weight_format"
+                    android:hint="@string/box_tare_weight"
+                    android:inputType="numberDecimal"
+                    android:textSize="16sp" />
+
+                <EditText
+                    android:id="@+id/etGrossWeight"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:selectAllOnFocus="true"
+                    android:hint="@string/gross_weight_total"
                     android:inputType="numberDecimal"
                     android:textSize="16sp" />
 

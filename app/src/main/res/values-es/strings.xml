@@ -287,4 +287,6 @@
     <string name="share_via">Compartir vía...</string>
 
 
+    <string name="box_tare_weight">Box weight (kg)</string>
+    <string name="gross_weight_total">Gross weight (kg)</string>
 </resources>

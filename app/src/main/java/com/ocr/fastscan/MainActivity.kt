@@ -6,7 +6,10 @@ import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
@@ -113,31 +116,60 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNavigation(savedInstanceState: Bundle?) {
         if (savedInstanceState == null) {
-            supportFragmentManager.commit {
-                replace(R.id.fragment_container, ScanFragment())
-            }
+            navigateToTopLevel(R.id.nav_scan, clearBackStack = false)
         }
 
         binding.bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_scan -> {
-                    supportFragmentManager.commit { replace(R.id.fragment_container, ScanFragment()) }
-                    true
+            navigateToTopLevel(item.itemId)
+        }
+
+        binding.bottomNav.setOnItemReselectedListener { item ->
+            navigateToTopLevel(item.itemId)
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack()
+                    return
                 }
-                R.id.nav_boxes -> {
-                    supportFragmentManager.commit { replace(R.id.fragment_container, BoxFragment()) }
-                    true
+
+                if (binding.bottomNav.selectedItemId != R.id.nav_scan) {
+                    binding.bottomNav.selectedItemId = R.id.nav_scan
+                    return
                 }
-                R.id.nav_batches -> {
-                    supportFragmentManager.commit { replace(R.id.fragment_container, PartyFragment()) }
-                    true
-                }
-                R.id.nav_unpacked -> {
-                    supportFragmentManager.commit { replace(R.id.fragment_container, UnpackedOrdersFragment()) }
-                    true
-                }
-                else -> false
+
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
             }
+        })
+    }
+
+    private fun navigateToTopLevel(itemId: Int, clearBackStack: Boolean = true): Boolean {
+        val fragment = createTopLevelFragment(itemId) ?: return false
+
+        if (clearBackStack) {
+            supportFragmentManager.popBackStackImmediate(
+                null,
+                FragmentManager.POP_BACK_STACK_INCLUSIVE
+            )
+        }
+
+        supportFragmentManager.commit {
+            setReorderingAllowed(true)
+            replace(R.id.fragment_container, fragment)
+        }
+
+        return true
+    }
+
+    private fun createTopLevelFragment(itemId: Int): Fragment? {
+        return when (itemId) {
+            R.id.nav_scan -> ScanFragment()
+            R.id.nav_boxes -> BoxFragment()
+            R.id.nav_batches -> PartyFragment()
+            R.id.nav_unpacked -> UnpackedOrdersFragment()
+            else -> null
         }
     }
 }

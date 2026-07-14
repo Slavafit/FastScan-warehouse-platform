@@ -98,7 +98,7 @@ class PartyDetailFragment : BaseFragment() {
                     val boxes = response.body() ?: emptyList()
                     currentBoxes = boxes // Сохраняем список
                     boxesAdapter.submitList(boxes)
-                    binding.tvInfo.text = "Склад: BMG | Коробок: ${boxes.size}"
+                    binding.tvInfo.text = getString(R.string.party_detail_info, "BMG", boxes.size)
                     Log.d("PartyDetail", "Loaded ${boxes.size} boxes for report")
                 }
             } catch (e: Exception) {

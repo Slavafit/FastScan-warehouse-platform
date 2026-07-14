@@ -287,8 +287,8 @@
     <string name="share_via">Compartir vía...</string>
 
 
-    <string name="box_tare_weight">Box weight (kg)</string>
-    <string name="gross_weight_total">Gross weight (kg)</string>
+    <string name="box_tare_weight">Peso de la caja (kg)</string>
+    <string name="gross_weight_total">Peso bruto (kg)</string>
     <string name="license_need_activation_detail">Introduce el email para solicitar acceso de prueba.</string>
     <string name="license_invalid_detail">Contacta con el desarrollador para restaurar el acceso.</string>
     <string name="license_checking_detail">Obteniendo el estado actual de la licencia.</string>
@@ -307,4 +307,6 @@
     <string name="connection_error_message">Comprueba la conexión a internet o inténtalo más tarde: el servidor de licencias no está disponible.</string>
     <string name="app_version_title">Versión de la app</string>
     <string name="app_version_summary">Versión %1$s (%2$d)</string>
+    <string name="party_detail_info">Almacén: %1$s | Cajas: %2$d</string>
+    <string name="party_detail_info_placeholder">Almacén: - | Cajas: 0</string>
 </resources>

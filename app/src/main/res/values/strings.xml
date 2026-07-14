@@ -313,8 +313,8 @@
     <string name="not_found">Трек %1$s не найден</string>
     <string name="weight_kg2">"Вес: %1$.2f "</string>
 
-    <string name="box_tare_weight">Box weight (kg)</string>
-    <string name="gross_weight_total">Gross weight (kg)</string>
+    <string name="box_tare_weight">Вес коробки (кг)</string>
+    <string name="gross_weight_total">Вес брутто (кг)</string>
     <string name="license_need_activation_detail">Введите email, чтобы запросить пробный доступ.</string>
     <string name="license_invalid_detail">Обратитесь к разработчику для восстановления доступа.</string>
     <string name="license_checking_detail">Получаем актуальный статус лицензии.</string>
@@ -333,4 +333,6 @@
     <string name="connection_error_message">Проверьте интернет или повторите позже: сервер лицензий сейчас недоступен.</string>
     <string name="app_version_title">Версия приложения</string>
     <string name="app_version_summary">Версия %1$s (%2$d)</string>
+    <string name="party_detail_info">Склад: %1$s | Коробок: %2$d</string>
+    <string name="party_detail_info_placeholder">Склад: - | Коробок: 0</string>
 </resources>

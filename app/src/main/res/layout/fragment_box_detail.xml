@@ -90,36 +90,75 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center_vertical">
 
-                <EditText
-                    android:id="@+id/etLength"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:selectAllOnFocus="true"
-                    android:hint="@string/length"
-                    android:inputType="number"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/etWidth"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:selectAllOnFocus="true"
-                    android:hint="@string/width"
-                    android:inputType="number"
-                    android:textSize="16sp"
-                    android:layout_marginHorizontal="8dp" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/length"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="12sp" />
 
-                <EditText
-                    android:id="@+id/etHeight"
+                    <EditText
+                        android:id="@+id/etLength"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:selectAllOnFocus="true"
+                        android:hint="@string/length"
+                        android:inputType="number"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:selectAllOnFocus="true"
-                    android:hint="@string/height"
-                    android:inputType="number"
-                    android:textSize="16sp" />
+                    android:layout_marginHorizontal="8dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/width"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/etWidth"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:selectAllOnFocus="true"
+                        android:hint="@string/width"
+                        android:inputType="number"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/height"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/etHeight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:selectAllOnFocus="true"
+                        android:hint="@string/height"
+                        android:inputType="number"
+                        android:textSize="16sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <LinearLayout
@@ -129,26 +168,52 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center_vertical">
 
-                <EditText
-                    android:id="@+id/etBoxTareWeight"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:selectAllOnFocus="true"
-                    android:hint="@string/box_tare_weight"
-                    android:inputType="numberDecimal"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/etGrossWeight"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/box_tare_weight"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/etBoxTareWeight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:selectAllOnFocus="true"
+                        android:hint="@string/box_tare_weight"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
-                    android:selectAllOnFocus="true"
-                    android:hint="@string/gross_weight_total"
-                    android:inputType="numberDecimal"
-                    android:textSize="16sp" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/gross_weight_total"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="12sp" />
+
+                    <EditText
+                        android:id="@+id/etGrossWeight"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:selectAllOnFocus="true"
+                        android:hint="@string/gross_weight_total"
+                        android:inputType="numberDecimal"
+                        android:textSize="16sp" />
+                </LinearLayout>
 
                 <Button
                     android:id="@+id/btnSaveSizes"

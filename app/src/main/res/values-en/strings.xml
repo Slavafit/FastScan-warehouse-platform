@@ -317,4 +317,6 @@
     <string name="connection_error_message">Check the internet connection or try later: the license server is unavailable.</string>
     <string name="app_version_title">App version</string>
     <string name="app_version_summary">Version %1$s (%2$d)</string>
+    <string name="party_detail_info">Warehouse: %1$s | Boxes: %2$d</string>
+    <string name="party_detail_info_placeholder">Warehouse: - | Boxes: 0</string>
 </resources>

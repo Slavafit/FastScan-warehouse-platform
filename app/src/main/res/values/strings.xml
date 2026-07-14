@@ -315,4 +315,20 @@
 
     <string name="box_tare_weight">Box weight (kg)</string>
     <string name="gross_weight_total">Gross weight (kg)</string>
+    <string name="license_need_activation_detail">Введите email, чтобы запросить пробный доступ.</string>
+    <string name="license_invalid_detail">Обратитесь к разработчику для восстановления доступа.</string>
+    <string name="license_checking_detail">Получаем актуальный статус лицензии.</string>
+    <string name="license_activation_message">Введите email для начала работы. Пробный доступ действует 3 дня.</string>
+    <string name="license_start_trial">Начать пробный период</string>
+    <string name="license_trial_expired_title">Пробный период завершён</string>
+    <string name="license_no_access_title">Нет доступа</string>
+    <string name="license_trial_expired_message">Запросите полную лицензию у разработчика.</string>
+    <string name="license_revoked_message">Лицензия отозвана. Обратитесь к разработчику.</string>
+    <string name="license_expired_message">Срок лицензии истёк. Обратитесь к разработчику.</string>
+    <string name="license_device_mismatch_message">Лицензия привязана к другому устройству.</string>
+    <string name="license_invalid_message">Лицензия недействительна. Обратитесь к разработчику.</string>
+    <string name="license_active_full_status">Лицензия активна без ограничения срока</string>
+    <string name="license_trial_status">Пробный доступ: осталось %1$d дней (до %2$s)</string>
+    <string name="connection_error_title">Не удалось проверить лицензию</string>
+    <string name="connection_error_message">Проверьте интернет или повторите позже: сервер лицензий сейчас недоступен.</string>
 </resources>

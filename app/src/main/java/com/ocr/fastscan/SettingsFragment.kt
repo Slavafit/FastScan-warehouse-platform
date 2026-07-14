@@ -3,7 +3,6 @@ package com.ocr.fastscan
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
@@ -11,8 +10,9 @@ import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
-import com.google.firebase.firestore.FirebaseFirestore
+import com.ocr.fastscan.utils.LicenseCheckResult
 import com.ocr.fastscan.utils.LicenseChecker
+import com.ocr.fastscan.utils.LicenseStatus
 import com.ocr.fastscan.utils.saveVolWeightDivider
 import com.ocr.fastscan.utils.ThemeHelper
 import com.ocr.fastscan.utils.LanguageHelper
@@ -20,7 +20,6 @@ import com.ocr.fastscan.utils.PrintHelper
 import com.ocr.fastscan.utils.AppDependencies
 import com.ocr.fastscan.utils.normalizeEmail
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -139,27 +138,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         val checker = LicenseChecker(email)
-        val isValid = checker.isLicenseValid(requireContext())
+        val licenseResult = checker.checkLicense(requireContext())
 
-        if (!isValid) {
-            return getString(R.string.license_expired_or_inactive)
-        }
-
-        return try {
-            val db = FirebaseFirestore.getInstance()
-            val doc = db.collection("licenses").document(email).get().await()
-
-            val expirationDate = doc.getTimestamp("expiration_date")?.toDate()
-                ?: return getString(R.string.license_expiration_missing)
-
-            val daysLeft = ((expirationDate.time - Date().time) / (1000 * 60 * 60 * 24)).toInt()
-            val formattedDate = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(expirationDate)
-
-            when {
-                daysLeft <= 0 -> getString(R.string.license_expired_status)
-                daysLeft <= 7 -> getString(R.string.license_expires_soon_status, daysLeft, formattedDate)
-                else -> getString(R.string.license_active_until_status, formattedDate, daysLeft)
-            }
+        return licenseResult.toStatusText()
+/*
         } catch (e: Exception) {
             Log.e("Settings", "Ошибка при чтении лицензии", e)
             getString(R.string.license_check_error)
@@ -167,6 +149,38 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     // Полный перезапуск приложения
+*/
+    }
+
+    private fun LicenseCheckResult.toStatusText(): String {
+        return when (status) {
+            LicenseStatus.TRIAL -> {
+                val formattedDate = formatLicenseDate(expiresAt)
+                getString(R.string.license_trial_status, daysLeft(expiresAt), formattedDate)
+            }
+            LicenseStatus.ACTIVE -> {
+                if (expiresAt == 0L) getString(R.string.license_active_full_status)
+                else getString(R.string.license_active_until_status, formatLicenseDate(expiresAt), daysLeft(expiresAt))
+            }
+            LicenseStatus.NEED_ACTIVATION -> getString(R.string.license_need_activation_detail)
+            LicenseStatus.EXPIRED -> getString(R.string.license_expired_message)
+            LicenseStatus.REVOKED -> getString(R.string.license_revoked_message)
+            LicenseStatus.DEVICE_MISMATCH -> getString(R.string.license_device_mismatch_message)
+            LicenseStatus.CONNECTION_ERROR -> getString(R.string.connection_error_message)
+            LicenseStatus.INVALID -> getString(R.string.license_invalid_message)
+        }
+    }
+
+    private fun formatLicenseDate(expiresAt: Long): String {
+        if (expiresAt <= 0L) return "-"
+        return SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(expiresAt * 1000))
+    }
+
+    private fun daysLeft(expiresAt: Long): Int {
+        if (expiresAt <= 0L) return 0
+        return (((expiresAt * 1000) - Date().time) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+    }
+
     private fun restartApplicationSafely() {
         val intent = requireActivity().intent
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or

@@ -1,75 +1,172 @@
 package com.ocr.fastscan.utils
 
-
 import android.content.Context
-import android.util.Log
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-import java.util.Date
 import android.provider.Settings
+import android.util.Log
+import androidx.preference.PreferenceManager
+import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 class LicenseChecker(private val userId: String) {
 
-
     suspend fun isLicenseValid(context: Context): Boolean {
+        return checkLicense(context).hasAccess
+    }
+
+    suspend fun checkLicense(context: Context): LicenseCheckResult {
         val email = userId.normalizeEmail()
         if (email.isEmpty()) {
-            //Log.d("LicenseCheck", "Email пустой")
-            return false
+            return LicenseCheckResult(LicenseStatus.NEED_ACTIVATION)
         }
 
         val deviceId = getDeviceId(context)
-        //Log.d("LicenseCheck", "Email: '$email' | Device ID: '$deviceId'")
-
-        val db = FirebaseFirestore.getInstance()
-        val docRef = db.collection("licenses").document(email)
 
         return try {
-            val doc = docRef.get().await()
-
-            if (!doc.exists()) {
-                // Документа нет — создаём новый
-                val newLicense = hashMapOf(
-                    "email" to email,
-                    "device_id" to deviceId,
-                    "is_active" to true,
-                    "expiration_date" to com.google.firebase.Timestamp(Date(2026 - 1900, 11, 31, 23, 59, 59)) // 31.12.2026 23:59:59
-                )
-
-                docRef.set(newLicense).await()
-                //Log.d("LicenseCheck", "Создан новый документ лицензии для $email с device_id: $deviceId")
-                true  // Только что создали — считаем валидным
-            } else {
-                // Документ существует — проверяем
-                val storedDeviceId = doc.getString("device_id") ?: ""
-                //автоматическое обновление device_id
-                if (storedDeviceId != deviceId) {
-                    // Если device_id не совпадает — обновляем его
-                    docRef.update("device_id", deviceId).await()
-                    //Log.d("LicenseCheck", "device_id обновлён на: $deviceId")
-                }
-                val isActive = doc.getBoolean("is_active") ?: false
-                val expirationDate = doc.getTimestamp("expiration_date")?.toDate()
-
-                val deviceMatch = storedDeviceId == deviceId
-                val dateValid = expirationDate != null && Date().before(expirationDate)
-
-//                Log.d("LicenseCheck", "Device match: $deviceMatch")
-//                Log.d("LicenseCheck", "is_active: $isActive")
-//                Log.d("LicenseCheck", "expiration_date: $expirationDate")
-//                Log.d("LicenseCheck", "Текущая дата: ${Date()}")
-//                Log.d("LicenseCheck", "Дата валидна: $dateValid")
-
-                isActive && deviceMatch && dateValid
-            }
+            val response = requestLicense(email, deviceId)
+            saveLicenseToken(context, response.token)
+            response.toResult()
         } catch (e: Exception) {
-            Log.e("LicenseCheck", "Ошибка проверки лицензии: ${e.message}", e)
-            false
+            Log.e("LicenseCheck", "License server check failed", e)
+            LicenseCheckResult(LicenseStatus.CONNECTION_ERROR, errorMessage = e.localizedMessage)
         }
     }
-    //Получение device_id
+
+    private suspend fun requestLicense(email: String, deviceId: String): LicenseServerResponse {
+        return withContext(Dispatchers.IO) {
+            val postResponse = executePost(email, deviceId)
+            if (postResponse != null) return@withContext postResponse
+
+            executeGet(email, deviceId) ?: LicenseServerResponse(ok = false, status = "invalid")
+        }
+    }
+
+    private fun executePost(email: String, deviceId: String): LicenseServerResponse? {
+        val json = gson.toJson(
+            mapOf(
+                "email" to email,
+                "device_id" to deviceId
+            )
+        )
+        val body = json.toRequestBody(JSON_MEDIA_TYPE)
+        val request = Request.Builder()
+            .url(LICENSE_SERVER_URL)
+            .post(body)
+            .build()
+
+        return executeRequest(request)
+    }
+
+    private fun executeGet(email: String, deviceId: String): LicenseServerResponse? {
+        val encodedEmail = URLEncoder.encode(email, "UTF-8")
+        val encodedDeviceId = URLEncoder.encode(deviceId, "UTF-8")
+        val request = Request.Builder()
+            .url("$LICENSE_SERVER_URL?email=$encodedEmail&device_id=$encodedDeviceId")
+            .get()
+            .build()
+
+        return executeRequest(request)
+    }
+
+    private fun executeRequest(request: Request): LicenseServerResponse? {
+        httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return null
+
+            val body = response.body?.string().orEmpty()
+            if (body.isBlank()) return null
+
+            return gson.fromJson(body, LicenseServerResponse::class.java)
+        }
+    }
+
+    private fun LicenseServerResponse.toResult(): LicenseCheckResult {
+        val normalizedStatus = status.orEmpty().lowercase()
+        if (!ok) {
+            return LicenseCheckResult(normalizedStatus.toLicenseStatus())
+        }
+
+        val status = normalizedStatus.toLicenseStatus()
+        val expiresAt = expires_at ?: 0L
+        val nowSeconds = System.currentTimeMillis() / 1000
+        val isExpired = expiresAt > 0L && nowSeconds >= expiresAt
+
+        return when {
+            status == LicenseStatus.ACTIVE && expiresAt == 0L -> LicenseCheckResult(status, token, expiresAt)
+            status in ACCESS_STATUSES && !isExpired -> LicenseCheckResult(status, token, expiresAt)
+            status in ACCESS_STATUSES -> LicenseCheckResult(LicenseStatus.EXPIRED, token, expiresAt)
+            else -> LicenseCheckResult(status, token, expiresAt)
+        }
+    }
+
+    private fun String.toLicenseStatus(): LicenseStatus {
+        return when (this) {
+            "trial" -> LicenseStatus.TRIAL
+            "active" -> LicenseStatus.ACTIVE
+            "expired" -> LicenseStatus.EXPIRED
+            "revoked" -> LicenseStatus.REVOKED
+            "device_mismatch" -> LicenseStatus.DEVICE_MISMATCH
+            "need_activation", "not_found", "missing_email" -> LicenseStatus.NEED_ACTIVATION
+            else -> LicenseStatus.INVALID
+        }
+    }
+
+    private fun saveLicenseToken(context: Context, token: String?) {
+        if (token.isNullOrBlank()) return
+
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .edit()
+            .putString("license_token", token)
+            .apply()
+    }
+
     private fun getDeviceId(context: Context): String {
         return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-            ?: "unknown_device"  // fallback, если вдруг не удалось
+            ?: "unknown_device"
     }
+
+    private data class LicenseServerResponse(
+        val ok: Boolean = false,
+        val status: String? = null,
+        val token: String? = null,
+        val expires_at: Long? = null
+    )
+
+    companion object {
+        private const val LICENSE_SERVER_URL = "https://license-server.slavafit.workers.dev"
+        private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
+        private val ACCESS_STATUSES = setOf(LicenseStatus.TRIAL, LicenseStatus.ACTIVE)
+        private val gson = Gson()
+        private val httpClient = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .build()
+    }
+}
+
+data class LicenseCheckResult(
+    val status: LicenseStatus,
+    val token: String? = null,
+    val expiresAt: Long = 0L,
+    val errorMessage: String? = null
+) {
+    val hasAccess: Boolean
+        get() = status == LicenseStatus.TRIAL || status == LicenseStatus.ACTIVE
+}
+
+enum class LicenseStatus {
+    NEED_ACTIVATION,
+    TRIAL,
+    ACTIVE,
+    EXPIRED,
+    REVOKED,
+    DEVICE_MISMATCH,
+    INVALID,
+    CONNECTION_ERROR
 }

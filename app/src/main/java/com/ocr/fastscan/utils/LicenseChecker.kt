@@ -27,13 +27,14 @@ class LicenseChecker(private val userId: String) {
         }
 
         val deviceId = getDeviceId(context)
+        val appId = context.packageName
         Log.d(
             "LicenseCheck",
-            "Checking license: email=${email.maskEmail()}, device=${deviceId.maskDeviceId()}, app_id=$APP_ID"
+            "Checking license: email=${email.maskEmail()}, device=${deviceId.maskDeviceId()}, app_id=$appId"
         )
 
         return try {
-            val response = requestLicense(email, deviceId, APP_ID)
+            val response = requestLicense(email, deviceId, appId)
             saveLicenseToken(context, response.token)
             response.toResult()
         } catch (e: Exception) {
@@ -182,7 +183,6 @@ class LicenseChecker(private val userId: String) {
 
     companion object {
         private const val LICENSE_SERVER_URL = "https://license-server.slavafit.workers.dev/activate"
-        private const val APP_ID = "FastScan Pro"
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private val ACCESS_STATUSES = setOf(LicenseStatus.TRIAL, LicenseStatus.ACTIVE)
         private val gson = Gson()

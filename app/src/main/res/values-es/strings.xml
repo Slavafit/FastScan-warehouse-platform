@@ -305,4 +305,6 @@
     <string name="license_trial_status">Acceso de prueba: quedan %1$d días (hasta %2$s)</string>
     <string name="connection_error_title">No se pudo comprobar la licencia</string>
     <string name="connection_error_message">Comprueba la conexión a internet o inténtalo más tarde: el servidor de licencias no está disponible.</string>
+    <string name="app_version_title">Versión de la app</string>
+    <string name="app_version_summary">Versión %1$s (%2$d)</string>
 </resources>

@@ -47,7 +47,7 @@ class LicenseChecker(private val userId: String) {
             val postResponse = executePost(email, deviceId, appId)
             if (postResponse != null) return@withContext postResponse
 
-            executeGet(email, deviceId, appId) ?: LicenseServerResponse(ok = false, status = "invalid")
+            executeGet(email, deviceId, appId) ?: LicenseServerResponse(ok = false, status = "connection_error")
         }
     }
 
@@ -90,10 +90,16 @@ class LicenseChecker(private val userId: String) {
 
     private fun executeRequest(request: Request): LicenseServerResponse? {
         httpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return null
+            if (!response.isSuccessful) {
+                Log.w("LicenseCheck", "${request.method} license check failed: HTTP ${response.code}")
+                return null
+            }
 
             val body = response.body?.string().orEmpty()
-            if (body.isBlank()) return null
+            if (body.isBlank()) {
+                Log.w("LicenseCheck", "${request.method} license check failed: empty response")
+                return null
+            }
 
             return gson.fromJson(body, LicenseServerResponse::class.java)
         }
@@ -125,6 +131,7 @@ class LicenseChecker(private val userId: String) {
             "expired" -> LicenseStatus.EXPIRED
             "revoked" -> LicenseStatus.REVOKED
             "device_mismatch" -> LicenseStatus.DEVICE_MISMATCH
+            "connection_error" -> LicenseStatus.CONNECTION_ERROR
             "need_activation", "not_found", "missing_email" -> LicenseStatus.NEED_ACTIVATION
             else -> LicenseStatus.INVALID
         }

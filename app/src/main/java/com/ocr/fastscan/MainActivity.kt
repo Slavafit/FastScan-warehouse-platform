@@ -97,6 +97,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this@MainActivity, licenseResult.toUserMessage(), Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(this@MainActivity, licenseResult.toUserMessage(), Toast.LENGTH_LONG).show()
+                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
                 finish()
             }
         }

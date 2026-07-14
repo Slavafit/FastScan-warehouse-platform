@@ -107,6 +107,11 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/developer_info_title">
         <Preference
+            android:key="app_version"
+            android:title="@string/app_version_title"
+            android:summary="@string/app_version_summary"/>
+
+        <Preference
             android:key="developer_info"
             android:title="@string/developer_title"
             android:summary="@string/developer_summary"/>

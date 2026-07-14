@@ -2,6 +2,7 @@ package com.ocr.fastscan
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -113,6 +114,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             startActivity(intent)
             true
         }
+
+        findPreference<Preference>("app_version")?.summary = getString(
+            R.string.app_version_summary,
+            getAppVersionName(),
+            getAppVersionCode()
+        )
     }
 
     override fun onResume() {
@@ -179,6 +186,23 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun daysLeft(expiresAt: Long): Int {
         if (expiresAt <= 0L) return 0
         return (((expiresAt * 1000) - Date().time) / (1000 * 60 * 60 * 24)).toInt().coerceAtLeast(0)
+    }
+
+    private fun getAppVersionName(): String {
+        return requireContext().packageManager
+            .getPackageInfo(requireContext().packageName, 0)
+            .versionName ?: "-"
+    }
+
+    private fun getAppVersionCode(): Long {
+        val packageInfo = requireContext().packageManager
+            .getPackageInfo(requireContext().packageName, 0)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            packageInfo.longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            packageInfo.versionCode.toLong()
+        }
     }
 
     private fun restartApplicationSafely() {

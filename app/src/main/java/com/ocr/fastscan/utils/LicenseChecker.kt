@@ -27,6 +27,10 @@ class LicenseChecker(private val userId: String) {
         }
 
         val deviceId = getDeviceId(context)
+        Log.d(
+            "LicenseCheck",
+            "Checking license: email=${email.maskEmail()}, device=${deviceId.maskDeviceId()}, app_id=$APP_ID"
+        )
 
         return try {
             val response = requestLicense(email, deviceId, APP_ID)
@@ -69,6 +73,7 @@ class LicenseChecker(private val userId: String) {
             .post(body)
             .build()
 
+        Log.d("LicenseCheck", "Sending POST license check")
         return executeRequest(request)
     }
 
@@ -85,17 +90,20 @@ class LicenseChecker(private val userId: String) {
             .get()
             .build()
 
+        Log.d("LicenseCheck", "Sending GET license check fallback")
         return executeRequest(request)
     }
 
     private fun executeRequest(request: Request): LicenseServerResponse? {
         httpClient.newCall(request).execute().use { response ->
+            val body = response.body?.string().orEmpty()
+            Log.d("LicenseCheck", "${request.method} license response: HTTP ${response.code}, body=$body")
+
             if (!response.isSuccessful) {
                 Log.w("LicenseCheck", "${request.method} license check failed: HTTP ${response.code}")
                 return null
             }
 
-            val body = response.body?.string().orEmpty()
             if (body.isBlank()) {
                 Log.w("LicenseCheck", "${request.method} license check failed: empty response")
                 return null
@@ -151,6 +159,20 @@ class LicenseChecker(private val userId: String) {
             ?: "unknown_device"
     }
 
+    private fun String.maskEmail(): String {
+        val atIndex = indexOf('@')
+        if (atIndex <= 1) return "***"
+
+        val name = take(atIndex)
+        val domain = drop(atIndex)
+        return "${name.take(1)}***$domain"
+    }
+
+    private fun String.maskDeviceId(): String {
+        if (length <= 4) return "***"
+        return "***${takeLast(4)}"
+    }
+
     private data class LicenseServerResponse(
         val ok: Boolean = false,
         val status: String? = null,
@@ -159,7 +181,7 @@ class LicenseChecker(private val userId: String) {
     )
 
     companion object {
-        private const val LICENSE_SERVER_URL = "https://license-server.slavafit.workers.dev"
+        private const val LICENSE_SERVER_URL = "https://license-server.slavafit.workers.dev/activate"
         private const val APP_ID = "FastScan Pro"
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private val ACCESS_STATUSES = setOf(LicenseStatus.TRIAL, LicenseStatus.ACTIVE)

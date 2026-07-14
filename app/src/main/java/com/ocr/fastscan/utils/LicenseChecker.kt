@@ -29,7 +29,7 @@ class LicenseChecker(private val userId: String) {
         val deviceId = getDeviceId(context)
 
         return try {
-            val response = requestLicense(email, deviceId)
+            val response = requestLicense(email, deviceId, APP_ID)
             saveLicenseToken(context, response.token)
             response.toResult()
         } catch (e: Exception) {
@@ -38,20 +38,29 @@ class LicenseChecker(private val userId: String) {
         }
     }
 
-    private suspend fun requestLicense(email: String, deviceId: String): LicenseServerResponse {
+    private suspend fun requestLicense(
+        email: String,
+        deviceId: String,
+        appId: String
+    ): LicenseServerResponse {
         return withContext(Dispatchers.IO) {
-            val postResponse = executePost(email, deviceId)
+            val postResponse = executePost(email, deviceId, appId)
             if (postResponse != null) return@withContext postResponse
 
-            executeGet(email, deviceId) ?: LicenseServerResponse(ok = false, status = "invalid")
+            executeGet(email, deviceId, appId) ?: LicenseServerResponse(ok = false, status = "invalid")
         }
     }
 
-    private fun executePost(email: String, deviceId: String): LicenseServerResponse? {
+    private fun executePost(
+        email: String,
+        deviceId: String,
+        appId: String
+    ): LicenseServerResponse? {
         val json = gson.toJson(
             mapOf(
                 "email" to email,
-                "device_id" to deviceId
+                "device_id" to deviceId,
+                "app_id" to appId
             )
         )
         val body = json.toRequestBody(JSON_MEDIA_TYPE)
@@ -63,11 +72,16 @@ class LicenseChecker(private val userId: String) {
         return executeRequest(request)
     }
 
-    private fun executeGet(email: String, deviceId: String): LicenseServerResponse? {
+    private fun executeGet(
+        email: String,
+        deviceId: String,
+        appId: String
+    ): LicenseServerResponse? {
         val encodedEmail = URLEncoder.encode(email, "UTF-8")
         val encodedDeviceId = URLEncoder.encode(deviceId, "UTF-8")
+        val encodedAppId = URLEncoder.encode(appId, "UTF-8")
         val request = Request.Builder()
-            .url("$LICENSE_SERVER_URL?email=$encodedEmail&device_id=$encodedDeviceId")
+            .url("$LICENSE_SERVER_URL?email=$encodedEmail&device_id=$encodedDeviceId&app_id=$encodedAppId")
             .get()
             .build()
 
@@ -139,6 +153,7 @@ class LicenseChecker(private val userId: String) {
 
     companion object {
         private const val LICENSE_SERVER_URL = "https://license-server.slavafit.workers.dev"
+        private const val APP_ID = "FastScan Pro"
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private val ACCESS_STATUSES = setOf(LicenseStatus.TRIAL, LicenseStatus.ACTIVE)
         private val gson = Gson()

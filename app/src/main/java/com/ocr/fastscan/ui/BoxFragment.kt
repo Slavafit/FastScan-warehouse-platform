@@ -9,12 +9,17 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
+import com.ocr.fastscan.data.model.BoxItem
 import com.ocr.fastscan.databinding.FragmentBoxBinding
 import com.ocr.fastscan.utils.DialogUtils
+import com.ocr.fastscan.utils.getBoxTareWeight
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import java.util.TimeZone
 
@@ -102,9 +107,11 @@ class BoxFragment : BaseFragment() {
                 if (_binding == null) return@launch
 
                 if (response.isSuccessful && response.body() != null) {
-                    val boxes = response.body()!!.map { box ->
-                        box.copy(dateCreated = formatBoxDate(box.dateCreated))
-                    }
+                    val boxTareWeight = requireContext().getBoxTareWeight()
+                    val boxes = response.body()!!
+                        .map { box -> box.copy(dateCreated = formatBoxDate(box.dateCreated)) }
+                        .withCalculatedGrossWeight(boxTareWeight)
+
                     boxesAdapter.submitList(boxes) {
                         if (highlightTrackingCode != null) {
                             val newBoxPosition = boxes.indexOfFirst {
@@ -138,6 +145,34 @@ class BoxFragment : BaseFragment() {
                 _binding?.progressBar?.visibility = View.GONE
                 isLoading = false
             }
+        }
+    }
+
+    private suspend fun List<BoxItem>.withCalculatedGrossWeight(boxTareWeight: Double): List<BoxItem> =
+        coroutineScope {
+            map { box ->
+                async {
+                    val ordersWeight = loadOrdersWeight(box.trackingCode)
+                    box.copy(grossWeight = ordersWeight?.plus(boxTareWeight) ?: box.grossWeight)
+                }
+            }.awaitAll()
+        }
+
+    private suspend fun loadOrdersWeight(trackingCode: String?): Double? {
+        if (trackingCode.isNullOrBlank()) return null
+        return try {
+            val response = apiService.getOrderDetailsBox(trackingCode)
+            if (response.isSuccessful) {
+                response.body()?.sumOf { it.grossWeight ?: 0.0 }
+            } else {
+                Log.w("BoxFragment", "Failed to load box orders for $trackingCode: ${response.code()}")
+                null
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w("BoxFragment", "Failed to calculate box gross weight for $trackingCode", e)
+            null
         }
     }
 

@@ -206,7 +206,8 @@ data class BoxInPartial(
     val v_weight: Double,
     val gross_weight: Double,
     val date_created: String,
-    val warehouse_name: String
+    val warehouse_name: String,
+    @SerializedName("orderCount") val orderCount: Int? = null
 )
 
 // Ответ на создание/обновление партии

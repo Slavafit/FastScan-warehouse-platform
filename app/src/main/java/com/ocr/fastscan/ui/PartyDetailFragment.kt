@@ -12,6 +12,8 @@ import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogSelectBoxBinding
 import com.ocr.fastscan.databinding.FragmentPartyDetailBinding
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -26,6 +28,7 @@ class PartyDetailFragment : BaseFragment() {
     private var partialCode: String = ""
     private var partialName: String = ""
     private var isFinishing = false
+    private var orderCountLoadRequestId = 0
 
     // Храним актуальный список коробок отдельно от адаптера
     private var currentBoxes: List<BoxInPartial> = emptyList()
@@ -48,6 +51,8 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     companion object {
+        private const val BOX_ORDER_COUNT_BATCH_SIZE = 4
+
         fun newInstance(guid: String, codeid: String, code: String, name: String): PartyDetailFragment {
             return PartyDetailFragment().apply {
                 arguments = Bundle().apply {
@@ -99,6 +104,7 @@ class PartyDetailFragment : BaseFragment() {
                     currentBoxes = boxes // Сохраняем список
                     boxesAdapter.submitList(boxes)
                     binding.tvInfo.text = getString(R.string.party_detail_info, "BMG", boxes.size)
+                    loadBoxOrderCounts(boxes, ++orderCountLoadRequestId)
                     Log.d("PartyDetail", "Loaded ${boxes.size} boxes for report")
                 }
             } catch (e: Exception) {
@@ -106,6 +112,41 @@ class PartyDetailFragment : BaseFragment() {
             } finally {
                 binding.progressBar.visibility = View.GONE
             }
+        }
+    }
+
+    private fun loadBoxOrderCounts(boxes: List<BoxInPartial>, requestId: Int) {
+        if (boxes.isEmpty()) return
+        launchOnViewLifecycle {
+            boxes.chunked(BOX_ORDER_COUNT_BATCH_SIZE).forEach { chunk ->
+                val countedBoxes = chunk.map { box ->
+                    async {
+                        if (box.orderCount != null) {
+                            box
+                        } else {
+                            box.copy(orderCount = loadOrderCount(box.tracking_code))
+                        }
+                    }
+                }.awaitAll()
+
+                if (_binding == null || requestId != orderCountLoadRequestId) return@launchOnViewLifecycle
+
+                val countedByGuid = countedBoxes.associateBy { it.guid }
+                currentBoxes = currentBoxes.map { currentBox ->
+                    countedByGuid[currentBox.guid] ?: currentBox
+                }
+                boxesAdapter.submitList(currentBoxes)
+            }
+        }
+    }
+
+    private suspend fun loadOrderCount(boxTracking: String): Int {
+        return try {
+            val response = apiService.getOrderDetailsBox(boxTracking)
+            if (response.isSuccessful) response.body()?.size ?: 0 else 0
+        } catch (e: Exception) {
+            Log.w("PartyDetail", "Failed to load order count for $boxTracking", e)
+            0
         }
     }
 

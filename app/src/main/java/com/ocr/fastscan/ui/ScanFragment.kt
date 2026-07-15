@@ -3,6 +3,8 @@ package com.ocr.fastscan.ui
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -75,6 +77,7 @@ class ScanFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        binding.tvAppVersion.text = getAppVersionText()
 
         binding.etTracking.setOnEditorActionListener { _, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE ||
@@ -90,6 +93,28 @@ class ScanFragment : BaseFragment() {
         }
         setupButtons()
         setupClientCodeInput()
+    }
+
+    private fun getAppVersionText(): String {
+        return try {
+            val packageInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
+            getString(
+                R.string.app_version_summary,
+                packageInfo.versionName ?: "-",
+                packageInfo.versionCodeCompat()
+            )
+        } catch (e: Exception) {
+            getString(R.string.app_version_summary, "-", 0L)
+        }
+    }
+
+    private fun PackageInfo.versionCodeCompat(): Long {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            longVersionCode
+        } else {
+            @Suppress("DEPRECATION")
+            versionCode.toLong()
+        }
     }
 
     private fun setupButtons() {

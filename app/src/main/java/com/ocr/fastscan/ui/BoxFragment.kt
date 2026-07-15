@@ -8,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -119,8 +121,7 @@ class BoxFragment : BaseFragment() {
                 if (response.isSuccessful && response.body() != null) {
                     val boxTareWeight = requireContext().getBoxTareWeight()
                     val requestId = ++weightLoadRequestId
-                    val boxes = response.body()!!
-                        .map { box -> box.copy(dateCreated = formatBoxDate(box.dateCreated)) }
+                    val boxes = prepareBoxesForDisplay(response.body()!!, highlightTrackingCode)
 
                     boxesAdapter.submitList(boxes) {
                         if (highlightTrackingCode != null) {
@@ -157,6 +158,34 @@ class BoxFragment : BaseFragment() {
                 isLoading = false
             }
         }
+    }
+
+    private fun prepareBoxesForDisplay(
+        boxes: List<BoxItem>,
+        preferredTrackingCode: String? = null
+    ): List<BoxItem> {
+        val dedupedByIdentity = linkedMapOf<String, BoxItem>()
+        boxes
+            .map { box -> box.copy(dateCreated = formatBoxDate(box.dateCreated)) }
+            .forEach { box ->
+                val key = boxIdentityKey(box) ?: box.trackingCode.orEmpty()
+                if (key.isBlank()) return@forEach
+
+                val current = dedupedByIdentity[key]
+                val selectedBox = when {
+                    current == null -> box
+                    box.trackingCode == preferredTrackingCode -> box
+                    current.trackingCode == preferredTrackingCode -> current
+                    else -> box
+                }
+                dedupedByIdentity[key] = selectedBox
+            }
+        return dedupedByIdentity.values.toList()
+    }
+
+    private fun boxIdentityKey(box: BoxItem): String? {
+        return box.guid?.takeIf { it.isNotBlank() }
+            ?: box.codeid?.takeIf { it.isNotBlank() }
     }
 
     private fun updateCalculatedBoxWeights(
@@ -212,28 +241,46 @@ class BoxFragment : BaseFragment() {
     }
 
     private fun showEditTrackingDialog(box: BoxItem) {
+        val currentTrackingCode = box.trackingCode.orEmpty()
+        val dialogPadding = (24 * resources.displayMetrics.density).toInt()
+        val fieldTopMargin = (12 * resources.displayMetrics.density).toInt()
+
         val input = EditText(requireContext()).apply {
             setSingleLine(true)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
-            setText(box.trackingCode.orEmpty())
-            selectAll()
+            setText(currentTrackingCode)
+            setSelection(text.length)
             hint = getString(R.string.tracking_code)
-            val horizontalPadding = (24 * resources.displayMetrics.density).toInt()
-            setPadding(horizontalPadding, paddingTop, horizontalPadding, paddingBottom)
+        }
+
+        val content = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dialogPadding, fieldTopMargin, dialogPadding, 0)
+            addView(TextView(requireContext()).apply {
+                text = getString(R.string.current_box_tracking, currentTrackingCode)
+                textSize = 14f
+            })
+            addView(input, LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = fieldTopMargin
+            })
         }
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.edit_box_tracking_title)
-            .setView(input)
+            .setView(content)
             .setPositiveButton(R.string.save, null)
             .setNegativeButton(R.string.cancel, null)
             .create()
 
         dialog.setOnShowListener {
+            input.requestFocus()
             val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             saveButton.setOnClickListener {
-                val newTrackingCode = input.text.toString().trim()
-                val oldTrackingCode = box.trackingCode.orEmpty()
+                val newTrackingCode = normalizeTrackingCode(input.text.toString())
+                val oldTrackingCode = currentTrackingCode
 
                 if (newTrackingCode.isBlank()) {
                     Toast.makeText(requireContext(), R.string.box_tracking_empty, Toast.LENGTH_SHORT).show()
@@ -250,6 +297,15 @@ class BoxFragment : BaseFragment() {
         }
 
         dialog.show()
+    }
+
+    private fun normalizeTrackingCode(value: String): String {
+        return value
+            .trim()
+            .split(Regex("\\s+"))
+            .filter { it.isNotBlank() }
+            .lastOrNull()
+            .orEmpty()
     }
 
     private fun updateBoxTracking(box: BoxItem, newTrackingCode: String, dialog: AlertDialog) {
@@ -275,6 +331,7 @@ class BoxFragment : BaseFragment() {
                 if (response.isSuccessful && response.body()?.success == true) {
                     Toast.makeText(requireContext(), R.string.box_tracking_updated, Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
+                    replaceBoxTrackingInCurrentList(box, newTrackingCode)
                     loadBoxes(
                         isOpenOnly = !isShowingAllBoxes,
                         highlightTrackingCode = newTrackingCode
@@ -294,6 +351,22 @@ class BoxFragment : BaseFragment() {
                 _binding?.progressBar?.visibility = View.GONE
             }
         }
+    }
+
+    private fun replaceBoxTrackingInCurrentList(editedBox: BoxItem, newTrackingCode: String) {
+        val editedKey = boxIdentityKey(editedBox)
+        val oldTrackingCode = editedBox.trackingCode
+        val updatedList = boxesAdapter.currentList
+            .map { currentBox ->
+                val isSameBox = if (editedKey != null) {
+                    boxIdentityKey(currentBox) == editedKey
+                } else {
+                    currentBox.trackingCode == oldTrackingCode
+                }
+                if (isSameBox) currentBox.copy(trackingCode = newTrackingCode) else currentBox
+            }
+            .let { prepareBoxesForDisplay(it, newTrackingCode) }
+        boxesAdapter.submitList(updatedList)
     }
 
     private fun formatBoxDate(isoDate: String?): String {

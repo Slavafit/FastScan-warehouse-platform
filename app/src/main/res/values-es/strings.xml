@@ -314,6 +314,7 @@
     <string name="box_tracking_unchanged">El código de seguimiento no ha cambiado</string>
     <string name="box_tracking_updated">Código de seguimiento de la caja actualizado</string>
     <string name="error_update_box_tracking">No se pudo actualizar el código de seguimiento de la caja</string>
+    <string name="current_box_tracking">Código actual: %1$s</string>
     <string name="paste_from_clipboard">Pegar</string>
     <string name="clipboard_empty">El portapapeles está vacío</string>
 </resources>

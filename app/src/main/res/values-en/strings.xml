@@ -324,6 +324,7 @@
     <string name="box_tracking_unchanged">Tracking code was not changed</string>
     <string name="box_tracking_updated">Box tracking code updated</string>
     <string name="error_update_box_tracking">Could not update box tracking code</string>
+    <string name="current_box_tracking">Current tracking code: %1$s</string>
     <string name="paste_from_clipboard">Paste</string>
     <string name="clipboard_empty">Clipboard is empty</string>
 </resources>

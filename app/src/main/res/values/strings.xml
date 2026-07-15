@@ -340,6 +340,7 @@
     <string name="box_tracking_unchanged">Трек не изменен</string>
     <string name="box_tracking_updated">Трек коробки обновлен</string>
     <string name="error_update_box_tracking">Не удалось обновить трек коробки</string>
+    <string name="current_box_tracking">Текущий трек: %1$s</string>
     <string name="paste_from_clipboard">Вставить</string>
     <string name="clipboard_empty">Буфер обмена пуст</string>
 </resources>

@@ -316,5 +316,6 @@
     <string name="error_update_box_tracking">No se pudo actualizar el código de seguimiento de la caja</string>
     <string name="current_box_tracking">Código actual: %1$s</string>
     <string name="paste_from_clipboard">Pegar</string>
+    <string name="paste_order_track_from_clipboard">Pegar seguimiento del pedido</string>
     <string name="clipboard_empty">El portapapeles está vacío</string>
 </resources>

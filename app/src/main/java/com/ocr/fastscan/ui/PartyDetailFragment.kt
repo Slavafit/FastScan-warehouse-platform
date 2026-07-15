@@ -14,6 +14,7 @@ import com.ocr.fastscan.databinding.DialogSelectBoxBinding
 import com.ocr.fastscan.databinding.FragmentPartyDetailBinding
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -96,21 +97,25 @@ class PartyDetailFragment : BaseFragment() {
 
     private fun loadBoxDetails() {
         launchOnViewLifecycle {
-            binding.progressBar.visibility = View.VISIBLE
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
             try {
                 val response = apiService.getBoxesInPartial(partialGuid)
+                val currentBinding = _binding ?: return@launchOnViewLifecycle
                 if (response.isSuccessful) {
                     val boxes = response.body() ?: emptyList()
                     currentBoxes = boxes // Сохраняем список
                     boxesAdapter.submitList(boxes)
-                    binding.tvInfo.text = getString(R.string.party_detail_info, "BMG", boxes.size)
+                    currentBinding.tvInfo.text = getString(R.string.party_detail_info, "BMG", boxes.size)
                     loadBoxOrderCounts(boxes, ++orderCountLoadRequestId)
                     Log.d("PartyDetail", "Loaded ${boxes.size} boxes for report")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("PartyDetail", "Load boxes error", e)
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -144,6 +149,8 @@ class PartyDetailFragment : BaseFragment() {
         return try {
             val response = apiService.getOrderDetailsBox(boxTracking)
             if (response.isSuccessful) response.body()?.size ?: 0 else 0
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.w("PartyDetail", "Failed to load order count for $boxTracking", e)
             0
@@ -166,11 +173,14 @@ class PartyDetailFragment : BaseFragment() {
         launchOnViewLifecycle {
             try {
                 val response = apiService.getOpenBoxes()
+                if (_binding == null || !isAdded) return@launchOnViewLifecycle
                 if (response.isSuccessful) {
                     adapter.submitList(response.body() ?: emptyList())
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                showToast(R.string.error_load_boxes_short)
+                if (isAdded) showToast(R.string.error_load_boxes_short)
             }
         }
         dialog.show()
@@ -178,7 +188,8 @@ class PartyDetailFragment : BaseFragment() {
 
     private fun addBoxToParty(box: BoxInPartial) {
         launchOnViewLifecycle {
-            binding.progressBar.visibility = View.VISIBLE
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
             try {
                 val request = AddBoxRequest(
                     guid = box.guid,
@@ -192,6 +203,7 @@ class PartyDetailFragment : BaseFragment() {
                     gross_weight = box.gross_weight
                 )
                 val response = apiService.addBoxToPartial(request)
+                if (_binding == null || !isAdded) return@launchOnViewLifecycle
                 if (response.isSuccessful && response.body()?.success == true) {
                     soundManager.playSuccess()
                     loadBoxDetails()
@@ -199,10 +211,12 @@ class PartyDetailFragment : BaseFragment() {
                     showToast(R.string.error_adding_box)
                     soundManager.playError()
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 soundManager.playError()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -212,10 +226,12 @@ class PartyDetailFragment : BaseFragment() {
         isFinishing = true
 
         launchOnViewLifecycle {
-            binding.progressBar.visibility = View.VISIBLE
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
             try {
                 val request = SendPartialRequest(partial = partialGuid)
                 val response = apiService.sendPartial(request)
+                if (_binding == null || !isAdded) return@launchOnViewLifecycle
 
                 if (response.isSuccessful) {
                     soundManager.playSuccess()
@@ -224,17 +240,21 @@ class PartyDetailFragment : BaseFragment() {
                     sharePartyReport()
                     
                     delay(800) 
-                    parentFragmentManager.popBackStack()
+                    if (_binding != null && isAdded) {
+                        parentFragmentManager.popBackStack()
+                    }
                 } else {
                     isFinishing = false
                     showToast(getString(R.string.server_error, response.code()))
                     soundManager.playError()
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 isFinishing = false
                 soundManager.playError()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -282,6 +302,8 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
+        orderCountLoadRequestId++
+        _binding?.rvBoxes?.adapter = null
         super.onDestroyView()
         _binding = null
     }

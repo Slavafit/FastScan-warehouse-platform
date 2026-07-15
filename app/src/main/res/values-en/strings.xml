@@ -326,5 +326,6 @@
     <string name="error_update_box_tracking">Could not update box tracking code</string>
     <string name="current_box_tracking">Current tracking code: %1$s</string>
     <string name="paste_from_clipboard">Paste</string>
+    <string name="paste_order_track_from_clipboard">Paste order track from clipboard</string>
     <string name="clipboard_empty">Clipboard is empty</string>
 </resources>

@@ -1,15 +1,19 @@
 package com.ocr.fastscan.ui
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.BoxItem
+import com.ocr.fastscan.data.model.BoxRequest
 import com.ocr.fastscan.databinding.FragmentBoxBinding
 import com.ocr.fastscan.utils.DialogUtils
 import com.ocr.fastscan.utils.getBoxTareWeight
@@ -19,7 +23,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import java.util.TimeZone
 
@@ -29,21 +32,28 @@ class BoxFragment : BaseFragment() {
     
     private var isShowingAllBoxes = false
     private var isLoading = false
+    private var isUpdatingTracking = false
+    private var weightLoadRequestId = 0
     
-    private val boxesAdapter = BoxesAdapter { box ->
-        val partialName = arguments?.getString("partial_name")
-        val detailFragment = BoxDetailFragment.newInstance(
-            boxGuid = box.guid ?: "",
-            boxCodeid = box.codeid ?: "",
-            boxTracking = box.trackingCode ?: "",
-            boxWeight = box.grossWeight?.toString() ?: "0.0",
-            partialName = partialName ?: "KG"
-        )
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, detailFragment)
-            .addToBackStack(null)
-            .commit()
-    }
+    private val boxesAdapter = BoxesAdapter(
+        onClick = { box ->
+            val partialName = arguments?.getString("partial_name")
+            val detailFragment = BoxDetailFragment.newInstance(
+                boxGuid = box.guid ?: "",
+                boxCodeid = box.codeid ?: "",
+                boxTracking = box.trackingCode ?: "",
+                boxWeight = box.grossWeight?.toString() ?: "0.0",
+                partialName = partialName ?: "KG"
+            )
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, detailFragment)
+                .addToBackStack(null)
+                .commit()
+        },
+        onLongClick = { box ->
+            showEditTrackingDialog(box)
+        }
+    )
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentBoxBinding.inflate(inflater, container, false)
@@ -108,9 +118,9 @@ class BoxFragment : BaseFragment() {
 
                 if (response.isSuccessful && response.body() != null) {
                     val boxTareWeight = requireContext().getBoxTareWeight()
+                    val requestId = ++weightLoadRequestId
                     val boxes = response.body()!!
                         .map { box -> box.copy(dateCreated = formatBoxDate(box.dateCreated)) }
-                        .withCalculatedGrossWeight(boxTareWeight)
 
                     boxesAdapter.submitList(boxes) {
                         if (highlightTrackingCode != null) {
@@ -133,6 +143,7 @@ class BoxFragment : BaseFragment() {
                     binding.btnShowAll.text = if (isOpenOnly) getString(R.string.all_boxes) else getString(R.string.open_boxes)
                     
                     binding.tvNoBoxes.visibility = if (boxes.isEmpty()) View.VISIBLE else View.GONE
+                    updateCalculatedBoxWeights(boxes, boxTareWeight, requestId)
                 } else {
                     Toast.makeText(requireContext(), R.string.error_load, Toast.LENGTH_SHORT).show()
                 }
@@ -148,15 +159,39 @@ class BoxFragment : BaseFragment() {
         }
     }
 
-    private suspend fun List<BoxItem>.withCalculatedGrossWeight(boxTareWeight: Double): List<BoxItem> =
-        coroutineScope {
-            map { box ->
-                async {
-                    val ordersWeight = loadOrdersWeight(box.trackingCode)
-                    box.copy(grossWeight = ordersWeight?.plus(boxTareWeight) ?: box.grossWeight)
+    private fun updateCalculatedBoxWeights(
+        boxes: List<BoxItem>,
+        boxTareWeight: Double,
+        requestId: Int
+    ) {
+        if (boxes.isEmpty()) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            boxes.chunked(BOX_WEIGHT_BATCH_SIZE).forEach { chunk ->
+                val calculatedBoxes = chunk.map { box ->
+                    async {
+                        val ordersWeight = loadOrdersWeight(box.trackingCode)
+                        if (ordersWeight == null) null else box.copy(grossWeight = ordersWeight + boxTareWeight)
+                    }
+                }.awaitAll().filterNotNull()
+
+                if (_binding == null || requestId != weightLoadRequestId) return@launch
+                if (calculatedBoxes.isEmpty()) return@forEach
+
+                val calculatedByGuid = calculatedBoxes
+                    .mapNotNull { box -> box.guid?.let { it to box } }
+                    .toMap()
+                val calculatedByTracking = calculatedBoxes
+                    .mapNotNull { box -> box.trackingCode?.let { it to box } }
+                    .toMap()
+                val updatedList = boxesAdapter.currentList.map { currentBox ->
+                    calculatedByGuid[currentBox.guid]
+                        ?: calculatedByTracking[currentBox.trackingCode]
+                        ?: currentBox
                 }
-            }.awaitAll()
+                boxesAdapter.submitList(updatedList)
+            }
         }
+    }
 
     private suspend fun loadOrdersWeight(trackingCode: String?): Double? {
         if (trackingCode.isNullOrBlank()) return null
@@ -173,6 +208,90 @@ class BoxFragment : BaseFragment() {
         } catch (e: Exception) {
             Log.w("BoxFragment", "Failed to calculate box gross weight for $trackingCode", e)
             null
+        }
+    }
+
+    private fun showEditTrackingDialog(box: BoxItem) {
+        val input = EditText(requireContext()).apply {
+            setSingleLine(true)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+            setText(box.trackingCode.orEmpty())
+            setSelection(text.length)
+            hint = getString(R.string.tracking_code)
+            val horizontalPadding = (24 * resources.displayMetrics.density).toInt()
+            setPadding(horizontalPadding, paddingTop, horizontalPadding, paddingBottom)
+        }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.edit_box_tracking_title)
+            .setView(input)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            saveButton.setOnClickListener {
+                val newTrackingCode = input.text.toString().trim()
+                val oldTrackingCode = box.trackingCode.orEmpty()
+
+                if (newTrackingCode.isBlank()) {
+                    Toast.makeText(requireContext(), R.string.box_tracking_empty, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (newTrackingCode == oldTrackingCode) {
+                    Toast.makeText(requireContext(), R.string.box_tracking_unchanged, Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+
+                updateBoxTracking(box, newTrackingCode, dialog)
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun updateBoxTracking(box: BoxItem, newTrackingCode: String, dialog: AlertDialog) {
+        if (isUpdatingTracking) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            _binding?.progressBar?.visibility = View.VISIBLE
+            try {
+                isUpdatingTracking = true
+                val request = BoxRequest(
+                    guid = box.guid.orEmpty(),
+                    codeid = box.codeid.orEmpty(),
+                    trackingCode = newTrackingCode,
+                    width = box.width ?: 45,
+                    height = box.height ?: 50,
+                    length = box.length ?: 70,
+                    vWeight = box.vWeight ?: 0.0,
+                    weight = box.grossWeight
+                )
+                val response = apiService.createOrUpdateBox(request)
+                if (_binding == null || !isAdded) return@launch
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    Toast.makeText(requireContext(), R.string.box_tracking_updated, Toast.LENGTH_SHORT).show()
+                    dialog.dismiss()
+                    loadBoxes(
+                        isOpenOnly = !isShowingAllBoxes,
+                        highlightTrackingCode = newTrackingCode
+                    )
+                } else {
+                    Toast.makeText(requireContext(), R.string.error_update_box_tracking, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("BoxFragment", "Failed to update box tracking", e)
+                if (isAdded) {
+                    Toast.makeText(requireContext(), getString(R.string.net_error, e.localizedMessage), Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                isUpdatingTracking = false
+                _binding?.progressBar?.visibility = View.GONE
+            }
         }
     }
 
@@ -200,5 +319,6 @@ class BoxFragment : BaseFragment() {
 
     private companion object {
         const val NEW_BOX_HIGHLIGHT_DURATION_MS = 2500L
+        const val BOX_WEIGHT_BATCH_SIZE = 4
     }
 }

@@ -309,4 +309,11 @@
     <string name="app_version_summary">Versión %1$s (%2$d)</string>
     <string name="party_detail_info">Almacén: %1$s | Cajas: %2$d</string>
     <string name="party_detail_info_placeholder">Almacén: - | Cajas: 0</string>
+    <string name="edit_box_tracking_title">Editar código de seguimiento de la caja</string>
+    <string name="box_tracking_empty">Introduce el código de seguimiento de la caja</string>
+    <string name="box_tracking_unchanged">El código de seguimiento no ha cambiado</string>
+    <string name="box_tracking_updated">Código de seguimiento de la caja actualizado</string>
+    <string name="error_update_box_tracking">No se pudo actualizar el código de seguimiento de la caja</string>
+    <string name="paste_from_clipboard">Pegar</string>
+    <string name="clipboard_empty">El portapapeles está vacío</string>
 </resources>

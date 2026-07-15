@@ -12,13 +12,19 @@ import com.ocr.fastscan.data.model.BoxItem
 import com.ocr.fastscan.databinding.ItemBoxBinding
 
 class BoxesAdapter(
-    private val onClick: (BoxItem) -> Unit
+    private val onClick: (BoxItem) -> Unit,
+    private val onLongClick: (BoxItem) -> Unit
 ) : ListAdapter<BoxItem, BoxesAdapter.ViewHolder>(DiffCallback) {
 
     private var highlightedTrackingCode: String? = null
 
     class ViewHolder(private val binding: ItemBoxBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(box: BoxItem, isHighlighted: Boolean, onClick: (BoxItem) -> Unit) {
+        fun bind(
+            box: BoxItem,
+            isHighlighted: Boolean,
+            onClick: (BoxItem) -> Unit,
+            onLongClick: (BoxItem) -> Unit
+        ) {
             binding.tvTrackingCode.text = box.trackingCode
             binding.tvGrossWeight.text = getString(R.string.weight_format, box.grossWeight?: 0.0)
             binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0)
@@ -41,6 +47,10 @@ class BoxesAdapter(
             binding.root.strokeWidth = dp(if (isHighlighted) 2f else 1f).toInt()
 
             binding.root.setOnClickListener { onClick(box) }
+            binding.root.setOnLongClickListener {
+                onLongClick(box)
+                true
+            }
         }
         // Важно: добавляем функцию getString в ViewHolder
         private fun getString(resId: Int, vararg formatArgs: Any): String {
@@ -59,7 +69,7 @@ class BoxesAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val box = getItem(position)
-        holder.bind(box, box.trackingCode == highlightedTrackingCode, onClick)
+        holder.bind(box, box.trackingCode == highlightedTrackingCode, onClick, onLongClick)
     }
 
     fun highlightBox(trackingCode: String) {

@@ -118,9 +118,13 @@ object DialogUtils {
         dialogBinding.etWidth.setText("45")
         dialogBinding.etHeight.setText("50")
 
+        var isSubmitting = false
         dialog.setOnShowListener {
             val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            val negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
             positiveButton?.setOnClickListener {
+                if (isSubmitting) return@setOnClickListener
+
                 val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 70
                 val width = dialogBinding.etWidth.text.toString().toIntOrNull() ?: 45
                 val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 50
@@ -132,6 +136,12 @@ object DialogUtils {
 
                 lifecycleOwner.lifecycleScope.launch {
                     try {
+                        isSubmitting = true
+                        positiveButton.isEnabled = false
+                        negativeButton?.isEnabled = false
+                        dialog.setCanceledOnTouchOutside(false)
+                        dialog.setCancelable(false)
+
                         //вызов конструктора для передачи
                         val request = BoxRequest(
                             guid = "",
@@ -177,6 +187,14 @@ object DialogUtils {
                             .show()
                         soundManager.playError()
                         onError(e.localizedMessage ?: context.getString(R.string.unknown_error))
+                    } finally {
+                        if (dialog.isShowing) {
+                            isSubmitting = false
+                            positiveButton.isEnabled = true
+                            negativeButton?.isEnabled = true
+                            dialog.setCanceledOnTouchOutside(true)
+                            dialog.setCancelable(true)
+                        }
                     }
                 }
             }

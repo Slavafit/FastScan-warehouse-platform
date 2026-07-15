@@ -319,4 +319,11 @@
     <string name="app_version_summary">Version %1$s (%2$d)</string>
     <string name="party_detail_info">Warehouse: %1$s | Boxes: %2$d</string>
     <string name="party_detail_info_placeholder">Warehouse: - | Boxes: 0</string>
+    <string name="edit_box_tracking_title">Edit box tracking code</string>
+    <string name="box_tracking_empty">Enter the box tracking code</string>
+    <string name="box_tracking_unchanged">Tracking code was not changed</string>
+    <string name="box_tracking_updated">Box tracking code updated</string>
+    <string name="error_update_box_tracking">Could not update box tracking code</string>
+    <string name="paste_from_clipboard">Paste</string>
+    <string name="clipboard_empty">Clipboard is empty</string>
 </resources>

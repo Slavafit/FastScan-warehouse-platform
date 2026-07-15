@@ -1,6 +1,8 @@
 package com.ocr.fastscan.ui
 
 import android.app.Activity
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -114,6 +116,10 @@ class BoxDetailFragment : BaseFragment() {
             ScanUtils.launchCamera(requireContext(), "barcode", scanLauncher)
         }
 
+        binding.btnPasteOrderTrack.setOnClickListener {
+            pasteOrderTrackFromClipboard()
+        }
+
         binding.btnSaveSizes.setOnClickListener {
             updateSizes()
         }
@@ -131,6 +137,25 @@ class BoxDetailFragment : BaseFragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+    }
+
+    private fun pasteOrderTrackFromClipboard() {
+        val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val pastedTrack = clipboard.primaryClip
+            ?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)
+            ?.coerceToText(requireContext())
+            ?.toString()
+            ?.trim()
+            .orEmpty()
+
+        if (pastedTrack.isBlank()) {
+            Toast.makeText(requireContext(), R.string.clipboard_empty, Toast.LENGTH_SHORT).show()
+            soundManager.playError()
+            return
+        }
+
+        addOrderByTrack(pastedTrack)
     }
 
     private fun loadOrdersInBox() {

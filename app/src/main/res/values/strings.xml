@@ -335,4 +335,11 @@
     <string name="app_version_summary">Версия %1$s (%2$d)</string>
     <string name="party_detail_info">Склад: %1$s | Коробок: %2$d</string>
     <string name="party_detail_info_placeholder">Склад: - | Коробок: 0</string>
+    <string name="edit_box_tracking_title">Редактировать трек коробки</string>
+    <string name="box_tracking_empty">Введите трек коробки</string>
+    <string name="box_tracking_unchanged">Трек не изменен</string>
+    <string name="box_tracking_updated">Трек коробки обновлен</string>
+    <string name="error_update_box_tracking">Не удалось обновить трек коробки</string>
+    <string name="paste_from_clipboard">Вставить</string>
+    <string name="clipboard_empty">Буфер обмена пуст</string>
 </resources>

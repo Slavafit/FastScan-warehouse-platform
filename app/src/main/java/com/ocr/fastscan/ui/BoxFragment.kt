@@ -184,9 +184,9 @@ class BoxFragment : BaseFragment() {
                     .mapNotNull { box -> box.trackingCode?.let { it to box } }
                     .toMap()
                 val updatedList = boxesAdapter.currentList.map { currentBox ->
-                    calculatedByGuid[currentBox.guid]
-                        ?: calculatedByTracking[currentBox.trackingCode]
-                        ?: currentBox
+                    val calculatedWeight = calculatedByGuid[currentBox.guid]?.grossWeight
+                        ?: calculatedByTracking[currentBox.trackingCode]?.grossWeight
+                    if (calculatedWeight == null) currentBox else currentBox.copy(grossWeight = calculatedWeight)
                 }
                 boxesAdapter.submitList(updatedList)
             }
@@ -216,7 +216,7 @@ class BoxFragment : BaseFragment() {
             setSingleLine(true)
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
             setText(box.trackingCode.orEmpty())
-            setSelection(text.length)
+            selectAll()
             hint = getString(R.string.tracking_code)
             val horizontalPadding = (24 * resources.displayMetrics.density).toInt()
             setPadding(horizontalPadding, paddingTop, horizontalPadding, paddingBottom)
@@ -254,6 +254,7 @@ class BoxFragment : BaseFragment() {
 
     private fun updateBoxTracking(box: BoxItem, newTrackingCode: String, dialog: AlertDialog) {
         if (isUpdatingTracking) return
+        weightLoadRequestId++
         viewLifecycleOwner.lifecycleScope.launch {
             _binding?.progressBar?.visibility = View.VISIBLE
             try {

@@ -195,6 +195,7 @@
     <string name="part">Lote %1$s</string>
     <string name="no_party_name">Sin nombre</string>
     <string name="new_part">Creación de un nuevo lote</string>
+    <string name="create_party">Nuevo lote</string>
     <string name="input_part">Nombre del lote: KG (solo números)</string>
     <string name="track_code">Código de seguimiento: %1$s</string>
     <string name="part_name">Código de despachos: %1$s</string>

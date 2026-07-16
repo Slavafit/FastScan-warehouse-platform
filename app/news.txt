@@ -1,3 +1,6 @@
+1.8 (code 8)
+- Refined party action buttons with softer color, elevation, and clearer create-party action.
+
 1.7 (code 7)
 - Improved the party detail UI and box cards.
 - Made the add-box action clearer and easier to reach.

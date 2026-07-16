@@ -199,6 +199,7 @@
     <string name="part">Batch %1$s</string>
     <string name="no_party_name">No name</string>
     <string name="new_part">Creation of a new batch</string>
+    <string name="create_party">New batch</string>
     <string name="input_part">Batch name KG (numbers only)</string>
     <string name="track_code">Track code: %1$s</string>
     <string name="part_name">Batch code: %1$s</string>

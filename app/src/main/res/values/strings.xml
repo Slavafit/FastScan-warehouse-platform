@@ -238,6 +238,7 @@
     <string name="part">Партия %1$s</string>
     <string name="no_party_name">Без названия</string>
     <string name="new_part">Создание новой партии</string>
+    <string name="create_party">Новая партия</string>
     <string name="input_part">Название партии KG(только цифры)</string>
     <string name="track_code">Трек-код: %1$s</string>
     <string name="part_name">Код партии: %1$s</string>

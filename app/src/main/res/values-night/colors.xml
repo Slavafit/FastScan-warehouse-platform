@@ -10,6 +10,9 @@
     <color name="app_icon_tint">#E0E4E1</color>
     <color name="card_stroke">#59615B</color>
     <color name="card_stroke_highlight">#81C784</color>
+    <color name="action_button_background">#CC81C784</color>
+    <color name="action_button_text">#102313</color>
+    <color name="action_button_outline">#9981C784</color>
     <color name="status_open_background">#1E3D25</color>
     <color name="status_open_text">#A5D6A7</color>
     <color name="status_finished_background">#33383A</color>

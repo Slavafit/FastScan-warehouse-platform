@@ -107,7 +107,10 @@ class PartyDetailFragment : BaseFragment() {
                     currentBoxes = boxes // Сохраняем список
                     boxesAdapter.submitList(boxes)
                     currentBinding.tvInfo.text = getString(R.string.party_detail_info, "BMG", boxes.size)
-                    loadBoxOrderCounts(boxes, ++orderCountLoadRequestId)
+                    
+                    // ВРЕМЕННО ОТКЛЮЧЕНО: Подсчет заказов вызывает вылеты
+                    // loadBoxOrderCounts(boxes, ++orderCountLoadRequestId)
+
                     Log.d("PartyDetail", "Loaded ${boxes.size} boxes for report")
                 }
             } catch (e: CancellationException) {

@@ -386,18 +386,54 @@ class ScanFragment : BaseFragment() {
 
     private fun showSearchClientDialog() {
         val dialogBinding = DialogSearchClientBinding.inflate(layoutInflater)
-        AlertDialog.Builder(requireContext())
+        
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.search_client_title)
             .setCancelable(false)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.search) { _, _ ->
+            .setPositiveButton(R.string.search, null) // Обработаем клик вручную для скрытия клавиатуры
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val searchBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            searchBtn.setOnClickListener {
+                // Прячем клавиатуру перед выполнением поиска
+                hideKeyboard(dialog.currentFocus ?: dialogBinding.root)
+
                 val first = dialogBinding.etFirstName.text.toString().trim()
                 val last = dialogBinding.etLastName.text.toString().trim()
-                if (first.isNotEmpty() || last.isNotEmpty()) searchClientByName(first, last)
-                else Toast.makeText(requireContext(), getString(R.string.input_name_surname), Toast.LENGTH_SHORT).show()
+                if (first.isNotEmpty() || last.isNotEmpty()) {
+                    searchClientByName(first, last)
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(requireContext(), getString(R.string.input_name_surname), Toast.LENGTH_SHORT).show()
+                }
             }
-            .setNegativeButton(R.string.cancel, null)
-            .show()
+        }
+
+        // Позволяем запустить поиск кнопкой Enter/Search на клавиатуре
+        val editorActionListener = android.widget.TextView.OnEditorActionListener { v, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard(v)
+                val first = dialogBinding.etFirstName.text.toString().trim()
+                val last = dialogBinding.etLastName.text.toString().trim()
+                if (first.isNotEmpty() || last.isNotEmpty()) {
+                    searchClientByName(first, last)
+                    dialog.dismiss()
+                } else {
+                    Toast.makeText(requireContext(), getString(R.string.input_name_surname), Toast.LENGTH_SHORT).show()
+                }
+                true
+            } else false
+        }
+        
+        dialogBinding.etFirstName.imeOptions = EditorInfo.IME_ACTION_SEARCH
+        dialogBinding.etLastName.imeOptions = EditorInfo.IME_ACTION_SEARCH
+        dialogBinding.etFirstName.setOnEditorActionListener(editorActionListener)
+        dialogBinding.etLastName.setOnEditorActionListener(editorActionListener)
+
+        dialog.show()
     }
 
     private fun searchClientByName(first: String, last: String) {

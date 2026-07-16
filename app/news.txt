@@ -1,3 +1,6 @@
+2.8 (code 17)
+- Cleaned the settings screen code, removed broken comments and hardcoded email license text.
+
 2.7 (code 16)
 - Refreshed scan screen action icons while keeping the existing compact layout unchanged.
 

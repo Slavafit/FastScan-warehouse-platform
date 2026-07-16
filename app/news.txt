@@ -1,3 +1,12 @@
+2.2 (code 11)
+- Refreshed the unpacked orders screen UI with a cleaner header, search area, cards, and report action.
+
+2.1 (code 10)
+- Fixed the party filter button spacing so it is not clipped at the top.
+
+2.0 (code 9)
+- Major UI refresh for party screens: updated party list, party details, cards, and action buttons.
+
 1.8 (code 8)
 - Refined party action buttons with softer color, elevation, and clearer create-party action.
 

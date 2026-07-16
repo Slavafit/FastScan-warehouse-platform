@@ -54,7 +54,9 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_menu_preferences"
+                    android:contentDescription="@string/settings"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_settings"
                     app:tint="@color/app_icon_tint" />
             </RelativeLayout>
 
@@ -67,8 +69,26 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:hint="@string/scan_or_input" />
-                <ImageButton android:id="@+id/btnScanTrack" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_camera" />
-                <ImageButton android:id="@+id/btnPrint" android:layout_width="48dp" android:layout_height="48dp" android:src="@android:drawable/ic_menu_save" android:visibility="gone" />
+                <ImageButton
+                    android:id="@+id/btnScanTrack"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/scan_track"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_scan"
+                    app:tint="@color/app_icon_tint" />
+
+                <ImageButton
+                    android:id="@+id/btnPrint"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/print_label"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_print"
+                    android:visibility="gone"
+                    app:tint="@color/app_icon_tint" />
             </LinearLayout>
 
             <Button android:id="@+id/btnGenerateOnza" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/generate_track" android:textSize="12sp" style="@style/Widget.MaterialComponents.Button.TextButton"/>
@@ -125,13 +145,20 @@
                     android:id="@+id/btnScanKg"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@android:drawable/ic_menu_camera"/>
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/scan_kg"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_scan"
+                    app:tint="@color/app_icon_tint" />
                 <ImageButton
                     android:id="@+id/btnSearchClient"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@android:drawable/ic_menu_search"
-                    android:contentDescription="@string/search_client" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/search_client"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/app_icon_tint" />
             </LinearLayout>
 
             <Space android:layout_width="match_parent" android:layout_height="16dp" />
@@ -157,7 +184,11 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginBottom="2dp"
-                    android:src="@android:drawable/ic_dialog_dialer"/>
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/hint_scan_weight"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_scale"
+                    app:tint="@color/app_icon_tint" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnVolumeCalc"
@@ -242,7 +273,8 @@
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
                 android:text="@string/find_order"
-                app:icon="@android:drawable/ic_menu_search" />
+                app:icon="@drawable/ic_search"
+                app:iconTint="@color/app_icon_tint" />
 
         </LinearLayout>
     </ScrollView>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">FastScan</string>
+    <string name="settings">Настройки</string>
 
     <string name="language_settings">🌍 Язык приложения</string>
     <string name="language">Language</string>

@@ -4,6 +4,7 @@
     <string name="language">Idioma</string>
     <string name="language_summary">idioma de app</string>
     <string name="app_name">FastScan Pro</string>
+    <string name="settings">Configuración</string>
     <string name="server_settings">💻⚙️ Configuración del servidor</string>
     <string name="server_url_title">URL del servidor</string>
     <string name="server_url_summary">Por defecto: https://onza-api.ibm.kg</string>

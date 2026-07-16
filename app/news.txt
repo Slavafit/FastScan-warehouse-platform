@@ -1,3 +1,6 @@
+2.7 (code 16)
+- Refreshed scan screen action icons while keeping the existing compact layout unchanged.
+
 2.6 (code 15)
 - Kept the license device id in backed-up app preferences so reinstalling the app can keep the same license request number.
 

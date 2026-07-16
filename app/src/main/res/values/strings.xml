@@ -112,7 +112,7 @@
     <string name="generate_track">✨ ГЕНЕРИРОВАТЬ ONZA</string>
 
     <!-- кнопки -->
-    <string name="refresh">🔄 Обновить</string>
+    <string name="refresh">Обновить</string>
     <string name="back">↩️ Hазад</string>
     <string name="save">Сохранить</string>
     <string name="ok">OK</string>
@@ -227,6 +227,7 @@
     <string name="total_weight">Итого: 0.00 кг</string>
     <string name="tracking_code">Трек-код</string>
     <string name="order_deleted">Заказ удалён</string>
+    <string name="delete_order">Удалить заказ</string>
     <string name="search_error">Ошибка поиска: %1$d</string>
     <string name="order_not_found">Заказ не найден</string>
     <string name="weight_total">Общий вес: %1$.2f кг</string>

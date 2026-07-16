@@ -89,7 +89,7 @@
     <string name="scan_track">Scan order track</string>
     <string name="save_sizes">Save sizes</string>
     <string name="print_label">🖨️ Print label</string>
-    <string name="refresh">🔄 Refresh</string>
+    <string name="refresh">Refresh</string>
     <string name="back">↩️ Back</string>
     <string name="save">Save</string>
     <string name="apply">APPLY</string>
@@ -187,6 +187,7 @@
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Tracking code</string>
     <string name="order_deleted">Order deleted</string>
+    <string name="delete_order">Delete order</string>
     <string name="search_error">Search error: %1$d</string>
     <string name="order_not_found">Order not found</string>
     <string name="weight_total">Total weight: %1$.2f kg</string>

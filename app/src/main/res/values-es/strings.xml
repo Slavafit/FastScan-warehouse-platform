@@ -86,7 +86,7 @@
     <string name="scan_track">Escanear número de seguimiento del pedido</string>
     <string name="save_sizes">Guardar tamaños</string>
     <string name="print_label">🖨️ Imprimir etiqueta</string>
-    <string name="refresh">🔄 Actualizar</string>
+    <string name="refresh">Actualizar</string>
     <string name="back">↩️ Atras</string>
     <string name="save">Guardar</string>
     <string name="apply">APRENDER</string>
@@ -185,6 +185,7 @@
     <string name="total_weight">Total: 0.00 kg</string>
     <string name="tracking_code">Código de seguimiento</string>
     <string name="order_deleted">Pedido eliminado</string>
+    <string name="delete_order">Eliminar pedido</string>
     <string name="search_error">Error de búsqueda: %1$d</string>
     <string name="order_not_found">Pedido no encontrado</string>
     <string name="weight_total">Weight total: %1$.2f kg</string>

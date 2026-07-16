@@ -20,6 +20,8 @@
     <color name="action_button_background">#E62E7D32</color>
     <color name="action_button_text">#FFFFFF</color>
     <color name="action_button_outline">#802E7D32</color>
+    <color name="delete_icon_tint">#B3261E</color>
+    <color name="delete_button_background">#14B3261E</color>
     <color name="status_open_background">#E8F5E9</color>
     <color name="status_open_text">#1B5E20</color>
     <color name="status_finished_background">#ECEFF1</color>

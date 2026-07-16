@@ -91,6 +91,7 @@
         android:layout_marginTop="10dp"
         android:clipToPadding="false"
         android:overScrollMode="never"
+        android:paddingEnd="16dp"
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -100,6 +101,8 @@
             android:id="@+id/chipGroupDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:clipToPadding="false"
+            android:paddingEnd="16dp"
             app:singleSelection="true">
 
             <com.google.android.material.chip.Chip

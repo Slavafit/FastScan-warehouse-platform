@@ -1,3 +1,12 @@
+2.6 (code 15)
+- Kept the license device id in backed-up app preferences so reinstalling the app can keep the same license request number.
+
+2.5 (code 14)
+- Fixed date filter chips on the unpacked orders screen so the last filter is not clipped.
+
+2.4 (code 13)
+- Replaced the order remove cross in box details with a trash icon.
+
 2.3 (code 12)
 - Refreshed the boxes screen UI, box cards, and box detail screen to match the new party screens.
 - Added a visible refresh action for the boxes list.

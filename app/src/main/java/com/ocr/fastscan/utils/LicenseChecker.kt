@@ -12,6 +12,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.net.URLEncoder
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class LicenseChecker(private val userId: String) {
@@ -162,8 +163,20 @@ class LicenseChecker(private val userId: String) {
     }
 
     private fun getDeviceId(context: Context): String {
-        return Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
-            ?: "unknown_device"
+        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+        prefs.getString(KEY_LICENSE_DEVICE_ID, null)
+            ?.takeIf { it.isNotBlank() }
+            ?.let { return it }
+
+        val androidId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+            ?.takeIf { it.isNotBlank() && it != BROKEN_ANDROID_ID }
+            ?: UUID.randomUUID().toString()
+
+        prefs.edit()
+            .putString(KEY_LICENSE_DEVICE_ID, androidId)
+            .apply()
+
+        return androidId
     }
 
     private fun getAppName(context: Context): String {
@@ -194,6 +207,8 @@ class LicenseChecker(private val userId: String) {
 
     companion object {
         private const val LICENSE_SERVER_URL = "https://license-server.slavafit.workers.dev/activate"
+        private const val KEY_LICENSE_DEVICE_ID = "license_device_id"
+        private const val BROKEN_ANDROID_ID = "9774d56d682e549c"
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
         private val ACCESS_STATUSES = setOf(LicenseStatus.TRIAL, LicenseStatus.ACTIVE)
         private val gson = Gson()

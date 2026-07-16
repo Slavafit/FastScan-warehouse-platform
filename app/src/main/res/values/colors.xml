@@ -17,6 +17,10 @@
     <color name="app_icon_tint">#424242</color>
     <color name="card_stroke">#D7DDD8</color>
     <color name="card_stroke_highlight">#2E7D32</color>
+    <color name="status_open_background">#E8F5E9</color>
+    <color name="status_open_text">#1B5E20</color>
+    <color name="status_finished_background">#ECEFF1</color>
+    <color name="status_finished_text">#546E7A</color>
     <color name="bottom_nav_active">#2E7D32</color>
     <color name="bottom_nav_inactive">#616161</color>
     <color name="box_card_highlight">#E8F5E9</color>

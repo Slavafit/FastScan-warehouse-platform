@@ -67,6 +67,7 @@
     <string name="show_all_boxes">👀 Show all boxes</string>
     <string name="no_boxes">There are no open boxes. Create a new one.</string>
     <string name="no_open_parties">There are no open parties</string>
+    <string name="no_parties_found">No batches found</string>
 <!--    <string name="box_number">Box number</string>-->
     <string name="box_track">Box number</string>
     <string name="finish_part">Finish</string>
@@ -209,6 +210,8 @@
     <string name="box_added">The box was added</string>
     <string name="show_all">Show all</string>
     <string name="in_work">In work</string>
+    <string name="party_status_open">In work</string>
+    <string name="party_status_finished">Finished</string>
     <string name="restore_party_title">Restore to work?</string>
     <string name="restore_party_message">Are you sure you want to restore batch %1$s to work?</string>
     <string name="party_restored">Batch restored to work</string>

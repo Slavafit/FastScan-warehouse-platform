@@ -1,3 +1,7 @@
+6
+- Improved the party list UI: clearer header, filter button, readable cards, and visible party status.
+- Replaced hardcoded empty-party text with localized resources.
+
 5
 - Returned visible version code in the app version text.
 

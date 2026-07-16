@@ -3,6 +3,7 @@ package com.ocr.fastscan.ui
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -23,37 +24,33 @@ class PartiesAdapter(
     }
 
     override fun onBindViewHolder(holder: PartyViewHolder, position: Int) {
-        val party = getItem(position)
-        holder.bind(party)
+        holder.bind(getItem(position))
     }
 
     inner class PartyViewHolder(private val binding: ItemPartyBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(party: Partial) {
             val context = binding.root.context
 
+            binding.tvPartialName.text = PartyNumberFormatter.display(party.partial_name)
             binding.tvPartialCode.text = context.getString(R.string.track_code, party.partial_code)
-            binding.tvPartialName.text = context.getString(
-                R.string.part_name,
-                PartyNumberFormatter.display(party.partial_name)
-            )
             binding.tvWarehouse.text = context.getString(R.string.country, party.warehouse_name)
             binding.tvBoxCount.text = context.getString(R.string.boxes_count, party.boxCount)
+            binding.tvDate.text = context.getString(R.string.date, formatPartyDate(context, party.date_created))
 
-            val dateCreated = formatBoxDate(context, party.date_created)
-            binding.tvDate.text = context.getString(R.string.date, dateCreated)
-
-            // Визуальное отличие завершенной партии
             if (party.status != 0) {
-                binding.root.alpha = 0.6f
-                binding.tvPartialName.append(context.getString(R.string.finished_label))
+                binding.tvStatus.text = context.getString(R.string.party_status_finished)
+                binding.tvStatus.setBackgroundResource(R.drawable.bg_status_finished)
+                binding.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.status_finished_text))
             } else {
-                binding.root.alpha = 1.0f
+                binding.tvStatus.text = context.getString(R.string.party_status_open)
+                binding.tvStatus.setBackgroundResource(R.drawable.bg_status_open)
+                binding.tvStatus.setTextColor(ContextCompat.getColor(context, R.color.status_open_text))
             }
 
             binding.root.setOnClickListener {
                 onClick(party)
             }
-            
+
             binding.root.setOnLongClickListener {
                 onLongClick(party)
                 true
@@ -61,16 +58,15 @@ class PartiesAdapter(
         }
     }
 
-    private fun formatBoxDate(context: Context, isoDate: String?): String {
+    private fun formatPartyDate(context: Context, isoDate: String?): String {
         if (isoDate.isNullOrBlank()) return context.getString(R.string.no_date)
-        try {
+        return try {
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
             inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
             val date = inputFormat.parse(isoDate) ?: return context.getString(R.string.no_date)
-            val outputFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-            return outputFormat.format(date)
+            SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(date)
         } catch (e: Exception) {
-            return isoDate
+            isoDate
         }
     }
 }

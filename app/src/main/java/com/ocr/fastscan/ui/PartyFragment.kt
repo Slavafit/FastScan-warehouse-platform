@@ -8,12 +8,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
-import com.ocr.fastscan.data.model.*
+import com.ocr.fastscan.data.model.Partial
+import com.ocr.fastscan.data.model.PartialCreateRequest
+import com.ocr.fastscan.data.model.PartialUpdateRequest
 import com.ocr.fastscan.databinding.DialogCreatePartyBinding
 import com.ocr.fastscan.databinding.FragmentPartyBinding
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.coroutines.cancellation.CancellationException
 
 class PartyFragment : BaseFragment() {
@@ -82,33 +85,37 @@ class PartyFragment : BaseFragment() {
 
     private fun loadParties() {
         launchOnViewLifecycle {
-            binding.progressBar.visibility = View.VISIBLE
-            binding.tvNoParties.visibility = View.GONE
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
+            activeBinding.tvNoParties.visibility = View.GONE
 
             try {
                 val typeParam = if (showAll) null else 0
                 val response = apiService.getPartials(typeParam)
-                
-                if (_binding == null) return@launchOnViewLifecycle
-                
+                val currentBinding = _binding ?: return@launchOnViewLifecycle
+
                 if (response.isSuccessful) {
-                    val parties = response.body() ?: emptyList()
-                    
-                    // Сортировка: самые новые сверху
-                    val sortedParties = parties.sortedByDescending { it.date_created }
-                    
-                    binding.tvNoParties.visibility = if (sortedParties.isEmpty()) View.VISIBLE else View.GONE
-                    binding.tvNoParties.text = if (showAll) "Партий не найдено" else getString(R.string.no_open_parties)
+                    val sortedParties = response.body()
+                        .orEmpty()
+                        .sortedByDescending { it.date_created }
+
+                    currentBinding.tvNoParties.visibility = if (sortedParties.isEmpty()) View.VISIBLE else View.GONE
+                    currentBinding.tvNoParties.text = if (showAll) {
+                        getString(R.string.no_parties_found)
+                    } else {
+                        getString(R.string.no_open_parties)
+                    }
                     partiesAdapter.submitList(sortedParties)
                 } else {
-                    binding.tvNoParties.text = getString(R.string.error_load)
-                    binding.tvNoParties.visibility = View.VISIBLE
+                    currentBinding.tvNoParties.text = getString(R.string.error_load)
+                    currentBinding.tvNoParties.visibility = View.VISIBLE
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                if (e is CancellationException) throw e
                 Log.e("PartyFragment", "Load error", e)
-                binding.tvNoParties.text = getString(R.string.net_error)
-                binding.tvNoParties.visibility = View.VISIBLE
+                _binding?.tvNoParties?.text = getString(R.string.net_error)
+                _binding?.tvNoParties?.visibility = View.VISIBLE
             } finally {
                 _binding?.progressBar?.visibility = View.GONE
             }
@@ -128,7 +135,8 @@ class PartyFragment : BaseFragment() {
 
     private fun restoreParty(party: Partial) {
         launchOnViewLifecycle {
-            binding.progressBar.visibility = View.VISIBLE
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
             try {
                 val request = PartialUpdateRequest(
                     guid = party.guid,
@@ -145,11 +153,13 @@ class PartyFragment : BaseFragment() {
                     showToast(getString(R.string.server_error, response.code()))
                     soundManager.playError()
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 showToast(R.string.net_error_short)
                 soundManager.playError()
             } finally {
-                binding.progressBar.visibility = View.GONE
+                _binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -163,7 +173,7 @@ class PartyFragment : BaseFragment() {
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.create, null) 
+            .setPositiveButton(R.string.create, null)
             .setNegativeButton(R.string.cancel, null)
             .create()
 
@@ -179,7 +189,7 @@ class PartyFragment : BaseFragment() {
                 val finalName = PartyNumberFormatter.normalize(inputName)
 
                 button.isEnabled = false
-                
+
                 launchOnViewLifecycle {
                     try {
                         val request = PartialCreateRequest(generatedCode, finalName)
@@ -196,6 +206,8 @@ class PartyFragment : BaseFragment() {
                             showToast(getString(R.string.error_code, response.code()))
                             soundManager.playError()
                         }
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         button.isEnabled = true
                         showToast(R.string.net_error_short)
@@ -208,6 +220,7 @@ class PartyFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
+        _binding?.rvParties?.adapter = null
         super.onDestroyView()
         _binding = null
     }

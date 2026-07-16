@@ -64,6 +64,7 @@
     <string name="show_all_boxes">👀 Mostrar todas las cajas</string>
     <string name="no_boxes">No hay cajas. Crea una nueva.</string>
     <string name="no_open_parties">No hay lote de cajas abiertas.</string>
+    <string name="no_parties_found">No se encontraron lotes</string>
 <!--    <string name="box_number">Número de caja</string>-->
     <string name="box_track">Número de caja</string>
     <string name="finish_part">Completar</string>
@@ -205,6 +206,8 @@
     <string name="box_added">La caja fue añadida</string>
     <string name="show_all">Mostrar todo</string>
     <string name="in_work">En trabajo</string>
+    <string name="party_status_open">En trabajo</string>
+    <string name="party_status_finished">Finalizado</string>
     <string name="restore_party_title">¿Restaurar al trabajo?</string>
     <string name="restore_party_message">¿Está seguro de que desea restaurar el lote %1$s al trabajo?</string>
     <string name="party_restored">Lote restaurado al trabajo</string>

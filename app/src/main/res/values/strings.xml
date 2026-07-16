@@ -88,6 +88,7 @@
 
     <string name="parties">Партии</string>
     <string name="no_open_parties">Нет открытых партий</string>
+    <string name="no_parties_found">Партий не найдено</string>
     <string name="box_track">Номер коробки %s</string>
     <string name="finish_part">Завершить</string>
     <string name="finish_part_property">Завершить партию %1$s ?</string>
@@ -248,6 +249,8 @@
     <string name="box_added">Коробка добавлена</string>
     <string name="show_all">Показать все</string>
     <string name="in_work">В работе</string>
+    <string name="party_status_open">В работе</string>
+    <string name="party_status_finished">Завершена</string>
     <string name="restore_party_title">Вернуть в работу?</string>
     <string name="restore_party_message">Вы уверены, что хотите вернуть партию %1$s в работу?</string>
     <string name="party_restored">Партия возвращена в работу</string>

@@ -332,7 +332,7 @@
     <string name="connection_error_title">Не удалось проверить лицензию</string>
     <string name="connection_error_message">Проверьте интернет или повторите позже: сервер лицензий сейчас недоступен.</string>
     <string name="app_version_title">Версия приложения</string>
-    <string name="app_version_summary">Версия %1$s (%2$d)</string>
+    <string name="app_version_summary">Версия %1$s (код %2$d)</string>
     <string name="party_detail_info">Склад: %1$s | Коробок: %2$d</string>
     <string name="party_detail_info_placeholder">Склад: - | Коробок: 0</string>
     <string name="edit_box_tracking_title">Редактировать трек коробки</string>

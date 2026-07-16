@@ -12,8 +12,6 @@ import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.DialogSelectBoxBinding
 import com.ocr.fastscan.databinding.FragmentPartyDetailBinding
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -29,9 +27,7 @@ class PartyDetailFragment : BaseFragment() {
     private var partialCode: String = ""
     private var partialName: String = ""
     private var isFinishing = false
-    private var orderCountLoadRequestId = 0
-
-    // Храним актуальный список коробок отдельно от адаптера
+    // Keep the current box list available for the final party report.
     private var currentBoxes: List<BoxInPartial> = emptyList()
 
     private val displayPartyNumber: String
@@ -52,8 +48,6 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     companion object {
-        private const val BOX_ORDER_COUNT_BATCH_SIZE = 4
-
         fun newInstance(guid: String, codeid: String, code: String, name: String): PartyDetailFragment {
             return PartyDetailFragment().apply {
                 arguments = Bundle().apply {
@@ -104,12 +98,9 @@ class PartyDetailFragment : BaseFragment() {
                 val currentBinding = _binding ?: return@launchOnViewLifecycle
                 if (response.isSuccessful) {
                     val boxes = response.body() ?: emptyList()
-                    currentBoxes = boxes // Сохраняем список
+                    currentBoxes = boxes
                     boxesAdapter.submitList(boxes)
                     currentBinding.tvInfo.text = getString(R.string.party_detail_info, "BMG", boxes.size)
-                    
-                    // ВРЕМЕННО ОТКЛЮЧЕНО: Подсчет заказов вызывает вылеты
-                    // loadBoxOrderCounts(boxes, ++orderCountLoadRequestId)
 
                     Log.d("PartyDetail", "Loaded ${boxes.size} boxes for report")
                 }
@@ -120,43 +111,6 @@ class PartyDetailFragment : BaseFragment() {
             } finally {
                 _binding?.progressBar?.visibility = View.GONE
             }
-        }
-    }
-
-    private fun loadBoxOrderCounts(boxes: List<BoxInPartial>, requestId: Int) {
-        if (boxes.isEmpty()) return
-        launchOnViewLifecycle {
-            boxes.chunked(BOX_ORDER_COUNT_BATCH_SIZE).forEach { chunk ->
-                val countedBoxes = chunk.map { box ->
-                    async {
-                        if (box.orderCount != null) {
-                            box
-                        } else {
-                            box.copy(orderCount = loadOrderCount(box.tracking_code))
-                        }
-                    }
-                }.awaitAll()
-
-                if (_binding == null || requestId != orderCountLoadRequestId) return@launchOnViewLifecycle
-
-                val countedByGuid = countedBoxes.associateBy { it.guid }
-                currentBoxes = currentBoxes.map { currentBox ->
-                    countedByGuid[currentBox.guid] ?: currentBox
-                }
-                boxesAdapter.submitList(currentBoxes)
-            }
-        }
-    }
-
-    private suspend fun loadOrderCount(boxTracking: String): Int {
-        return try {
-            val response = apiService.getOrderDetailsBox(boxTracking)
-            if (response.isSuccessful) response.body()?.size ?: 0 else 0
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            Log.w("PartyDetail", "Failed to load order count for $boxTracking", e)
-            0
         }
     }
 
@@ -263,7 +217,7 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     private fun sharePartyReport() {
-        val boxes = currentBoxes // Используем наш надежный список
+        val boxes = currentBoxes
         if (boxes.isEmpty()) {
             Log.w("PartyDetail", "Report attempt with empty boxes list")
             return
@@ -305,7 +259,6 @@ class PartyDetailFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
-        orderCountLoadRequestId++
         _binding?.rvBoxes?.adapter = null
         super.onDestroyView()
         _binding = null

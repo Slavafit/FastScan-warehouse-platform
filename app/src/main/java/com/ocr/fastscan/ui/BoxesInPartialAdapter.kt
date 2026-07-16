@@ -33,7 +33,6 @@ class BoxesInPartialAdapter(
             binding.tvDimensions.text = getString(R.string.sizes, box.length, box.width, box.height)
             binding.tvGrossWeight.text = getString(R.string.weight_format, box.gross_weight)
             binding.tvVWeight.text = getString(R.string.volume_weight, box.v_weight)
-            binding.tvOrderCount.text = getString(R.string.orders_count, box.orderCount ?: 0)
 
             binding.root.setOnLongClickListener {
                 onLongClick(box)

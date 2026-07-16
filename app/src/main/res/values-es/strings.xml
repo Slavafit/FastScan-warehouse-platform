@@ -306,7 +306,7 @@
     <string name="connection_error_title">No se pudo comprobar la licencia</string>
     <string name="connection_error_message">Comprueba la conexión a internet o inténtalo más tarde: el servidor de licencias no está disponible.</string>
     <string name="app_version_title">Versión de la app</string>
-    <string name="app_version_summary">Versión %1$s (%2$d)</string>
+    <string name="app_version_summary">Versión %1$s (código %2$d)</string>
     <string name="party_detail_info">Almacén: %1$s | Cajas: %2$d</string>
     <string name="party_detail_info_placeholder">Almacén: - | Cajas: 0</string>
     <string name="edit_box_tracking_title">Editar código de seguimiento de la caja</string>

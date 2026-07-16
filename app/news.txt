@@ -1,0 +1,12 @@
+5
+- Returned visible version code in the app version text.
+
+4
+- Removed order count row from boxes inside a party.
+- Removed background order-count loading in PartyDetailFragment to avoid crashes and extra server requests.
+
+3
+- Improved box order scanning controls: primary scan button moved to the right, paste action made secondary.
+- Added app version display on the scan screen.
+- Added order count loading for boxes inside a party.
+- Hardened PartyDetailFragment async work against crashes after leaving the screen.

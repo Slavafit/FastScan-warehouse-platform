@@ -1,15 +1,19 @@
-6
+1.7 (code 7)
+- Improved the party detail UI and box cards.
+- Made the add-box action clearer and easier to reach.
+
+1.6 (code 6)
 - Improved the party list UI: clearer header, filter button, readable cards, and visible party status.
 - Replaced hardcoded empty-party text with localized resources.
 
-5
+1.5 (code 5)
 - Returned visible version code in the app version text.
 
-4
+1.4 (code 4)
 - Removed order count row from boxes inside a party.
 - Removed background order-count loading in PartyDetailFragment to avoid crashes and extra server requests.
 
-3
+1.3 (code 3)
 - Improved box order scanning controls: primary scan button moved to the right, paste action made secondary.
 - Added app version display on the scan screen.
 - Added order count loading for boxes inside a party.

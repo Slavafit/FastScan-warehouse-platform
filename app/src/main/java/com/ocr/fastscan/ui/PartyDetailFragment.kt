@@ -35,9 +35,9 @@ class PartyDetailFragment : BaseFragment() {
 
     private val boxesAdapter = BoxesInPartialAdapter { box ->
         val detailFragment = BoxDetailFragment.newInstance(
-            boxGuid = box.guid ?: "",
-            boxCodeid = box.codeid ?: "",
-            boxTracking = box.tracking_code ?: "",
+            boxGuid = box.guid,
+            boxCodeid = box.codeid,
+            boxTracking = box.tracking_code,
             boxWeight = box.gross_weight.toString(),
             partialName = partialName
         )
@@ -64,7 +64,7 @@ class PartyDetailFragment : BaseFragment() {
         arguments?.let {
             partialGuid = it.getString("partial_guid", "")
             partialCode = it.getString("partial_code", "")
-            partialName = it.getString("partial_name", "Без названия")
+            partialName = it.getString("partial_name", getString(R.string.no_party_name))
         }
     }
 

@@ -214,6 +214,8 @@
     <string name="show_all_boxes">👀 Показать все</string>
     <string name="no_boxes">Нет открытых коробок. Создайте новую.</string>
     <string name="add_new_box">Добавить новую коробку</string>
+    <string name="add_box_to_party">Добавить коробку</string>
+    <string name="party_detail_hint">Выберите открытую коробку и добавьте ее в эту партию.</string>
     <string name="new_box_number">Будет создан номер: …</string>
     <string name="length">Длина (см)</string>
     <string name="width">Ширина (см)</string>

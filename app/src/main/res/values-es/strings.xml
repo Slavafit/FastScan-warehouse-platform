@@ -172,6 +172,8 @@
 
 
     <string name="add_new_box">Agregar nueva caja</string>
+    <string name="add_box_to_party">Agregar caja</string>
+    <string name="party_detail_hint">Selecciona una caja abierta y agrégala a este lote.</string>
     <string name="new_box_number">Se creará un número: ...</string>
     <string name="length">Longitud (cm)</string>
     <string name="width">Ancho (cm)</string>

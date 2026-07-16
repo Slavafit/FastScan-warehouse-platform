@@ -1,3 +1,7 @@
+2.3 (code 12)
+- Refreshed the boxes screen UI, box cards, and box detail screen to match the new party screens.
+- Added a visible refresh action for the boxes list.
+
 2.2 (code 11)
 - Refreshed the unpacked orders screen UI with a cleaner header, search area, cards, and report action.
 

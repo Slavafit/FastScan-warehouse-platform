@@ -88,6 +88,10 @@ class BoxFragment : BaseFragment() {
             )
         }
 
+        binding.btnRefresh.setOnClickListener {
+            loadBoxes(isOpenOnly = !isShowingAllBoxes)
+        }
+
         binding.btnShowAll.setOnClickListener {
             isShowingAllBoxes = !isShowingAllBoxes
             binding.rvBoxes.animate()
@@ -387,6 +391,8 @@ class BoxFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
+        weightLoadRequestId++
+        _binding?.rvBoxes?.adapter = null
         super.onDestroyView()
         _binding = null
     }

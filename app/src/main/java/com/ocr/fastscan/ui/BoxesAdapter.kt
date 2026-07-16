@@ -18,50 +18,6 @@ class BoxesAdapter(
 
     private var highlightedTrackingCode: String? = null
 
-    class ViewHolder(private val binding: ItemBoxBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(
-            box: BoxItem,
-            isHighlighted: Boolean,
-            onClick: (BoxItem) -> Unit,
-            onLongClick: (BoxItem) -> Unit
-        ) {
-            binding.tvTrackingCode.text = box.trackingCode
-            binding.tvGrossWeight.text = getString(R.string.weight_format, box.grossWeight?: 0.0)
-            binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0)
-            binding.tvSizes.text = getString(R.string.sizes, box.length?: 0.0, box.width?: 0.0, box.height?: 0.0)
-            binding.tvOrderCount.text = getString(R.string.orders_count, box.orderCount?: 0.0)
-            binding.tvDate.text = box.dateCreated
-
-            val context = binding.root.context
-            val backgroundColor = if (isHighlighted) {
-                ContextCompat.getColor(context, R.color.box_card_highlight)
-            } else {
-                MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorSurface)
-            }
-            binding.root.setCardBackgroundColor(backgroundColor)
-            binding.root.cardElevation = dp(if (isHighlighted) 10f else 3f)
-            binding.root.strokeColor = ContextCompat.getColor(
-                context,
-                if (isHighlighted) R.color.card_stroke_highlight else R.color.card_stroke
-            )
-            binding.root.strokeWidth = dp(if (isHighlighted) 2f else 1f).toInt()
-
-            binding.root.setOnClickListener { onClick(box) }
-            binding.root.setOnLongClickListener {
-                onLongClick(box)
-                true
-            }
-        }
-        // Важно: добавляем функцию getString в ViewHolder
-        private fun getString(resId: Int, vararg formatArgs: Any): String {
-            return itemView.context.getString(resId, *formatArgs)
-        }
-
-        private fun dp(value: Float): Float {
-            return value * itemView.resources.displayMetrics.density
-        }
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemBoxBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
@@ -90,8 +46,55 @@ class BoxesAdapter(
         if (position >= 0) notifyItemChanged(position)
     }
 
+    class ViewHolder(private val binding: ItemBoxBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(
+            box: BoxItem,
+            isHighlighted: Boolean,
+            onClick: (BoxItem) -> Unit,
+            onLongClick: (BoxItem) -> Unit
+        ) {
+            binding.tvTrackingCode.text = box.trackingCode
+            binding.tvGrossWeight.text = getString(R.string.weight_format, box.grossWeight ?: 0.0)
+            binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0)
+            binding.tvSizes.text = getString(R.string.sizes, box.length ?: 0, box.width ?: 0, box.height ?: 0)
+            binding.tvOrderCount.text = getString(R.string.orders_count, box.orderCount ?: 0)
+            binding.tvDate.text = box.dateCreated
+
+            val context = binding.root.context
+            val backgroundColor = if (isHighlighted) {
+                ContextCompat.getColor(context, R.color.box_card_highlight)
+            } else {
+                MaterialColors.getColor(binding.root, com.google.android.material.R.attr.colorSurface)
+            }
+            binding.root.setCardBackgroundColor(backgroundColor)
+            binding.root.cardElevation = dp(if (isHighlighted) 10f else 3f)
+            binding.root.strokeColor = ContextCompat.getColor(
+                context,
+                if (isHighlighted) R.color.card_stroke_highlight else R.color.card_stroke
+            )
+            binding.root.strokeWidth = dp(if (isHighlighted) 2f else 1f).toInt()
+
+            binding.root.setOnClickListener { onClick(box) }
+            binding.root.setOnLongClickListener {
+                onLongClick(box)
+                true
+            }
+        }
+
+        private fun getString(resId: Int, vararg formatArgs: Any): String {
+            return itemView.context.getString(resId, *formatArgs)
+        }
+
+        private fun dp(value: Float): Float {
+            return value * itemView.resources.displayMetrics.density
+        }
+    }
+
     object DiffCallback : DiffUtil.ItemCallback<BoxItem>() {
-        override fun areItemsTheSame(oldItem: BoxItem, newItem: BoxItem): Boolean = oldItem.guid == newItem.guid
-        override fun areContentsTheSame(oldItem: BoxItem, newItem: BoxItem): Boolean = oldItem == newItem
+        override fun areItemsTheSame(oldItem: BoxItem, newItem: BoxItem): Boolean =
+            oldItem.guid == newItem.guid
+
+        override fun areContentsTheSame(oldItem: BoxItem, newItem: BoxItem): Boolean =
+            oldItem == newItem
     }
 }

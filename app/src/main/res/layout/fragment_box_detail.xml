@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/app_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -12,51 +12,92 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Шапка -->
-        <TextView
-            android:id="@+id/tvBoxNumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/box_track"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvGrossWeight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/total_weight"
-            android:textSize="16sp"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            android:id="@+id/tvVWeight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Объёмный вес: 0.0 кг"
-            android:textSize="16sp"
-            android:layout_marginTop="4dp" />
-
-        <TextView
-            android:id="@+id/tvOrderCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/orders"
-            android:textSize="16sp"
-            android:layout_marginTop="4dp" />
-
-        <!-- Кнопка сканирования трека -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBack"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="48dp"
+                android:text="@string/back"
+                android:textAllCaps="false" />
+
+            <TextView
+                android:id="@+id/tvBoxNumber"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:text="@string/box_track"
+                android:textColor="@color/app_text_primary"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/app_surface"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:id="@+id/tvGrossWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/total_weight"
+                    android:textColor="@color/app_text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvVWeight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/volume_weight"
+                    android:textColor="@color/app_text_secondary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvOrderCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/orders"
+                    android:textColor="@color/app_text_secondary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:baselineAligned="false"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPasteOrderTrack"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_marginEnd="8dp"
@@ -64,228 +105,246 @@
                 android:minWidth="0dp"
                 android:paddingHorizontal="8dp"
                 android:text="@string/paste_from_clipboard"
+                android:textAllCaps="false"
                 android:textColor="@color/app_primary"
                 android:textSize="14sp"
-                app:cornerRadius="10dp"
                 app:icon="@android:drawable/ic_menu_upload"
                 app:iconGravity="textStart"
                 app:iconPadding="4dp"
                 app:iconTint="@color/app_primary"
-                app:strokeColor="@color/app_primary" />
+                app:strokeColor="@color/action_button_outline" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAddOrder"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_weight="2"
+                android:elevation="6dp"
                 android:minWidth="0dp"
                 android:text="@string/scan_track"
-                android:textColor="@color/app_on_primary"
+                android:textAllCaps="false"
+                android:textColor="@color/action_button_text"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/app_primary"
-                app:cornerRadius="10dp"
+                app:backgroundTint="@color/action_button_background"
                 app:icon="@android:drawable/ic_menu_camera"
                 app:iconGravity="textStart"
                 app:iconPadding="8dp"
-                app:iconTint="@color/app_on_primary" />
+                app:iconTint="@color/action_button_text" />
         </LinearLayout>
 
-        <!-- Прогресс-бар -->
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:visibility="gone"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
 
-        <!-- Список заказов -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvOrders"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="14dp"
             android:nestedScrollingEnabled="false" />
 
-        <!-- Блок редактирования размеров и веса -->
-        <LinearLayout
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="24dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/edit_dimensions_and_weight"
-                android:textStyle="bold"
-                android:textSize="18sp" />
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="@color/app_surface"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="14dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/length"
-                        android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
-
-                    <EditText
-                        android:id="@+id/etLength"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:selectAllOnFocus="true"
-                        android:hint="@string/length"
-                        android:inputType="number"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/width"
-                        android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
-
-                    <EditText
-                        android:id="@+id/etWidth"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:selectAllOnFocus="true"
-                        android:hint="@string/width"
-                        android:inputType="number"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/height"
-                        android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
-
-                    <EditText
-                        android:id="@+id/etHeight"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:selectAllOnFocus="true"
-                        android:hint="@string/height"
-                        android:inputType="number"
-                        android:textSize="16sp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="12dp"
-                android:gravity="center_vertical">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/box_tare_weight"
-                        android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
-
-                    <EditText
-                        android:id="@+id/etBoxTareWeight"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:selectAllOnFocus="true"
-                        android:hint="@string/box_tare_weight"
-                        android:inputType="numberDecimal"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/gross_weight_total"
-                        android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp" />
-
-                    <EditText
-                        android:id="@+id/etGrossWeight"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:selectAllOnFocus="true"
-                        android:hint="@string/gross_weight_total"
-                        android:inputType="numberDecimal"
-                        android:textSize="16sp" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnSaveSizes"
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/save"
-                    android:backgroundTint="@color/app_primary"
-                    android:textColor="@color/app_on_primary" />
-            </LinearLayout>
-        </LinearLayout>
+                    android:text="@string/edit_dimensions_and_weight"
+                    android:textColor="@color/app_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
-        <!-- Кнопки действий -->
-        <Button
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/length"
+                            android:textColor="@color/app_text_secondary"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/etLength"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/length_l"
+                            android:inputType="number"
+                            android:selectAllOnFocus="true"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="8dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/width"
+                            android:textColor="@color/app_text_secondary"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/etWidth"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/width_w"
+                            android:inputType="number"
+                            android:selectAllOnFocus="true"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/height"
+                            android:textColor="@color/app_text_secondary"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/etHeight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/height_h"
+                            android:inputType="number"
+                            android:selectAllOnFocus="true"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/box_tare_weight"
+                            android:textColor="@color/app_text_secondary"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/etBoxTareWeight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/box_tare_weight"
+                            android:inputType="numberDecimal"
+                            android:selectAllOnFocus="true"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/gross_weight_total"
+                            android:textColor="@color/app_text_secondary"
+                            android:textSize="12sp" />
+
+                        <EditText
+                            android:id="@+id/etGrossWeight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="@string/gross_weight_total"
+                            android:inputType="numberDecimal"
+                            android:selectAllOnFocus="true"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveSizes"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="12dp"
+                    android:elevation="4dp"
+                    android:text="@string/save"
+                    android:textAllCaps="false"
+                    android:textColor="@color/action_button_text"
+                    app:backgroundTint="@color/action_button_background" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnPrint"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/print_label" />
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:elevation="4dp"
+            android:text="@string/print_label"
+            android:textAllCaps="false"
+            android:textColor="@color/action_button_text"
+            app:backgroundTint="@color/action_button_background"
+            app:icon="@android:drawable/ic_menu_upload"
+            app:iconGravity="textStart"
+            app:iconTint="@color/action_button_text" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRefresh"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:layout_marginTop="8dp"
-            android:text="@string/refresh" />
-
-        <Button
-            android:id="@+id/btnBack"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/back" />
+            android:text="@string/refresh"
+            android:textAllCaps="false"
+            app:icon="@android:drawable/ic_popup_sync"
+            app:iconGravity="textStart"
+            app:iconTint="@color/app_primary"
+            app:strokeColor="@color/action_button_outline" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

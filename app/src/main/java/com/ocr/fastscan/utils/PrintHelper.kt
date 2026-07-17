@@ -2,6 +2,7 @@ package com.ocr.fastscan.utils
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
 import com.ocr.fastscan.R
 import androidx.preference.PreferenceManager
@@ -78,6 +79,9 @@ class PrintHelper(private val activity: Activity) {
         val widthDots = getPrinterWidth() * 8
         val heightDots = getPrinterHeight() * 8
         val dateStr = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Date())
+        val appLabel = getAppLabel()
+        val appVersion = getAppVersion()
+        val developer = context.getString(R.string.developer_title)
         
         val zpl = """
             ^XA
@@ -99,6 +103,11 @@ class PrintHelper(private val activity: Activity) {
             ^CF0,50
             ^FO80,760^FDSizes: ${length}x${width}x$height cm^FS
             ^FO80,840^BQN,2,10^FDQA$trackingNumber^FS
+            ^CF0,28
+            ^FO360,870^FB340,1,0,L,0^FD$appLabel^FS
+            ^CF0,24
+            ^FO360,910^FB340,1,0,L,0^FDVersion $appVersion^FS
+            ^FO360,945^FB340,1,0,L,0^FDDev: $developer^FS
             ^XZ
         """.trimIndent()
         
@@ -155,6 +164,26 @@ class PrintHelper(private val activity: Activity) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val heightStr = prefs.getString("printer_height", "150") ?: "150"
         return heightStr.toIntOrNull() ?: 150
+    }
+
+    private fun getAppLabel(): String {
+        return context.packageManager.getApplicationLabel(context.applicationInfo).toString()
+    }
+
+    private fun getAppVersion(): String {
+        return try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val versionName = packageInfo.versionName ?: "-"
+            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode.toLong()
+            }
+            "$versionName ($versionCode)"
+        } catch (e: Exception) {
+            "-"
+        }
     }
 
     private fun sendToPrinter(ip: String, data: String) {

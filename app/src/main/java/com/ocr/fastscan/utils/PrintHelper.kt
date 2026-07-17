@@ -104,10 +104,10 @@ class PrintHelper(private val activity: Activity) {
             ^FO80,760^FDSizes: ${length}x${width}x$height cm^FS
             ^FO80,840^BQN,2,10^FDQA$trackingNumber^FS
             ^CF0,28
-            ^FO360,870^FB340,1,0,L,0^FD$appLabel^FS
+            ^FO360,1005^FB340,1,0,L,0^FD$appLabel^FS
             ^CF0,24
-            ^FO360,910^FB340,1,0,L,0^FDVersion $appVersion^FS
-            ^FO360,945^FB340,1,0,L,0^FDDev: $developer^FS
+            ^FO360,1045^FB340,1,0,L,0^FDVersion $appVersion^FS
+            ^FO360,1080^FB340,1,0,L,0^FDDev: $developer^FS
             ^XZ
         """.trimIndent()
         

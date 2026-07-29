@@ -29,6 +29,9 @@ object ScanUtils {
         binding.etWidth.text.clear()
         binding.etHeight.text.clear()
         binding.tvClientName.text = context.getString(R.string.scan_wait_client)
+        binding.cbWithBox.isChecked = false
+        binding.cbShoesBox.isChecked = false
+        binding.cbBagBox.isChecked = false
     }
     fun clearFieldsAll(binding: FragmentScanBinding, context: Context,) {
         binding.etTracking.text.clear()

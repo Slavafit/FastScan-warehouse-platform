@@ -287,9 +287,7 @@ class BoxDetailFragment : BaseFragment() {
         val length = binding.etLength.text.toString().toIntOrNull()
         val width = binding.etWidth.text.toString().toIntOrNull()
         val height = binding.etHeight.text.toString().toIntOrNull()
-        val fullWeightText = binding.etGrossWeight.text.toString()
-
-        val weightValue = parseWeight(fullWeightText)
+        val weightValue = parseWeight(binding.etGrossWeight.text.toString())
 
         if (weightValue == null || weightValue <= 0.0) {
             Toast.makeText(requireContext(), R.string.incorrect_weight, Toast.LENGTH_SHORT).show()

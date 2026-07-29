@@ -3,6 +3,8 @@ package com.ocr.fastscan.utils
 import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import androidx.lifecycle.LifecycleOwner
 import com.ocr.fastscan.databinding.DialogVolumeBinding
 import android.util.Log
@@ -86,6 +88,13 @@ object DialogUtils {
         }
         // Показываем диалог
         dialog.show()
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        dialogBinding.etLength.post {
+            dialogBinding.etLength.requestFocus()
+            val inputMethodManager =
+                context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.showSoftInput(dialogBinding.etLength, InputMethodManager.SHOW_IMPLICIT)
+        }
     }
 
 

@@ -1,6 +1,7 @@
 package com.ocr.fastscan
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -14,6 +15,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.ocr.fastscan.databinding.ActivityCameraBinding
+import com.ocr.fastscan.utils.LanguageHelper
 import java.util.concurrent.Executors
 
 class CameraActivity : AppCompatActivity() {
@@ -25,6 +27,11 @@ class CameraActivity : AppCompatActivity() {
     private var cameraControl: CameraControl? = null
     private var currentExposureIndex = -6
     private var isFlashOn = false
+
+    override fun attachBaseContext(newBase: Context) {
+        val language = LanguageHelper.getCurrentLanguage(newBase)
+        super.attachBaseContext(LanguageHelper.applyLanguage(newBase, language))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

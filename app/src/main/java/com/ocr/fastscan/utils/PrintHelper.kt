@@ -82,6 +82,7 @@ class PrintHelper(private val activity: Activity) {
         val appLabel = getAppLabel()
         val appVersion = getAppVersion()
         val developer = context.getString(R.string.developer_title)
+        val weightWarning = buildWeightWarning(weight, 740)
         
         val zpl = """
             ^XA
@@ -95,19 +96,20 @@ class PrintHelper(private val activity: Activity) {
             ^FO80,330^A0N,80,80^FD$last4^FS
             ^FO80,420^GB600,3,3^FS
             ^CF0,30
-            ^FO80,440^FDPrinted in Malaga: $dateStr^FS
+            ^FO80,440^FDPacked in Malaga: $dateStr^FS
             ^FO80,480^GB600,3,3^FS
             ^FO80,510^A0N,120,120^FD$partialName^FS
             ^CF0,50
             ^FO80,660^FDWeight total: $weight kg^FS
+            $weightWarning
             ^CF0,50
-            ^FO80,760^FDSizes: ${length}x${width}x$height cm^FS
-            ^FO80,840^BQN,2,10^FDQA$trackingNumber^FS
+            ^FO80,860^FDSizes: ${length}x${width}x$height cm^FS
+            ^FO80,880^BQN,2,10^FDQA$trackingNumber^FS
             ^CF0,28
-            ^FO360,1005^FB340,1,0,L,0^FD$appLabel^FS
+            ^FO360,1045^FB340,1,0,L,0^FD$appLabel^FS
             ^CF0,24
-            ^FO360,1045^FB340,1,0,L,0^FDVersion $appVersion^FS
-            ^FO360,1080^FB340,1,0,L,0^FDDev: $developer^FS
+            ^FO360,1085^FB340,1,0,L,0^FDVersion $appVersion^FS
+            ^FO360,1120^FB340,1,0,L,0^FDDev: $developer^FS
             ^XZ
         """.trimIndent()
         
@@ -184,6 +186,17 @@ class PrintHelper(private val activity: Activity) {
         } catch (e: Exception) {
             "-"
         }
+    }
+
+    private fun buildWeightWarning(weight: String, y: Int): String {
+        val numericWeight = weight.trim().replace(',', '.').toDoubleOrNull() ?: return ""
+        if (numericWeight <= 25.0) return ""
+
+        return """
+            ^FO60,$y^GB680,100,5^FS
+            ^CF0,46
+            ^FO80,${y + 24}^FB640,1,0,C,0^FDWARNING: HEAVY WEIGHT^FS
+        """.trimIndent()
     }
 
     private fun sendToPrinter(ip: String, data: String) {

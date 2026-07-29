@@ -1,3 +1,42 @@
+4.1 (code 30)
+- Restored the proven box-weight calculation from version 2.9: order weights plus empty-box weight.
+
+4.0 (code 29)
+- Use the saved box gross weight as the total weight and keep the empty-box weight as a separate value.
+- Refresh box details after adding or removing an order so the total weight stays current.
+
+3.9 (code 28)
+- Moved the box label QR code upward so it stays within the label.
+
+3.8 (code 27)
+- Added spacing between total box weight and the heavy-weight warning on box labels.
+
+3.7 (code 26)
+- Automatically focus the first order dimension field and open the numeric keyboard.
+
+3.6 (code 25)
+- Simplified the heavy box label warning so it no longer displays a kilogram threshold.
+
+3.5 (code 24)
+- Restored the existing total-weight field as the source for box label printing and the over-25-kg warning.
+
+3.4 (code 23)
+- Print the box gross weight returned in box details instead of recalculating it from orders.
+- Changed the box label caption from "Printed in Malaga" to "Packed in Malaga".
+
+3.3 (code 22)
+- Limited the over-25-kg warning to box labels and made it more visible.
+- Recalculate total box weight from all orders plus box tare immediately before printing.
+
+3.2 (code 21)
+- Fixed scan camera hints using the phone language instead of the language selected in app settings.
+
+3.1 (code 20)
+- Added a high-visibility warning to order and box labels when weight exceeds 25 kg.
+
+3.0 (code 19)
+- Reset box option checkboxes when clearing order data after an unsuccessful track lookup.
+
 2.9 (code 18)
 - Added app name, version, and developer information to the box label near the QR code.
 

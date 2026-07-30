@@ -248,6 +248,8 @@
     <string name="boxes_count">Коробок: %1d</string>
     <string name="input_part_name">Введите название партии</string>
     <string name="part_created">Партия создана</string>
+    <string name="edit_party_name_title">Изменить название партии</string>
+    <string name="party_name_updated">Название партии изменено</string>
     <string name="error_code">Ошибка создания код %d</string>
     <string name="date">Дата: %1$s</string>
     <string name="no_date">Нет даты</string>

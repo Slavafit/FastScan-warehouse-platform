@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.text.InputType
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
@@ -84,9 +86,98 @@ class PartyDetailFragment : BaseFragment() {
 
         binding.btnAddBox.setOnClickListener { showSelectBoxDialog() }
         binding.btnFinishParty.setOnClickListener { showFinishPartyDialog() }
+        binding.btnEditPartyName.setOnClickListener { showEditPartyNameDialog() }
+        binding.tvTitle.setOnLongClickListener {
+            showEditPartyNameDialog()
+            true
+        }
         binding.btnBack.setOnClickListener { parentFragmentManager.popBackStack() }
 
         loadBoxDetails()
+    }
+
+    private fun showEditPartyNameDialog() {
+        val input = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = getString(R.string.input_part)
+            setText(PartyNumberFormatter.display(partialName))
+            setSelection(text.length)
+        }
+        val horizontalPadding = (24 * resources.displayMetrics.density).toInt()
+        val container = android.widget.FrameLayout(requireContext()).apply {
+            setPadding(horizontalPadding, 0, horizontalPadding, 0)
+            addView(
+                input,
+                android.widget.FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.edit_party_name_title)
+            .setView(container)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            input.requestFocus()
+            dialog.window?.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val newName = PartyNumberFormatter.normalize(input.text.toString().trim())
+                if (newName.isBlank()) {
+                    showToast(R.string.input_part_name)
+                    return@setOnClickListener
+                }
+                if (newName == partialName) {
+                    dialog.dismiss()
+                    return@setOnClickListener
+                }
+                updatePartyName(newName, dialog)
+            }
+        }
+        dialog.show()
+    }
+
+    private fun updatePartyName(newName: String, dialog: AlertDialog) {
+        launchOnViewLifecycle {
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
+            try {
+                val request = PartialUpdateRequest(
+                    guid = partialGuid,
+                    partial_code = partialCode,
+                    partial_name = newName,
+                    status = 0
+                )
+                val response = apiService.updatePartial(request)
+                if (_binding == null || !isAdded) return@launchOnViewLifecycle
+                if (response.isSuccessful) {
+                    partialName = newName
+                    binding.tvTitle.text = getString(R.string.part, displayPartyNumber)
+                    binding.btnFinishParty.text =
+                        getString(R.string.finish_part_property, displayPartyNumber)
+                    showToast(R.string.party_name_updated)
+                    soundManager.playSuccess()
+                    dialog.dismiss()
+                } else {
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
+                    showToast(getString(R.string.server_error, response.code()))
+                    soundManager.playError()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = true
+                showToast(R.string.net_error_short)
+                soundManager.playError()
+                Log.e("PartyDetail", "Update party name error", e)
+            } finally {
+                _binding?.progressBar?.visibility = View.GONE
+            }
+        }
     }
 
     private fun loadBoxDetails() {

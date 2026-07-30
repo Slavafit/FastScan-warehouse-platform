@@ -209,6 +209,8 @@
     <string name="boxes_count">Box count: %1d</string>
     <string name="input_part_name">Input batch name</string>
     <string name="part_created">The batch was created</string>
+    <string name="edit_party_name_title">Edit batch name</string>
+    <string name="party_name_updated">Batch name updated</string>
     <string name="error_code">Error creating code %d</string>
     <string name="date">Date: %1$s</string>
     <string name="no_date">no date</string>

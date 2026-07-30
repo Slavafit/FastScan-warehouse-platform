@@ -205,6 +205,8 @@
     <string name="boxes_count">Número de cajas: %1d</string>
     <string name="input_part_name">Ingrese el nombre de la lote</string>
     <string name="part_created">El lote fue creado</string>
+    <string name="edit_party_name_title">Editar nombre del lote</string>
+    <string name="party_name_updated">Nombre del lote actualizado</string>
     <string name="error_code">Error al crear el código %d</string>
     <string name="date">Fecha: %1$s</string>
     <string name="no_date">sin fecha</string>

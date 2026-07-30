@@ -1,0 +1,25 @@
+# dependencies
+/node_modules/
+
+# generated output
+/dist/
+/.vinext/
+/.next/
+/out/
+/coverage/
+/.wrangler/
+/outputs/
+/work/
+
+# local configuration
+.env*
+!.env.example
+
+# debug and OS files
+*.log
+*.pem
+.DS_Store
+Thumbs.db
+
+# TypeScript
+next-env.d.ts

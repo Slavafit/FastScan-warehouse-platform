@@ -1,19 +1,29 @@
-# Gradle caches and build output
+# Gradle caches and Android build output
 .gradle/
 .gradle-user/
 **/.gradle/
 **/.gradle-user/
-**/build/
+mobile/**/build/
 
-# Local Android configuration
+# Node.js dependencies and generated output
+**/node_modules/
+**/dist/
+**/coverage/
+**/.vinext/
+**/.next/
+**/*.tsbuildinfo
+api/src/generated/prisma/
+
+# Local configuration and secrets
+.env
+**/.env
 local.properties
 **/local.properties
 
-# Android Studio
+# IDE, logs, and OS files
 .idea/
 **/.idea/
 *.iml
-
-# OS files
+*.log
 .DS_Store
 Thumbs.db

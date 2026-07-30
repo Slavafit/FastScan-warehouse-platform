@@ -1,0 +1,166 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  WORKER
+  CLIENT
+}
+
+enum NotificationType {
+  INFO
+  WELCOME
+  ORDER_REGISTERED
+  ORDER_PACKED
+  ORDER_UNPACKED
+}
+
+model User {
+  id           String         @id @default(uuid()) @db.Uuid
+  login        String         @unique @db.VarChar(254)
+  passwordHash String         @map("password_hash") @db.VarChar(100)
+  role         Role           @default(WORKER)
+  enabled      Boolean        @default(true)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  client       ClientAccount?
+  operations   OperationLog[]
+
+  @@map("app_user")
+}
+
+model Receiver {
+  id           String          @id @default(uuid()) @db.Uuid
+  clientCode   String          @unique @map("client_code") @db.VarChar(50)
+  firstName    String          @map("first_name") @db.VarChar(120)
+  lastName     String          @map("last_name") @db.VarChar(120)
+  packageShoes Int             @default(0) @map("package_shoes")
+  bagPackage   Int             @default(0) @map("bag_package")
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  account      ClientAccount?
+  orders       ShipmentOrder[]
+
+  @@map("receiver")
+}
+
+model ClientAccount {
+  id                 String               @id @default(uuid()) @db.Uuid
+  userId             String               @unique @map("user_id") @db.Uuid
+  receiverId         String               @unique @map("receiver_id") @db.Uuid
+  email              String               @unique @db.VarChar(254)
+  emailNotifications Boolean              @default(true) @map("email_notifications")
+  pushNotifications  Boolean              @default(true) @map("push_notifications")
+  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  receiver           Receiver             @relation(fields: [receiverId], references: [id], onDelete: Cascade)
+  notifications      ClientNotification[]
+
+  @@map("client_account")
+}
+
+model ClientNotification {
+  id              String           @id @default(uuid()) @db.Uuid
+  clientAccountId String           @map("client_account_id") @db.Uuid
+  type            NotificationType @default(INFO)
+  title           String           @db.VarChar(160)
+  message         String           @db.VarChar(1000)
+  readAt          DateTime?        @map("read_at") @db.Timestamptz
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  account         ClientAccount    @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
+
+  @@index([clientAccountId, createdAt])
+  @@map("client_notification")
+}
+
+model PartialBatch {
+  id            String    @id @default(uuid()) @db.Uuid
+  codeId        String    @unique @map("code_id") @db.VarChar(50)
+  partialCode   String    @unique @map("partial_code") @db.VarChar(100)
+  partialName   String    @map("partial_name") @db.VarChar(160)
+  warehouseName String    @default("BMG") @map("warehouse_name") @db.VarChar(120)
+  status        Int       @default(0)
+  grossWeight   Decimal?  @map("gross_weight") @db.Decimal(12, 3)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  boxes         WarehouseBox[]
+
+  @@map("partial_batch")
+}
+
+model WarehouseBox {
+  id            String          @id @default(uuid()) @db.Uuid
+  codeId        String          @unique @map("code_id") @db.VarChar(50)
+  trackingCode  String          @unique @map("tracking_code") @db.VarChar(160)
+  warehouse     String          @default("BMG") @db.VarChar(120)
+  warehouseGuid String?         @map("warehouse_guid") @db.Uuid
+  width         Int             @default(0)
+  height        Int             @default(0)
+  length        Int             @default(0)
+  volumeWeight  Decimal         @default(0) @map("volume_weight") @db.Decimal(12, 3)
+  grossWeight   Decimal?        @map("gross_weight") @db.Decimal(12, 3)
+  status        Int             @default(0)
+  partialId     String?         @map("partial_id") @db.Uuid
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  partial       PartialBatch?   @relation(fields: [partialId], references: [id], onDelete: SetNull)
+  orders        ShipmentOrder[]
+
+  @@index([status])
+  @@index([partialId])
+  @@map("warehouse_box")
+}
+
+model ShipmentOrder {
+  id             String        @id @default(uuid()) @db.Uuid
+  trackingNumber String        @unique @map("tracking_number") @db.VarChar(160)
+  clientName     String?       @map("client_name") @db.VarChar(240)
+  clientCode     String?       @map("client_code") @db.VarChar(50)
+  receiverId     String?       @map("receiver_id") @db.Uuid
+  withBox        Int           @default(0) @map("with_box")
+  grossWeight    Decimal?      @map("gross_weight") @db.Decimal(12, 3)
+  length         Int?
+  width          Int?
+  height         Int?
+  statusName     String        @default("REGISTERED") @map("status_name") @db.VarChar(100)
+  boxId          String?       @map("box_id") @db.Uuid
+  boxDescription String?       @map("box_description") @db.VarChar(240)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  receiver       Receiver?     @relation(fields: [receiverId], references: [id], onDelete: SetNull)
+  box            WarehouseBox? @relation(fields: [boxId], references: [id], onDelete: SetNull)
+
+  @@index([receiverId])
+  @@index([boxId])
+  @@map("shipment_order")
+}
+
+model ClientCodeConfig {
+  id         Int      @id @default(1) @db.SmallInt
+  codePrefix String   @default("KG") @map("code_prefix") @db.VarChar(12)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("client_code_config")
+}
+
+model OperationLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(20)
+  route      String   @db.VarChar(255)
+  entityType String?  @map("entity_type") @db.VarChar(80)
+  entityId   String?  @map("entity_id") @db.VarChar(100)
+  details    Json?
+  ipAddress  String?  @map("ip_address") @db.VarChar(64)
+  userAgent  String?  @map("user_agent") @db.VarChar(500)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("operation_log")
+}

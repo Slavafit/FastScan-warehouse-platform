@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fastscan}
+      POSTGRES_USER: ${POSTGRES_USER:-fastscan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fastscan}
+    ports:
+      - "5432:5432"
+    volumes:
+      - fastscan_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fastscan} -d ${POSTGRES_DB:-fastscan}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fastscan}:${POSTGRES_PASSWORD:-fastscan}@postgres:5432/${POSTGRES_DB:-fastscan}
+      JWT_SECRET: ${JWT_SECRET:-development-only-secret-change-before-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-only-refresh-secret-change-before-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      FASTSCAN_ADMIN_LOGIN: ${FASTSCAN_ADMIN_LOGIN:-admin}
+      FASTSCAN_ADMIN_PASSWORD: ${FASTSCAN_ADMIN_PASSWORD:-admin}
+    ports:
+      - "8080:8080"
+
+volumes:
+  fastscan_postgres_data:

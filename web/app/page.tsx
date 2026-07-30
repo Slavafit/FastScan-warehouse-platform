@@ -1,0 +1,285 @@
+"use client";
+
+import { FormEvent, useEffect, useState } from "react";
+import { apiRequest, login, Role, Session } from "./lib/api";
+
+type View =
+  | "overview"
+  | "clients"
+  | "orders"
+  | "boxes"
+  | "batches"
+  | "notifications"
+  | "audit"
+  | "settings";
+
+const warehouseNav: Array<[View, string, string]> = [
+  ["overview", "Обзор", "⌂"],
+  ["clients", "Клиенты", "◎"],
+  ["orders", "Заказы", "▤"],
+  ["boxes", "Коробки", "□"],
+  ["batches", "Партии", "≡"],
+  ["notifications", "Оповещения", "●"],
+  ["audit", "Журнал", "↻"],
+  ["settings", "Настройки", "⚙"],
+];
+
+const clientNav: Array<[View, string, string]> = [
+  ["overview", "Мой кабинет", "⌂"],
+  ["orders", "Мои заказы", "▤"],
+  ["notifications", "Оповещения", "●"],
+  ["settings", "Профиль", "⚙"],
+];
+
+const demoOrders = [
+  { tracking: "1Z84A77E039218", client: "KG482731", status: "На складе", weight: "2,40 кг", time: "10:42" },
+  { tracking: "CA912770346ES", client: "KG105824", status: "Упакован", weight: "6,85 кг", time: "09:18" },
+  { tracking: "003404349102", client: "FS793160", status: "В партии", weight: "4,20 кг", time: "Вчера" },
+  { tracking: "LX274910583CN", client: "KG482731", status: "На складе", weight: "1,10 кг", time: "Вчера" },
+];
+
+const demoClients = [
+  { code: "KG482731", name: "Anna Petrova", orders: 12, weight: "36,4 кг", state: "Активен" },
+  { code: "KG105824", name: "Miguel Santos", orders: 8, weight: "21,8 кг", state: "Активен" },
+  { code: "FS793160", name: "Olena Koval", orders: 4, weight: "9,2 кг", state: "Новый" },
+];
+
+export default function FastScanWeb() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [demo, setDemo] = useState(false);
+  const [view, setView] = useState<View>("overview");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loginMode, setLoginMode] = useState<"warehouse" | "client">("warehouse");
+  const [loginValue, setLoginValue] = useState("admin");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [prefix, setPrefix] = useState("KG");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("fastscan-session");
+    if (stored) {
+      queueMicrotask(() => setSession(JSON.parse(stored) as Session));
+    }
+  }, []);
+
+  const role: Role = demo ? "ADMIN" : session?.role || "ADMIN";
+  const nav = role === "CLIENT" ? clientNav : warehouseNav;
+
+  async function submitLogin(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      const result = await login(loginMode, loginValue, password);
+      const next = {
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        role: result.role,
+      };
+      sessionStorage.setItem("fastscan-session", JSON.stringify(next));
+      setSession(next);
+      setView("overview");
+    } catch (exception) {
+      setError(exception instanceof Error ? exception.message : "Не удалось войти");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function openDemo() {
+    setDemo(true);
+    setView("overview");
+  }
+
+  function logout() {
+    sessionStorage.removeItem("fastscan-session");
+    setSession(null);
+    setDemo(false);
+  }
+
+  if (!session && !demo) {
+    return (
+      <main className="login-shell">
+        <section className="brand-panel">
+          <div className="brand-mark"><span>F</span></div>
+          <p className="eyebrow">WAREHOUSE OPERATIONS</p>
+          <h1>FastScan</h1>
+          <p className="brand-copy">
+            Приёмка, упаковка и движение отправлений — в одном рабочем пространстве.
+          </p>
+          <div className="signal-card">
+            <span className="signal-dot" />
+            <div><strong>Система готова</strong><small>API и складские модули доступны</small></div>
+          </div>
+          <p className="version-note">Warehouse Platform · Web 0.1</p>
+        </section>
+        <section className="login-panel">
+          <form className="login-card" onSubmit={submitLogin}>
+            <p className="eyebrow dark">БЕЗОПАСНЫЙ ДОСТУП</p>
+            <h2>Вход в систему</h2>
+            <p className="muted">Выберите рабочую область и введите данные.</p>
+            <div className="mode-switch" role="tablist" aria-label="Тип кабинета">
+              <button type="button" className={loginMode === "warehouse" ? "active" : ""} onClick={() => setLoginMode("warehouse")}>Склад</button>
+              <button type="button" className={loginMode === "client" ? "active" : ""} onClick={() => setLoginMode("client")}>Клиент</button>
+            </div>
+            <label>
+              <span>{loginMode === "client" ? "Email" : "Логин"}</span>
+              <input value={loginValue} onChange={(event) => setLoginValue(event.target.value)} autoComplete="username" />
+            </label>
+            <label>
+              <span>Пароль</span>
+              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
+            </label>
+            {error && <p className="form-error">{error}</p>}
+            <button className="primary-button" disabled={busy}>{busy ? "Проверка…" : "Войти →"}</button>
+            <button className="demo-button" type="button" onClick={openDemo}>Открыть демо-интерфейс</button>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <main className="app-shell">
+      <aside className={menuOpen ? "sidebar open" : "sidebar"}>
+        <div className="sidebar-brand">
+          <div className="brand-mark small"><span>F</span></div>
+          <div><strong>FastScan</strong><small>Warehouse Platform</small></div>
+        </div>
+        <nav>
+          {nav.map(([key, label, icon]) => (
+            <button key={key} className={view === key ? "active" : ""} onClick={() => { setView(key); setMenuOpen(false); }}>
+              <span>{icon}</span>{label}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-foot">
+          <span className="signal-dot" /> API подключён
+          <button onClick={logout}>Выйти</button>
+        </div>
+      </aside>
+      <section className="workspace">
+        <header className="topbar">
+          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Открыть меню">☰</button>
+          <div>
+            <p className="eyebrow dark">{role === "CLIENT" ? "ЛИЧНЫЙ КАБИНЕТ" : "ОПЕРАЦИОННЫЙ ЦЕНТР"}</p>
+            <h2>{nav.find(([key]) => key === view)?.[1]}</h2>
+          </div>
+          <div className="user-chip">
+            <span>{role.slice(0, 1)}</span>
+            <div><strong>{demo ? "Demo User" : loginValue}</strong><small>{role}</small></div>
+          </div>
+        </header>
+        <div className="content">
+          {view === "overview" && <Overview client={role === "CLIENT"} />}
+          {view === "clients" && <Clients />}
+          {view === "orders" && <Orders client={role === "CLIENT"} />}
+          {view === "boxes" && <Boxes />}
+          {view === "batches" && <Batches />}
+          {view === "notifications" && <Notifications client={role === "CLIENT"} />}
+          {view === "audit" && <Audit />}
+          {view === "settings" && (
+            <Settings
+              client={role === "CLIENT"}
+              prefix={prefix}
+              setPrefix={setPrefix}
+              notice={notice}
+              save={async () => {
+                if (!session || demo) { setNotice("Демо: настройка сохранена локально"); return; }
+                await apiRequest("/api/admin/client-code-settings", {
+                  method: "PUT",
+                  body: JSON.stringify({ prefix }),
+                }, session);
+                setNotice("Префикс обновлён");
+              }}
+            />
+          )}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function Overview({ client }: { client: boolean }) {
+  const metrics = client
+    ? [["Всего заказов", "24", "+3 за неделю"], ["На складе", "5", "Ожидают упаковки"], ["Общий вес", "68,4 кг", "Все отправления"], ["Оповещения", "2", "Непрочитанные"]]
+    : [["Заказы сегодня", "148", "+12% к вчера"], ["Открытые коробки", "23", "7 почти заполнены"], ["Активные партии", "6", "2 готовы к отправке"], ["Вес сегодня", "386 кг", "Средний 2,6 кг"]];
+  return (
+    <>
+      <section className="metric-grid">
+        {metrics.map(([label, value, note], index) => (
+          <article className="metric-card" key={label}>
+            <span className={`metric-index i${index}`}>0{index + 1}</span>
+            <p>{label}</p><strong>{value}</strong><small>{note}</small>
+          </article>
+        ))}
+      </section>
+      <section className="dashboard-grid">
+        <article className="panel activity-panel">
+          <div className="panel-title"><div><p className="eyebrow dark">ПОТОК</p><h3>Активность за неделю</h3></div><span>Последние 7 дней</span></div>
+          <div className="bar-chart" aria-label="График активности">
+            {[42, 68, 51, 82, 73, 96, 62].map((height, index) => (
+              <div key={index}><span style={{ height: `${height}%` }} /><small>{["Пн","Вт","Ср","Чт","Пт","Сб","Вс"][index]}</small></div>
+            ))}
+          </div>
+        </article>
+        <article className="panel queue-panel">
+          <div className="panel-title"><div><p className="eyebrow dark">СЕЙЧАС</p><h3>Очередь операций</h3></div><b>12</b></div>
+          {["Проверить вес коробки BX-1048", "Закрыть партию ML-0726", "Упаковать 7 новых заказов"].map((item, index) => (
+            <div className="queue-item" key={item}><span>{index + 1}</span><p>{item}<small>{index === 0 ? "Высокий приоритет" : "Рабочая очередь"}</small></p><b>→</b></div>
+          ))}
+        </article>
+      </section>
+      <OrdersTable compact />
+    </>
+  );
+}
+
+function Clients() {
+  return (
+    <section className="panel table-panel">
+      <div className="panel-title"><div><p className="eyebrow dark">БАЗА</p><h3>Клиенты</h3></div><button className="action-button">+ Новый клиент</button></div>
+      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Клиент</th><th>Заказы</th><th>Вес</th><th>Статус</th></tr></thead>
+        <tbody>{demoClients.map((client) => <tr key={client.code}><td><code>{client.code}</code></td><td><strong>{client.name}</strong></td><td>{client.orders}</td><td>{client.weight}</td><td><span className="status good">{client.state}</span></td></tr>)}</tbody>
+      </table></div>
+    </section>
+  );
+}
+
+function Orders({ client }: { client: boolean }) {
+  return <OrdersTable title={client ? "Мои заказы" : "Все заказы"} />;
+}
+
+function OrdersTable({ compact = false, title = "Последние заказы" }: { compact?: boolean; title?: string }) {
+  return (
+    <section className="panel table-panel">
+      <div className="panel-title"><div><p className="eyebrow dark">ТРЕКИНГ</p><h3>{title}</h3></div>{!compact && <button className="action-button">Экспорт CSV</button>}</div>
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Клиент</th><th>Статус</th><th>Вес</th><th>Обновлён</th></tr></thead>
+        <tbody>{demoOrders.map((order) => <tr key={order.tracking}><td><strong>{order.tracking}</strong></td><td><code>{order.client}</code></td><td><span className={`status ${order.status === "Упакован" ? "good" : ""}`}>{order.status}</span></td><td>{order.weight}</td><td>{order.time}</td></tr>)}</tbody>
+      </table></div>
+    </section>
+  );
+}
+
+function Boxes() {
+  return <section className="card-list">{["BX-1048","BX-1047","BX-1046"].map((box, i) => <article className="box-card" key={box}><p className="eyebrow dark">КОРОБКА</p><h3>{box}</h3><div className="box-visual"><span style={{ width: `${72 - i * 13}%` }} /></div><p><strong>{[18,12,7][i]}</strong> заказов <b>{[24.8,17.2,9.6][i]} кг</b></p><small>Создана сегодня · BMG</small><button>Открыть →</button></article>)}</section>;
+}
+
+function Batches() {
+  return <section className="panel"><div className="panel-title"><div><p className="eyebrow dark">ОТПРАВКА</p><h3>Активные партии</h3></div><button className="action-button">+ Создать партию</button></div>{["ML-0726 · Málaga","MD-0725 · Madrid","BC-0724 · Barcelona"].map((name, i) => <div className="batch-row" key={name}><span>0{i + 1}</span><div><strong>{name}</strong><small>{[8,5,3][i]} коробок · {[126,84,41][i]} кг</small></div><div className="progress"><i style={{ width: `${[82,55,34][i]}%` }} /></div><b>{[82,55,34][i]}%</b></div>)}</section>;
+}
+
+function Notifications({ client }: { client: boolean }) {
+  const items = client ? ["Ваш заказ CA912770346ES упакован", "Новый заказ принят на складе"] : ["Партия ML-0726 готова к закрытию", "Коробка BX-1048 превысила рекомендуемый вес", "3 новых клиента зарегистрированы"];
+  return <section className="panel"><div className="panel-title"><div><p className="eyebrow dark">СОБЫТИЯ</p><h3>Оповещения</h3></div>{!client && <button className="action-button">+ Отправить</button>}</div>{items.map((item, i) => <div className="notice-row" key={item}><span className={i === 0 ? "unread" : ""} /><div><strong>{item}</strong><small>{i === 0 ? "12 минут назад" : "Сегодня"}</small></div><button>Прочитано</button></div>)}</section>;
+}
+
+function Audit() {
+  return <section className="panel table-panel"><div className="panel-title"><div><p className="eyebrow dark">АУДИТ</p><h3>Журнал операций</h3></div><span>Последние 100 записей</span></div><div className="audit-list">{["POST /api/order/set-user","POST /api/order/box-order","PUT /api/admin/client-code-settings","DELETE /api/order/partial-box"].map((route, i) => <div key={route}><code>{route}</code><span>{["admin","worker.malaga","admin","worker.madrid"][i]}</span><small>{i * 7 + 2} мин назад</small><b>SUCCESS</b></div>)}</div></section>;
+}
+
+function Settings({ client, prefix, setPrefix, save, notice }: { client: boolean; prefix: string; setPrefix: (value: string) => void; save: () => void; notice: string }) {
+  return <section className="settings-grid"><article className="panel settings-card"><p className="eyebrow dark">{client ? "ПРОФИЛЬ" : "КОДЫ КЛИЕНТОВ"}</p><h3>{client ? "Личные данные" : "Формат клиентского номера"}</h3><p className="muted">{client ? "Имя и настройки оповещений." : "Префикс задаёт администратор, шесть цифр генерируются случайно."}</p>{client ? <><label><span>Имя</span><input defaultValue="Demo User" /></label><label className="check"><input type="checkbox" defaultChecked /> Email-оповещения</label><label className="check"><input type="checkbox" defaultChecked /> Push-оповещения</label></> : <><label><span>Префикс</span><input value={prefix} maxLength={12} onChange={(event) => setPrefix(event.target.value.toUpperCase())} /></label><div className="code-preview"><small>Формат</small><strong>{prefix || "KG"}######</strong><span>Пример: {prefix || "KG"}482731</span></div></>}<button className="primary-button" onClick={save}>Сохранить</button>{notice && <p className="save-notice">{notice}</p>}</article><article className="panel system-card"><p className="eyebrow dark">СИСТЕМА</p><h3>FastScan API</h3><dl><div><dt>Backend</dt><dd>Node.js + NestJS</dd></div><div><dt>Database</dt><dd>PostgreSQL</dd></div><div><dt>API</dt><dd>v0.4.0</dd></div><div><dt>Состояние</dt><dd><span className="signal-dot" /> Работает</dd></div></dl></article></section>;
+}

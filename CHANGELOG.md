@@ -1,0 +1,66 @@
+# Changelog / История изменений
+
+Все значимые изменения FastScan Warehouse Platform фиксируются в этом файле.
+
+All notable changes to FastScan Warehouse Platform are documented in this file. Detailed Android release news remains in [`mobile/app/news.txt`](mobile/app/news.txt).
+
+## [Unreleased]
+
+### Planned / Запланировано
+
+- Подключение тестовой сборки Android к собственному API.
+- Email и push-адаптеры поверх внутреннего центра уведомлений.
+- Production deployment, backups, monitoring, and migration from the previous API.
+
+## [0.4.0] — 2026-07-30
+
+### Changed / Изменено
+
+- Основной backend перенесён с экспериментального Kotlin/Spring прототипа на Node.js, NestJS и Prisma.
+- Лицензирование устройств исключено из платформенного API: существующий сервер лицензий продолжает обслуживать только Mobile.
+- Docker Compose и команды разработки обновлены для NestJS.
+
+### Added / Добавлено
+
+- PostgreSQL schema and initial Prisma migration.
+- JWT access/refresh authentication and `ADMIN`, `WORKER`, `CLIENT` roles.
+- Android-compatible order, box, batch, receiver, and authentication routes.
+- Client registration, profile, isolated orders, analytics, and notifications.
+- Random six-digit client numbers and administrator-managed prefix.
+- Operation audit log for mutating requests.
+- OpenAPI/Swagger documentation.
+- React/TypeScript web interface for warehouse and client roles.
+- API contract and authentication tests.
+
+### Security
+
+- Production API dependencies pass `npm audit --omit=dev`.
+- Client tokens cannot access warehouse routes.
+- Administrator routes require the `ADMIN` role.
+
+## [0.3.0] — 2026-07-30
+
+### Added / Добавлено
+
+- Automatic random client-code generation and configurable prefix.
+- Uniqueness checks and explicit legacy-code import support.
+
+## [0.2.0] — 2026-07-30
+
+### Added / Добавлено
+
+- Client accounts, analytics, internal notifications, and authorization isolation.
+
+## [0.1.0] — 2026-07-30
+
+### Added / Добавлено
+
+- Monorepo structure with `mobile`, `api`, `web`, and `docs`.
+- Initial self-hosted API prototype and PostgreSQL model.
+- Existing Android application moved into `mobile`.
+
+[Unreleased]: https://github.com/Slavafit/FastScan-warehouse-platform/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/Slavafit/FastScan-warehouse-platform/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/Slavafit/FastScan-warehouse-platform/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/Slavafit/FastScan-warehouse-platform/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/Slavafit/FastScan-warehouse-platform/releases/tag/v0.1.0

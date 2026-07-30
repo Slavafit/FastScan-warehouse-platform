@@ -1,3 +1,6 @@
+4.3 (code 32)
+- Added an up-to-date bilingual Russian and English README with features, setup, build instructions, and a GitHub project description.
+
 4.2 (code 31)
 - Added batch name editing from the batch details screen using the edit button or a long press on the batch name.
 

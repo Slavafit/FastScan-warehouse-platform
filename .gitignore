@@ -1,52 +1,19 @@
-# Android Studio / IntelliJ IDEA
-.idea/
-*.iml
-*.ipr
-*.iws
-out/
-
-# Gradle
+# Gradle caches and build output
 .gradle/
-.kotlin/
+.gradle-user/
+**/.gradle/
+**/.gradle-user/
 **/build/
-gradle/gradle-daemon-jvm.properties
 
-# Local machine configuration
+# Local Android configuration
 local.properties
-gradlew-local.ps1
+**/local.properties
 
-# Android build tools
-captures/
-.externalNativeBuild/
-.cxx/
+# Android Studio
+.idea/
+**/.idea/
+*.iml
 
-# Signing credentials
-*.jks
-*.keystore
-keystore.properties
-
-# Environment and secrets
-.env
-.env.*
-!.env.example
-
-# Logs and temporary files
-*.log
-*.tmp
-*.temp
-*.bak
-*.swp
-*~
-
-# Generated compiler metadata
-*.tsbuildinfo
-
-# Local copies
-*.copy
-*.copy.*
-* copy.*
-
-# Operating system files
+# OS files
 .DS_Store
 Thumbs.db
-desktop.ini

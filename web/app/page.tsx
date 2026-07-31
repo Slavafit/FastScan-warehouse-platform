@@ -13,6 +13,23 @@ type View =
   | "audit"
   | "settings";
 
+type ClientProfile = {
+  client_code: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+  address: string | null;
+  email_notifications: boolean;
+  push_notifications: boolean;
+};
+
+type PlatformSettings = {
+  prefix: string;
+  warehouse: string;
+  country: string;
+};
+
 const warehouseNav: Array<[View, string, string]> = [
   ["overview", "Обзор", "⌂"],
   ["clients", "Клиенты", "◎"],
@@ -54,7 +71,17 @@ export default function FastScanWeb() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [prefix, setPrefix] = useState("KG");
+  const [platform, setPlatform] = useState<PlatformSettings>({ prefix: "KG", warehouse: "BMG", country: "España" });
+  const [profile, setProfile] = useState<ClientProfile>({
+    client_code: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+    phone: "",
+    address: "",
+    email_notifications: true,
+    push_notifications: true,
+  });
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -63,6 +90,21 @@ export default function FastScanWeb() {
       queueMicrotask(() => setSession(JSON.parse(stored) as Session));
     }
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    if (session.role === "CLIENT") {
+      apiRequest<ClientProfile>("/api/client/profile", {}, session)
+        .then(setProfile)
+        .catch((exception) => setNotice(exception instanceof Error ? exception.message : "Не удалось загрузить профиль"));
+      return;
+    }
+    if (session.role === "ADMIN") {
+      apiRequest<PlatformSettings>("/api/admin/client-code-settings", {}, session)
+        .then(setPlatform)
+        .catch((exception) => setNotice(exception instanceof Error ? exception.message : "Не удалось загрузить настройки"));
+    }
+  }, [session]);
 
   const role: Role = demo ? "ADMIN" : session?.role || "ADMIN";
   const nav = role === "CLIENT" ? clientNav : warehouseNav;
@@ -183,16 +225,40 @@ export default function FastScanWeb() {
           {view === "settings" && (
             <Settings
               client={role === "CLIENT"}
-              prefix={prefix}
-              setPrefix={setPrefix}
+              platform={platform}
+              setPlatform={setPlatform}
+              profile={profile}
+              setProfile={setProfile}
               notice={notice}
               save={async () => {
                 if (!session || demo) { setNotice("Демо: настройка сохранена локально"); return; }
-                await apiRequest("/api/admin/client-code-settings", {
-                  method: "PUT",
-                  body: JSON.stringify({ prefix }),
-                }, session);
-                setNotice("Префикс обновлён");
+                setNotice("");
+                try {
+                  if (role === "CLIENT") {
+                    const updated = await apiRequest<ClientProfile>("/api/client/profile", {
+                      method: "PUT",
+                      body: JSON.stringify({
+                        first_name: profile.first_name,
+                        last_name: profile.last_name,
+                        phone: profile.phone,
+                        address: profile.address,
+                        email_notifications: profile.email_notifications,
+                        push_notifications: profile.push_notifications,
+                      }),
+                    }, session);
+                    setProfile(updated);
+                    setNotice("Профиль сохранён. Код клиента не изменялся.");
+                  } else {
+                    const updated = await apiRequest<PlatformSettings>("/api/admin/client-code-settings", {
+                      method: "PUT",
+                      body: JSON.stringify(platform),
+                    }, session);
+                    setPlatform(updated);
+                    setNotice("Настройки склада сохранены");
+                  }
+                } catch (exception) {
+                  setNotice(exception instanceof Error ? exception.message : "Не удалось сохранить настройки");
+                }
               }}
             />
           )}
@@ -280,6 +346,40 @@ function Audit() {
   return <section className="panel table-panel"><div className="panel-title"><div><p className="eyebrow dark">АУДИТ</p><h3>Журнал операций</h3></div><span>Последние 100 записей</span></div><div className="audit-list">{["POST /api/order/set-user","POST /api/order/box-order","PUT /api/admin/client-code-settings","DELETE /api/order/partial-box"].map((route, i) => <div key={route}><code>{route}</code><span>{["admin","worker.malaga","admin","worker.madrid"][i]}</span><small>{i * 7 + 2} мин назад</small><b>SUCCESS</b></div>)}</div></section>;
 }
 
-function Settings({ client, prefix, setPrefix, save, notice }: { client: boolean; prefix: string; setPrefix: (value: string) => void; save: () => void; notice: string }) {
-  return <section className="settings-grid"><article className="panel settings-card"><p className="eyebrow dark">{client ? "ПРОФИЛЬ" : "КОДЫ КЛИЕНТОВ"}</p><h3>{client ? "Личные данные" : "Формат клиентского номера"}</h3><p className="muted">{client ? "Имя и настройки оповещений." : "Префикс задаёт администратор, шесть цифр генерируются случайно."}</p>{client ? <><label><span>Имя</span><input defaultValue="Demo User" /></label><label className="check"><input type="checkbox" defaultChecked /> Email-оповещения</label><label className="check"><input type="checkbox" defaultChecked /> Push-оповещения</label></> : <><label><span>Префикс</span><input value={prefix} maxLength={12} onChange={(event) => setPrefix(event.target.value.toUpperCase())} /></label><div className="code-preview"><small>Формат</small><strong>{prefix || "KG"}######</strong><span>Пример: {prefix || "KG"}482731</span></div></>}<button className="primary-button" onClick={save}>Сохранить</button>{notice && <p className="save-notice">{notice}</p>}</article><article className="panel system-card"><p className="eyebrow dark">СИСТЕМА</p><h3>FastScan API</h3><dl><div><dt>Backend</dt><dd>Node.js + NestJS</dd></div><div><dt>Database</dt><dd>PostgreSQL</dd></div><div><dt>API</dt><dd>v0.4.0</dd></div><div><dt>Состояние</dt><dd><span className="signal-dot" /> Работает</dd></div></dl></article></section>;
+function Settings({ client, platform, setPlatform, profile, setProfile, save, notice }: {
+  client: boolean;
+  platform: PlatformSettings;
+  setPlatform: (value: PlatformSettings) => void;
+  profile: ClientProfile;
+  setProfile: (value: ClientProfile) => void;
+  save: () => void;
+  notice: string;
+}) {
+  return <section className="settings-grid"><article className="panel settings-card">
+    <p className="eyebrow dark">{client ? "ПРОФИЛЬ" : "НАСТРОЙКИ СКЛАДА"}</p>
+    <h3>{client ? "Личные данные" : "Параметры платформы"}</h3>
+    <p className="muted">{client ? "Контактные данные и настройки оповещений." : "Эти значения используются для склада и новых клиентских номеров."}</p>
+    {client ? <>
+      <div className="form-columns">
+        <label><span>Код клиента</span><input className="readonly-field" value={profile.client_code} readOnly aria-readonly="true" /></label>
+        <label><span>Email</span><input className="readonly-field" value={profile.email} readOnly aria-readonly="true" /></label>
+        <label><span>Имя</span><input value={profile.first_name} onChange={(event) => setProfile({ ...profile, first_name: event.target.value })} /></label>
+        <label><span>Фамилия</span><input value={profile.last_name} onChange={(event) => setProfile({ ...profile, last_name: event.target.value })} /></label>
+        <label><span>Телефон</span><input type="tel" value={profile.phone || ""} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
+        <label><span>Адрес</span><input value={profile.address || ""} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
+      </div>
+      <p className="field-note">Код клиента назначается системой и доступен только для просмотра.</p>
+      <label className="check"><input type="checkbox" checked={profile.email_notifications} onChange={(event) => setProfile({ ...profile, email_notifications: event.target.checked })} /> Email-оповещения</label>
+      <label className="check"><input type="checkbox" checked={profile.push_notifications} onChange={(event) => setProfile({ ...profile, push_notifications: event.target.checked })} /> Push-оповещения</label>
+    </> : <>
+      <div className="form-columns">
+        <label><span>Склад</span><input value={platform.warehouse} maxLength={120} onChange={(event) => setPlatform({ ...platform, warehouse: event.target.value })} /></label>
+        <label><span>Страна</span><input value={platform.country} maxLength={120} onChange={(event) => setPlatform({ ...platform, country: event.target.value })} /></label>
+        <label><span>Префикс клиента</span><input value={platform.prefix} maxLength={12} onChange={(event) => setPlatform({ ...platform, prefix: event.target.value.toUpperCase() })} /></label>
+      </div>
+      <div className="code-preview"><small>Формат клиентского номера</small><strong>{platform.prefix || "KG"}######</strong><span>Пример: {platform.prefix || "KG"}482731</span></div>
+    </>}
+    <button className="primary-button" onClick={save}>Сохранить</button>
+    {notice && <p className="save-notice">{notice}</p>}
+  </article><article className="panel system-card"><p className="eyebrow dark">СИСТЕМА</p><h3>FastScan API</h3><dl><div><dt>Склад</dt><dd>{platform.warehouse || "BMG"}</dd></div><div><dt>Страна</dt><dd>{platform.country || "España"}</dd></div><div><dt>API</dt><dd>v0.4.0</dd></div><div><dt>Состояние</dt><dd><span className="signal-dot" /> Работает</dd></div></dl></article></section>;
 }

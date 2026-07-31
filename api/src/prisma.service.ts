@@ -25,7 +25,12 @@ export class PrismaService
     await this.clientCodeConfig.upsert({
       where: { id: 1 },
       update: {},
-      create: { id: 1, codePrefix: 'KG' },
+      create: {
+        id: 1,
+        codePrefix: 'KG',
+        warehouseName: 'BMG',
+        country: 'España',
+      },
     });
     const login = this.config
       .get<string>('FASTSCAN_ADMIN_LOGIN', 'admin')

@@ -35,6 +35,19 @@ API личного кабинета использует отдельную ро
 | PATCH | `/api/client/notifications/{guid}/read` | Mark one as read |
 | PATCH | `/api/client/notifications/read-all` | Mark all as read |
 
+Профиль содержит имя, фамилию, телефон, адрес и настройки оповещений. `client_code` и email возвращаются для отображения, но метод `PUT /api/client/profile` не принимает и не изменяет клиентский код.
+
+```json
+{
+  "first_name": "Anna",
+  "last_name": "Client",
+  "phone": "+34 600 000 000",
+  "address": "Málaga, Spain",
+  "email_notifications": true,
+  "push_notifications": true
+}
+```
+
 Требуется `Authorization: Bearer <client-access-token>`.
 
 ## Оповещения

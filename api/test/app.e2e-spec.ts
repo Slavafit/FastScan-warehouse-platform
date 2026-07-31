@@ -54,8 +54,14 @@ describe('FastScan API (e2e)', () => {
       .set('Authorization', `Bearer ${auth.accessToken}`)
       .expect(200)
       .expect(({ body }) => {
-        const settings = body as { prefix: string };
+        const settings = body as {
+          prefix: string;
+          warehouse: string;
+          country: string;
+        };
         expect(settings.prefix).toBe('KG');
+        expect(settings.warehouse).toBe('BMG');
+        expect(settings.country).toBe('España');
       });
   });
 

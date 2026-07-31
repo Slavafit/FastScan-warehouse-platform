@@ -54,6 +54,8 @@ model ClientAccount {
   userId             String               @unique @map("user_id") @db.Uuid
   receiverId         String               @unique @map("receiver_id") @db.Uuid
   email              String               @unique @db.VarChar(254)
+  phone              String?              @db.VarChar(40)
+  address            String?              @db.VarChar(500)
   emailNotifications Boolean              @default(true) @map("email_notifications")
   pushNotifications  Boolean              @default(true) @map("push_notifications")
   createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz
@@ -80,14 +82,14 @@ model ClientNotification {
 }
 
 model PartialBatch {
-  id            String    @id @default(uuid()) @db.Uuid
-  codeId        String    @unique @map("code_id") @db.VarChar(50)
-  partialCode   String    @unique @map("partial_code") @db.VarChar(100)
-  partialName   String    @map("partial_name") @db.VarChar(160)
-  warehouseName String    @default("BMG") @map("warehouse_name") @db.VarChar(120)
-  status        Int       @default(0)
-  grossWeight   Decimal?  @map("gross_weight") @db.Decimal(12, 3)
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  id            String         @id @default(uuid()) @db.Uuid
+  codeId        String         @unique @map("code_id") @db.VarChar(50)
+  partialCode   String         @unique @map("partial_code") @db.VarChar(100)
+  partialName   String         @map("partial_name") @db.VarChar(160)
+  warehouseName String         @default("BMG") @map("warehouse_name") @db.VarChar(120)
+  status        Int            @default(0)
+  grossWeight   Decimal?       @map("gross_weight") @db.Decimal(12, 3)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
   boxes         WarehouseBox[]
 
   @@map("partial_batch")
@@ -140,9 +142,11 @@ model ShipmentOrder {
 }
 
 model ClientCodeConfig {
-  id         Int      @id @default(1) @db.SmallInt
-  codePrefix String   @default("KG") @map("code_prefix") @db.VarChar(12)
-  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id            Int      @id @default(1) @db.SmallInt
+  codePrefix    String   @default("KG") @map("code_prefix") @db.VarChar(12)
+  warehouseName String   @default("BMG") @map("warehouse_name") @db.VarChar(120)
+  country       String   @default("España") @db.VarChar(120)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("client_code_config")
 }

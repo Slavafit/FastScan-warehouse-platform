@@ -207,6 +207,7 @@ export class WarehouseController {
             length: dto.length ?? 0,
             volumeWeight: dto.v_weight ?? 0,
             grossWeight: dto.gross_weight,
+            warehouse: (await this.platformSettings()).warehouseName,
           },
         });
     return {
@@ -223,9 +224,13 @@ export class WarehouseController {
       this.prisma.warehouseBox.findUnique({ where: { id: dto.box } }),
     ]);
     if (!order || !box) throw new NotFoundException('Order or box not found');
+    const settings = await this.platformSettings();
     const saved = await this.prisma.shipmentOrder.update({
       where: { id: order.id },
-      data: { boxId: box.id, boxDescription: dto.desc },
+      data: {
+        boxId: box.id,
+        boxDescription: dto.desc?.trim() || settings.country,
+      },
     });
     if (saved.receiverId) {
       await this.notifications.createForReceiver(
@@ -306,6 +311,7 @@ export class WarehouseController {
           codeId: String((await this.prisma.partialBatch.count()) + 1),
           partialCode: dto.partial_code,
           partialName: dto.partial_name,
+          warehouseName: (await this.platformSettings()).warehouseName,
         },
       });
     }
@@ -357,6 +363,16 @@ export class WarehouseController {
       data: { partialId: null },
     });
     return { success: true, message: 'Box removed from batch' };
+  }
+
+  private async platformSettings() {
+    const config = await this.prisma.clientCodeConfig.findUnique({
+      where: { id: 1 },
+    });
+    return {
+      warehouseName: config?.warehouseName ?? 'BMG',
+      country: config?.country ?? 'España',
+    };
   }
 
   private findBox(value: string) {

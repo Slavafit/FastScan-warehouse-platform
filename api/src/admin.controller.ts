@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { NotificationDto, PrefixDto } from './dto.js';
+import { NotificationDto, PlatformSettingsDto } from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
@@ -21,19 +21,36 @@ export class AdminController {
       where: { id: 1 },
     });
     const prefix = config?.codePrefix ?? 'KG';
-    return { prefix, code_format: `${prefix}######` };
+    return {
+      prefix,
+      warehouse: config?.warehouseName ?? 'BMG',
+      country: config?.country ?? 'España',
+      code_format: `${prefix}######`,
+    };
   }
 
   @Put('client-code-settings')
-  async updateCodeSettings(@Body() dto: PrefixDto) {
+  async updateCodeSettings(@Body() dto: PlatformSettingsDto) {
     const prefix = dto.prefix.trim().toUpperCase();
+    const warehouse = dto.warehouse.trim();
+    const country = dto.country.trim();
     if (!/^[A-Z0-9-]{1,12}$/.test(prefix)) throw new Error('Invalid prefix');
     await this.prisma.clientCodeConfig.upsert({
       where: { id: 1 },
-      update: { codePrefix: prefix },
-      create: { id: 1, codePrefix: prefix },
+      update: { codePrefix: prefix, warehouseName: warehouse, country },
+      create: {
+        id: 1,
+        codePrefix: prefix,
+        warehouseName: warehouse,
+        country,
+      },
     });
-    return { prefix, code_format: `${prefix}######` };
+    return {
+      prefix,
+      warehouse,
+      country,
+      code_format: `${prefix}######`,
+    };
   }
 
   @Post('notifications')

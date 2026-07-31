@@ -32,6 +32,8 @@ export class ClientController {
     const updated = await this.prisma.clientAccount.update({
       where: { id: account.id },
       data: {
+        phone: this.optionalText(dto.phone),
+        address: this.optionalText(dto.address),
         emailNotifications: dto.email_notifications,
         pushNotifications: dto.push_notifications,
         receiver: {
@@ -169,6 +171,8 @@ export class ClientController {
       guid: account.id,
       client_code: account.receiver.clientCode,
       email: account.email,
+      phone: account.phone,
+      address: account.address,
       first_name: account.receiver.firstName,
       last_name: account.receiver.lastName,
       full_name:
@@ -179,6 +183,11 @@ export class ClientController {
       push_notifications: account.pushNotifications,
       created_at: account.createdAt.toISOString(),
     };
+  }
+
+  private optionalText(value?: string) {
+    const normalized = value?.trim();
+    return normalized ? normalized : null;
   }
 
   private number(value: Prisma.Decimal | null) {

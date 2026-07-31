@@ -57,7 +57,7 @@ export class BoxDto {
 export class BoxOrderDto {
   @IsString() @IsNotEmpty() order!: string;
   @IsString() @IsNotEmpty() box!: string;
-  @IsOptional() @IsString() desc = 'España';
+  @IsOptional() @IsString() desc?: string;
 }
 export class GuidDto {
   @IsString() @IsNotEmpty() guid!: string;
@@ -71,12 +71,16 @@ export class PartialDto {
 export class SendPartialDto {
   @IsString() @IsNotEmpty() partial!: string;
 }
-export class PrefixDto {
+export class PlatformSettingsDto {
   @IsString() @Length(1, 12) prefix!: string;
+  @IsString() @IsNotEmpty() @MaxLength(120) warehouse!: string;
+  @IsString() @IsNotEmpty() @MaxLength(120) country!: string;
 }
 export class ProfileDto {
   @IsString() @IsNotEmpty() first_name!: string;
   @IsString() @IsNotEmpty() last_name!: string;
+  @IsOptional() @IsString() @MaxLength(40) phone?: string;
+  @IsOptional() @IsString() @MaxLength(500) address?: string;
   @IsBoolean() email_notifications!: boolean;
   @IsBoolean() push_notifications!: boolean;
 }

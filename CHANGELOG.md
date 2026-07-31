@@ -6,6 +6,13 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ## [Unreleased]
 
+### Changed / Изменено
+
+- Ответ завершения партии теперь содержит `success` и понятное `message`, сохраняя совместимое поле `result` для Mobile.
+- Swagger требует Bearer-токен только для защищённых маршрутов; регистрация и вход явно остаются публичными.
+- Docker Compose использует единое имя `CORS_ORIGINS` с конфигурацией NestJS.
+- Стандартный e2e-тест NestJS заменён проверкой health, входа, PostgreSQL-настройки и защиты маршрутов FastScan.
+
 ### Planned / Запланировано
 
 - Подключение тестовой сборки Android к собственному API.

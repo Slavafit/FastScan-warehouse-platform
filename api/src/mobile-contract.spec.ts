@@ -63,4 +63,24 @@ describe('Mobile API contract', () => {
       },
     ]);
   });
+
+  it('keeps result while returning a readable batch completion response', async () => {
+    const prisma = {
+      partialBatch: {
+        update: jest.fn().mockResolvedValue({ id: 'partial-1', status: 1 }),
+      },
+    } as unknown as PrismaService;
+    const controller = new WarehouseController(
+      prisma,
+      {} as NotificationService,
+    );
+
+    await expect(
+      controller.sendPartial({ partial: 'partial-1' }),
+    ).resolves.toEqual({
+      success: true,
+      message: 'Batch completed',
+      result: {},
+    });
+  });
 });

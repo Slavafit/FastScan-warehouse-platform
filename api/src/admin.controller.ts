@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationDto, PrefixDto } from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
 import { PrismaService } from './prisma.service.js';
 
+@ApiBearerAuth()
 @Roles(Role.ADMIN)
 @Controller('api/admin')
 export class AdminController {

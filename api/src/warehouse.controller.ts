@@ -7,6 +7,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import {
   BoxDto,
   BoxOrderDto,
@@ -20,6 +21,7 @@ import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
 import { PrismaService } from './prisma.service.js';
 
+@ApiBearerAuth()
 @Roles(Role.ADMIN, Role.WORKER)
 @Controller('api/order')
 export class WarehouseController {
@@ -29,6 +31,8 @@ export class WarehouseController {
   ) {}
 
   @Get('order-tracking-code')
+  @ApiQuery({ name: 'tcode', required: false, type: String })
+  @ApiQuery({ name: 'boxId', required: false, type: String })
   async orderDetails(
     @Query('tcode') tcode?: string,
     @Query('boxId') boxId?: string,
@@ -121,6 +125,9 @@ export class WarehouseController {
   }
 
   @Get('box')
+  @ApiQuery({ name: 'guid', required: false, type: String })
+  @ApiQuery({ name: 'tCode', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: Number })
   async boxes(
     @Query('guid') guid = '',
     @Query('tCode') trackingCode = '',
@@ -256,6 +263,7 @@ export class WarehouseController {
   }
 
   @Get('partial')
+  @ApiQuery({ name: 'typePartial', required: false, type: Number })
   async partials(@Query('typePartial') type?: string) {
     const batches = await this.prisma.partialBatch.findMany({
       where: type === undefined ? {} : { status: Number(type) },
@@ -310,7 +318,11 @@ export class WarehouseController {
       where: { id: dto.partial },
       data: { status: 1 },
     });
-    return { result: {} };
+    return {
+      success: true,
+      message: 'Batch completed',
+      result: {},
+    };
   }
 
   @Get('partial-box')

@@ -9,11 +9,13 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ProfileDto } from './dto.js';
 import { AuthUser, Roles } from './auth.js';
 import { Prisma, Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
 
+@ApiBearerAuth()
 @Roles(Role.CLIENT)
 @Controller('api/client')
 export class ClientController {

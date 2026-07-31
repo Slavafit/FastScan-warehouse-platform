@@ -8,12 +8,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { randomInt } from 'node:crypto';
 import { ReceiverUpsertDto } from './dto.js';
 import { Role } from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { PrismaService } from './prisma.service.js';
 
+@ApiBearerAuth()
 @Roles(Role.ADMIN, Role.WORKER)
 @Controller('api/common')
 export class CommonController {

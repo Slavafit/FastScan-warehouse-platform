@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module.js';
+import { PrismaService } from './../src/prisma.service.js';
 
 interface HealthResponse {
   status: string;
@@ -23,6 +24,7 @@ interface LoginResponse {
 
 describe('FastScan API (e2e)', () => {
   let app: INestApplication<App>;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -30,6 +32,7 @@ describe('FastScan API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    prisma = moduleFixture.get(PrismaService);
     await app.init();
   });
 
@@ -92,6 +95,55 @@ describe('FastScan API (e2e)', () => {
 
   it('rejects protected routes without a token', () => {
     return request(app.getHttpServer()).get('/api/order/box').expect(401);
+  });
+
+  it('uses WORKER for staff permissions and rejects a MANAGER role', async () => {
+    const adminLogin = await request(app.getHttpServer())
+      .post('/api/admin/auth/login')
+      .send({ login: 'admin', password: 'change-me' })
+      .expect(201);
+    const admin = adminLogin.body as LoginResponse;
+    const workerLogin = `e2e-worker-${Date.now()}`;
+
+    await request(app.getHttpServer())
+      .post('/api/admin/users')
+      .set('Authorization', `Bearer ${admin.accessToken}`)
+      .send({ login: workerLogin, password: 'test-password', role: 'MANAGER' })
+      .expect(400);
+
+    try {
+      await request(app.getHttpServer())
+        .post('/api/admin/users')
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .send({ login: workerLogin, password: 'test-password', role: 'WORKER' })
+        .expect(201)
+        .expect(({ body }) => {
+          expect((body as { role: string }).role).toBe('WORKER');
+        });
+
+      const workerLoginResponse = await request(app.getHttpServer())
+        .post('/api/admin/auth/login')
+        .send({ login: workerLogin, password: 'test-password' })
+        .expect(201);
+      const worker = workerLoginResponse.body as LoginResponse;
+
+      await request(app.getHttpServer())
+        .get('/api/staff/clients')
+        .set('Authorization', `Bearer ${worker.accessToken}`)
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .get('/api/order/partial?typePartial=1')
+        .set('Authorization', `Bearer ${worker.accessToken}`)
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .get('/api/admin/client-code-settings')
+        .set('Authorization', `Bearer ${worker.accessToken}`)
+        .expect(403);
+    } finally {
+      await prisma.user.deleteMany({ where: { login: workerLogin } });
+    }
   });
 
   afterAll(async () => {

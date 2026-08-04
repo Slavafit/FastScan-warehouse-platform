@@ -10,6 +10,7 @@ import { JwtAuthGuard, JwtStrategy, RolesGuard, TokenService } from './auth.js';
 import { ClientController } from './client.controller.js';
 import { CommonController } from './common.controller.js';
 import { HealthController } from './health.controller.js';
+import { StaffController } from './staff.controller.js';
 import { NotificationService } from './notification.service.js';
 import { PrismaService } from './prisma.service.js';
 import { WarehouseController } from './warehouse.controller.js';
@@ -31,6 +32,7 @@ import { WarehouseController } from './warehouse.controller.js';
     CommonController,
     WarehouseController,
     ClientController,
+    StaffController,
     AdminController,
   ],
   providers: [

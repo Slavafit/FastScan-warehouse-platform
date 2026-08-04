@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -11,6 +12,7 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
+import { Role } from './generated/prisma/client.js';
 
 export class LoginDto {
   @IsString() @IsNotEmpty() login!: string;
@@ -95,4 +97,24 @@ export class BoolQueryDto {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean()
   unreadOnly = false;
+}
+
+export class StaffUserDto {
+  @IsString() @IsNotEmpty() login!: string;
+  @IsString() @MinLength(8) @MaxLength(100) password!: string;
+  @IsEnum(Role) role!: Role;
+}
+
+export class StaffClientUpdateDto {
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(120) first_name?: string;
+  @IsOptional() @IsString() @IsNotEmpty() @MaxLength(120) last_name?: string;
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() @MaxLength(40) phone?: string;
+  @IsOptional() @IsString() @MaxLength(500) address?: string;
+  @IsOptional() @IsInt() package_shoes?: number;
+  @IsOptional() @IsInt() bag_package?: number;
+}
+
+export class ManifestCreateDto {
+  @IsString() @IsNotEmpty() partial_guid!: string;
 }

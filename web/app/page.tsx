@@ -9,6 +9,7 @@ type View =
   | "orders"
   | "boxes"
   | "batches"
+  | "manifests"
   | "notifications"
   | "audit"
   | "settings";
@@ -30,15 +31,76 @@ type PlatformSettings = {
   country: string;
 };
 
+type StaffClient = {
+  guid: string;
+  client_code: string;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  package_shoes: number;
+  bag_package: number;
+  orders_count: number;
+};
+
+type BatchSummary = {
+  guid: string;
+  partial_code: string;
+  partial_name: string;
+  warehouse_name: string;
+  boxCount: number;
+  gross_weight: number;
+  status: number;
+};
+
+type ManifestOrder = {
+  guid: string;
+  tracking_number: string;
+  client_code: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  client_address: string | null;
+  gross_weight: number;
+  box_tracking_code: string;
+};
+
+type ManifestRecord = {
+  guid: string;
+  manifest_code: string;
+  partial_guid: string;
+  partial_code: string;
+  partial_name: string;
+  warehouse_name: string;
+  country: string;
+  box_count: number;
+  order_count: number;
+  gross_weight: number;
+  created_by: { login: string; role: Role };
+  created_at: string;
+  orders: ManifestOrder[];
+};
+
 const warehouseNav: Array<[View, string, string]> = [
   ["overview", "Обзор", "⌂"],
   ["clients", "Клиенты", "◎"],
   ["orders", "Заказы", "▤"],
   ["boxes", "Коробки", "□"],
   ["batches", "Партии", "≡"],
+  ["manifests", "Манифесты", "◇"],
   ["notifications", "Оповещения", "●"],
   ["audit", "Журнал", "↻"],
   ["settings", "Настройки", "⚙"],
+];
+
+const workerNav: Array<[View, string, string]> = [
+  ["overview", "Обзор", "⌂"],
+  ["clients", "Клиенты", "◎"],
+  ["orders", "Заказы", "▤"],
+  ["boxes", "Коробки", "□"],
+  ["batches", "Партии", "≡"],
+  ["manifests", "Манифесты", "◇"],
 ];
 
 const clientNav: Array<[View, string, string]> = [
@@ -107,7 +169,7 @@ export default function FastScanWeb() {
   }, [session]);
 
   const role: Role = demo ? "ADMIN" : session?.role || "ADMIN";
-  const nav = role === "CLIENT" ? clientNav : warehouseNav;
+  const nav = role === "CLIENT" ? clientNav : role === "WORKER" ? workerNav : warehouseNav;
 
   async function submitLogin(event: FormEvent) {
     event.preventDefault();
@@ -216,10 +278,11 @@ export default function FastScanWeb() {
         </header>
         <div className="content">
           {view === "overview" && <Overview client={role === "CLIENT"} />}
-          {view === "clients" && <Clients />}
+          {view === "clients" && (session && (role === "ADMIN" || role === "WORKER") ? <StaffClients session={session} /> : <Clients />)}
           {view === "orders" && <Orders client={role === "CLIENT"} />}
           {view === "boxes" && <Boxes />}
           {view === "batches" && <Batches />}
+          {view === "manifests" && <Manifests session={session} />}
           {view === "notifications" && <Notifications client={role === "CLIENT"} />}
           {view === "audit" && <Audit />}
           {view === "settings" && (
@@ -314,6 +377,72 @@ function Clients() {
   );
 }
 
+function StaffClients({ session }: { session: Session }) {
+  const [clients, setClients] = useState<StaffClient[]>([]);
+  const [editing, setEditing] = useState<StaffClient | null>(null);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    apiRequest<StaffClient[]>("/api/staff/clients", {}, session)
+      .then(setClients)
+      .catch((exception) => setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить клиентов"));
+  }, [session]);
+
+  function updateEditing(patch: Partial<StaffClient>) {
+    setEditing((current) => current ? { ...current, ...patch } : current);
+  }
+
+  async function saveClient() {
+    if (!editing) return;
+    setMessage("");
+    try {
+      const updated = await apiRequest<StaffClient>(`/api/staff/clients/${editing.guid}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          first_name: editing.first_name,
+          last_name: editing.last_name,
+          email: editing.email,
+          phone: editing.phone,
+          address: editing.address,
+          package_shoes: editing.package_shoes,
+          bag_package: editing.bag_package,
+        }),
+      }, session);
+      setClients((current) => current.map((client) => client.guid === updated.guid ? updated : client));
+      setEditing(updated);
+      setMessage("Данные клиента сохранены");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось сохранить клиента");
+    }
+  }
+
+  return <>
+    <section className="panel table-panel">
+      <div className="panel-title"><div><p className="eyebrow dark">БАЗА</p><h3>Клиенты</h3></div><span>{clients.length} записей</span></div>
+      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Клиент</th><th>Email</th><th>Телефон</th><th>Заказы</th><th></th></tr></thead>
+        <tbody>{clients.map((client) => <tr key={client.guid}><td><code>{client.client_code}</code></td><td><strong>{client.full_name}</strong></td><td>{client.email || "—"}</td><td>{client.phone || "—"}</td><td>{client.orders_count}</td><td><button className="table-action" onClick={() => { setEditing(client); setMessage(""); }}>Изменить</button></td></tr>)}</tbody>
+      </table></div>
+      {!clients.length && <p className="empty-state">Клиенты пока не найдены.</p>}
+    </section>
+    {editing && <section className="panel editor-card">
+      <div className="panel-title"><div><p className="eyebrow dark">РЕДАКТИРОВАНИЕ</p><h3>{editing.full_name}</h3></div><button className="action-button" onClick={() => setEditing(null)}>Закрыть</button></div>
+      <div className="form-columns">
+        <label><span>Код клиента</span><input className="readonly-field" value={editing.client_code} readOnly /></label>
+        <label><span>Email</span><input type="email" value={editing.email || ""} onChange={(event) => updateEditing({ email: event.target.value })} /></label>
+        <label><span>Имя</span><input value={editing.first_name} onChange={(event) => updateEditing({ first_name: event.target.value })} /></label>
+        <label><span>Фамилия</span><input value={editing.last_name} onChange={(event) => updateEditing({ last_name: event.target.value })} /></label>
+        <label><span>Телефон</span><input type="tel" value={editing.phone || ""} onChange={(event) => updateEditing({ phone: event.target.value })} /></label>
+        <label><span>Адрес</span><input value={editing.address || ""} onChange={(event) => updateEditing({ address: event.target.value })} /></label>
+        <label><span>Упаковка обуви</span><input type="number" value={editing.package_shoes} onChange={(event) => updateEditing({ package_shoes: Number(event.target.value) })} /></label>
+        <label><span>Пакет</span><input type="number" value={editing.bag_package} onChange={(event) => updateEditing({ bag_package: Number(event.target.value) })} /></label>
+      </div>
+      <p className="field-note">Код клиента нельзя изменить: он связан с заказами и кабинетом.</p>
+      <button className="primary-button" onClick={saveClient}>Сохранить изменения</button>
+      {message && <p className="save-notice">{message}</p>}
+    </section>}
+  </>;
+}
+
 function Orders({ client }: { client: boolean }) {
   return <OrdersTable title={client ? "Мои заказы" : "Все заказы"} />;
 }
@@ -335,6 +464,74 @@ function Boxes() {
 
 function Batches() {
   return <section className="panel"><div className="panel-title"><div><p className="eyebrow dark">ОТПРАВКА</p><h3>Активные партии</h3></div><button className="action-button">+ Создать партию</button></div>{["ML-0726 · Málaga","MD-0725 · Madrid","BC-0724 · Barcelona"].map((name, i) => <div className="batch-row" key={name}><span>0{i + 1}</span><div><strong>{name}</strong><small>{[8,5,3][i]} коробок · {[126,84,41][i]} кг</small></div><div className="progress"><i style={{ width: `${[82,55,34][i]}%` }} /></div><b>{[82,55,34][i]}%</b></div>)}</section>;
+}
+
+function Manifests({ session }: { session: Session | null }) {
+  const [batches, setBatches] = useState<BatchSummary[]>([]);
+  const [manifests, setManifests] = useState<ManifestRecord[]>([]);
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [active, setActive] = useState<ManifestRecord | null>(null);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!session) return;
+    Promise.all([
+      apiRequest<BatchSummary[]>("/api/order/partial?typePartial=1", {}, session),
+      apiRequest<ManifestRecord[]>("/api/staff/manifests", {}, session),
+    ]).then(([loadedBatches, loadedManifests]) => {
+      setBatches(loadedBatches);
+      setManifests(loadedManifests);
+    }).catch((exception) => setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить манифесты"));
+  }, [session]);
+
+  async function createManifest() {
+    if (!session || !selectedBatch) return;
+    setMessage("");
+    try {
+      const result = await apiRequest<{ success: boolean; created: boolean; manifest: ManifestRecord }>("/api/staff/manifests", {
+        method: "POST",
+        body: JSON.stringify({ partial_guid: selectedBatch }),
+      }, session);
+      setActive(result.manifest);
+      setManifests((current) => [result.manifest, ...current.filter((item) => item.guid !== result.manifest.guid)]);
+      setMessage(result.created ? "Манифест создан" : "Для этой партии манифест уже существует");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось создать манифест");
+    }
+  }
+
+  async function openManifest(guid: string) {
+    if (!session) return;
+    try {
+      setActive(await apiRequest<ManifestRecord>(`/api/staff/manifests/${guid}`, {}, session));
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось открыть манифест");
+    }
+  }
+
+  if (!session) return <section className="panel"><h3>Манифесты</h3><p className="empty-state">Для работы с манифестами войдите как администратор или сотрудник.</p></section>;
+
+  return <>
+    <section className="panel manifest-create">
+      <div className="panel-title"><div><p className="eyebrow dark">ОТПРАВКА</p><h3>Создать манифест</h3></div></div>
+      <p className="muted">Выберите завершённую партию. В манифест попадут все заказы из всех её коробок.</p>
+      <div className="manifest-controls">
+        <label><span>Завершённая партия</span><select value={selectedBatch} onChange={(event) => setSelectedBatch(event.target.value)}><option value="">Выберите партию</option>{batches.map((batch) => <option key={batch.guid} value={batch.guid}>{batch.partial_code} · {batch.partial_name} · {batch.boxCount} коробок</option>)}</select></label>
+        <button className="primary-button" disabled={!selectedBatch} onClick={createManifest}>Создать манифест</button>
+      </div>
+      {message && <p className="save-notice">{message}</p>}
+    </section>
+    <section className="panel table-panel">
+      <div className="panel-title"><div><p className="eyebrow dark">АРХИВ</p><h3>Манифесты</h3></div><span>{manifests.length} документов</span></div>
+      <div className="table-scroll"><table><thead><tr><th>Номер</th><th>Партия</th><th>Склад</th><th>Коробки</th><th>Заказы</th><th>Вес</th><th></th></tr></thead><tbody>{manifests.map((manifest) => <tr key={manifest.guid}><td><code>{manifest.manifest_code}</code></td><td>{manifest.partial_code}</td><td>{manifest.warehouse_name}</td><td>{manifest.box_count}</td><td>{manifest.order_count}</td><td>{manifest.gross_weight.toFixed(3)} кг</td><td><button className="table-action" onClick={() => openManifest(manifest.guid)}>Открыть</button></td></tr>)}</tbody></table></div>
+      {!manifests.length && <p className="empty-state">Манифесты ещё не созданы.</p>}
+    </section>
+    {active && <section className="panel manifest-detail">
+      <div className="panel-title"><div><p className="eyebrow dark">МАНИФЕСТ</p><h3>{active.manifest_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
+      <div className="summary-strip"><div><small>Партия</small><strong>{active.partial_code}</strong></div><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{active.box_count}</strong></div><div><small>Заказы</small><strong>{active.order_count}</strong></div><div><small>Общий вес</small><strong>{active.gross_weight.toFixed(3)} кг</strong></div></div>
+      <div className="table-scroll"><table><thead><tr><th>Коробка</th><th>Трек</th><th>Код клиента</th><th>Клиент</th><th>Телефон</th><th>Адрес</th><th>Вес</th></tr></thead><tbody>{active.orders.map((order) => <tr key={order.guid}><td><code>{order.box_tracking_code}</code></td><td><strong>{order.tracking_number}</strong></td><td>{order.client_code || "—"}</td><td>{order.client_name || "—"}</td><td>{order.client_phone || "—"}</td><td>{order.client_address || "—"}</td><td>{order.gross_weight.toFixed(3)} кг</td></tr>)}</tbody></table></div>
+    </section>}
+  </>;
 }
 
 function Notifications({ client }: { client: boolean }) {

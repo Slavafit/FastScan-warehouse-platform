@@ -1,6 +1,16 @@
-import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { NotificationDto, PlatformSettingsDto } from './dto.js';
+import { hash } from 'bcryptjs';
+import { NotificationDto, PlatformSettingsDto, StaffUserDto } from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
@@ -14,6 +24,46 @@ export class AdminController {
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationService,
   ) {}
+
+  @Get('users')
+  async users() {
+    return this.prisma.user.findMany({
+      where: { role: { in: [Role.ADMIN, Role.WORKER] } },
+      select: {
+        id: true,
+        login: true,
+        role: true,
+        enabled: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  @Post('users')
+  async createUser(@Body() dto: StaffUserDto) {
+    if (dto.role !== Role.WORKER) {
+      throw new BadRequestException('Only WORKER can be created');
+    }
+    const login = dto.login.trim().toLowerCase();
+    if (await this.prisma.user.findUnique({ where: { login } })) {
+      throw new ConflictException('User already exists');
+    }
+    const user = await this.prisma.user.create({
+      data: {
+        login,
+        passwordHash: await hash(dto.password, 12),
+        role: dto.role,
+      },
+    });
+    return {
+      success: true,
+      guid: user.id,
+      login: user.login,
+      role: user.role,
+      enabled: user.enabled,
+    };
+  }
 
   @Get('client-code-settings')
   async codeSettings() {

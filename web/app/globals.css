@@ -16,7 +16,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; background: var(--paper); color: var(--ink); }
 body { font-family: "Segoe UI", Inter, Arial, sans-serif; }
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 button { cursor: pointer; }
 
 .eyebrow { margin: 0 0 8px; color: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: .16em; }
@@ -44,8 +44,8 @@ button { cursor: pointer; }
 .mode-switch button { border: 0; padding: 12px; color: var(--muted); background: transparent; font-weight: 700; }
 .mode-switch button.active { background: var(--ink); color: #fff; }
 label { display: grid; gap: 8px; margin: 18px 0; color: #355149; font-size: 13px; font-weight: 700; }
-input { width: 100%; border: 1px solid #cad6ce; background: #fbfcfa; padding: 14px 15px; outline: none; }
-input:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,198,163,.12); }
+input, select { width: 100%; border: 1px solid #cad6ce; background: #fbfcfa; padding: 14px 15px; outline: none; }
+input:focus, select:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,198,163,.12); }
 .primary-button { width: 100%; border: 0; padding: 15px 20px; margin-top: 12px; background: var(--ink); color: #fff; font-weight: 800; }
 .primary-button:hover { background: var(--ink-soft); }
 .primary-button:disabled { opacity: .6; }
@@ -110,6 +110,14 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 .status { padding: 5px 9px; color: #6a5941; background: #fff2d8; font-size: 11px; font-weight: 800; }
 .status.good { color: #1e6e5b; background: #dcf5eb; }
 .action-button { border: 1px solid #bac9c0; padding: 10px 14px; color: var(--ink); background: transparent; font-size: 12px; font-weight: 800; }
+.table-action { border: 0; padding: 7px 10px; color: #174f42; background: #e1f3eb; font-size: 11px; font-weight: 800; }
+.empty-state { padding: 18px 0 0; color: var(--muted); }
+.editor-card, .manifest-detail { margin-top: 16px; }
+.manifest-controls { display: grid; grid-template-columns: minmax(260px, 1fr) 220px; gap: 16px; align-items: end; }
+.manifest-controls .primary-button { margin: 18px 0; }
+.summary-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin: 20px 0; background: var(--line); border: 1px solid var(--line); }
+.summary-strip div { display: grid; gap: 6px; padding: 16px; background: #f8faf7; }
+.summary-strip small { color: var(--muted); }
 .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .box-card { padding: 25px; border: 1px solid var(--line); background: var(--white); }
 .box-card h3 { margin: 0 0 24px; font-size: 26px; }
@@ -155,6 +163,7 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 @media (max-width: 1080px) {
   .metric-grid { grid-template-columns: repeat(2, 1fr); }
   .dashboard-grid, .settings-grid { grid-template-columns: 1fr; }
+  .summary-strip { grid-template-columns: repeat(2, 1fr); }
   .card-list { grid-template-columns: 1fr 1fr; }
 }
 
@@ -187,4 +196,5 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
   .audit-list > div { grid-template-columns: 1fr 80px; }
   .audit-list span { display: none; }
   .form-columns { grid-template-columns: 1fr; }
+  .manifest-controls, .summary-strip { grid-template-columns: 1fr; }
 }

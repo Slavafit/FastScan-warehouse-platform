@@ -31,6 +31,7 @@ model User {
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
   client       ClientAccount?
   operations   OperationLog[]
+  manifests    Manifest[]     @relation("ManifestCreatedBy")
 
   @@map("app_user")
 }
@@ -91,6 +92,7 @@ model PartialBatch {
   grossWeight   Decimal?       @map("gross_weight") @db.Decimal(12, 3)
   createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
   boxes         WarehouseBox[]
+  manifest      Manifest?
 
   @@map("partial_batch")
 }
@@ -149,6 +151,46 @@ model ClientCodeConfig {
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("client_code_config")
+}
+
+model Manifest {
+  id              String         @id @default(uuid()) @db.Uuid
+  manifestCode    String         @unique @map("manifest_code") @db.VarChar(120)
+  partialBatchId  String         @unique @map("partial_batch_id") @db.Uuid
+  createdByUserId String         @map("created_by_user_id") @db.Uuid
+  warehouseName   String         @map("warehouse_name") @db.VarChar(120)
+  country         String         @db.VarChar(120)
+  batchCode       String         @map("batch_code") @db.VarChar(100)
+  batchName       String         @map("batch_name") @db.VarChar(160)
+  boxCount        Int            @map("box_count")
+  orderCount      Int            @map("order_count")
+  grossWeight     Decimal        @default(0) @map("gross_weight") @db.Decimal(12, 3)
+  createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  partialBatch    PartialBatch   @relation(fields: [partialBatchId], references: [id], onDelete: Restrict)
+  createdBy       User           @relation("ManifestCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  items           ManifestItem[]
+
+  @@index([createdAt])
+  @@map("manifest")
+}
+
+model ManifestItem {
+  id              String   @id @default(uuid()) @db.Uuid
+  manifestId      String   @map("manifest_id") @db.Uuid
+  sourceOrderId   String   @map("source_order_id") @db.Uuid
+  trackingNumber  String   @map("tracking_number") @db.VarChar(160)
+  clientCode      String?  @map("client_code") @db.VarChar(50)
+  clientName      String?  @map("client_name") @db.VarChar(240)
+  clientPhone     String?  @map("client_phone") @db.VarChar(40)
+  clientAddress   String?  @map("client_address") @db.VarChar(500)
+  grossWeight     Decimal? @map("gross_weight") @db.Decimal(12, 3)
+  boxTrackingCode String   @map("box_tracking_code") @db.VarChar(160)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  manifest        Manifest @relation(fields: [manifestId], references: [id], onDelete: Cascade)
+
+  @@unique([manifestId, sourceOrderId])
+  @@index([clientCode])
+  @@map("manifest_item")
 }
 
 model OperationLog {

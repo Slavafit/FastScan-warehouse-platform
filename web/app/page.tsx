@@ -60,8 +60,15 @@ type ManifestOrder = {
   tracking_number: string;
   client_code: string | null;
   client_name: string | null;
+  client_first_name: string | null;
+  client_last_name: string | null;
+  client_email: string | null;
   client_phone: string | null;
   client_address: string | null;
+  composition: string | null;
+  description: string | null;
+  declared_value: number;
+  currency: string | null;
   gross_weight: number;
   box_tracking_code: string;
 };
@@ -529,7 +536,7 @@ function Manifests({ session }: { session: Session | null }) {
     {active && <section className="panel manifest-detail">
       <div className="panel-title"><div><p className="eyebrow dark">МАНИФЕСТ</p><h3>{active.manifest_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
       <div className="summary-strip"><div><small>Партия</small><strong>{active.partial_code}</strong></div><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{active.box_count}</strong></div><div><small>Заказы</small><strong>{active.order_count}</strong></div><div><small>Общий вес</small><strong>{active.gross_weight.toFixed(3)} кг</strong></div></div>
-      <div className="table-scroll"><table><thead><tr><th>Коробка</th><th>Трек</th><th>Код клиента</th><th>Клиент</th><th>Телефон</th><th>Адрес</th><th>Вес</th></tr></thead><tbody>{active.orders.map((order) => <tr key={order.guid}><td><code>{order.box_tracking_code}</code></td><td><strong>{order.tracking_number}</strong></td><td>{order.client_code || "—"}</td><td>{order.client_name || "—"}</td><td>{order.client_phone || "—"}</td><td>{order.client_address || "—"}</td><td>{order.gross_weight.toFixed(3)} кг</td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table><thead><tr><th>Трек заказа</th><th>Трек коробки</th><th>Имя</th><th>Фамилия</th><th>Адрес</th><th>Состав</th><th>Описание товара</th><th>Вес</th><th>Стоимость</th><th>Email</th><th>Телефон</th></tr></thead><tbody>{active.orders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><code>{order.box_tracking_code}</code></td><td>{order.client_first_name || "—"}</td><td>{order.client_last_name || "—"}</td><td>{order.client_address || "—"}</td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{order.gross_weight.toFixed(3)} кг</td><td>{order.declared_value.toFixed(2)} {order.currency || "EUR"}</td><td>{order.client_email || "—"}</td><td>{order.client_phone || "—"}</td></tr>)}</tbody></table></div>
     </section>}
   </>;
 }

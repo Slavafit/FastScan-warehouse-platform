@@ -138,6 +138,15 @@ describe('FastScan API (e2e)', () => {
         .expect(200);
 
       await request(app.getHttpServer())
+        .get('/api/common/order-compositions')
+        .set('Authorization', `Bearer ${worker.accessToken}`)
+        .expect(200)
+        .expect(({ body }) => {
+          const items = body as Array<{ code: string; name: string }>;
+          expect(items.some((item) => item.code === 'CLOTHING')).toBe(true);
+        });
+
+      await request(app.getHttpServer())
         .get('/api/admin/client-code-settings')
         .set('Authorization', `Bearer ${worker.accessToken}`)
         .expect(403);

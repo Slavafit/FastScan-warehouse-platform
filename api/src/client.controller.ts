@@ -53,7 +53,7 @@ export class ClientController {
     const account = await this.account(request.user.sub);
     const orders = await this.prisma.shipmentOrder.findMany({
       where: { receiverId: account.receiverId },
-      include: { box: true },
+      include: { box: true, composition: true },
       orderBy: { createdAt: 'desc' },
     });
     return orders.map((order) => ({
@@ -63,6 +63,11 @@ export class ClientController {
       gross_weight: this.number(order.grossWeight),
       with_box: order.withBox !== 0,
       box_tracking_code: order.box?.trackingCode ?? null,
+      composition_guid: order.compositionId,
+      composition: order.composition?.name ?? null,
+      description: order.productDescription,
+      declared_value: this.number(order.declaredValue),
+      currency: order.currency,
       created_at: order.createdAt.toISOString(),
       updated_at: order.updatedAt.toISOString(),
     }));

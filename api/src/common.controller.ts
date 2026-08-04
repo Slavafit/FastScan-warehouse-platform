@@ -21,6 +21,19 @@ import { PrismaService } from './prisma.service.js';
 export class CommonController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Get('order-compositions')
+  async orderCompositions() {
+    const items = await this.prisma.orderComposition.findMany({
+      where: { enabled: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    return items.map((item) => ({
+      guid: item.id,
+      code: item.code,
+      name: item.name,
+    }));
+  }
+
   @Get('reciever')
   async receiver(@Query('client_code') clientCode: string) {
     const receiver = await this.prisma.receiver.findUnique({

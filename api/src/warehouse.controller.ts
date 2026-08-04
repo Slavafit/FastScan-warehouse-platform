@@ -42,7 +42,7 @@ export class WarehouseController {
       if (!box) return [];
       const orders = await this.prisma.shipmentOrder.findMany({
         where: { boxId: box.id },
-        include: { receiver: true },
+        include: { receiver: true, composition: true },
         orderBy: { createdAt: 'asc' },
       });
       return orders.map((order) => this.orderDetailsResponse(order));
@@ -50,7 +50,7 @@ export class WarehouseController {
     if (!tcode) return [];
     const order = await this.prisma.shipmentOrder.findUnique({
       where: { trackingNumber: tcode },
-      include: { receiver: true },
+      include: { receiver: true, composition: true },
     });
     return order ? [this.orderDetailsResponse(order)] : [];
   }
@@ -59,6 +59,7 @@ export class WarehouseController {
   async orderSearch(@Query('tcode') tcode: string) {
     const order = await this.prisma.shipmentOrder.findUnique({
       where: { trackingNumber: tcode },
+      include: { composition: true },
     });
     return order
       ? [
@@ -70,6 +71,11 @@ export class WarehouseController {
             gross_weight: this.number(order.grossWeight),
             client_code: order.clientCode,
             client: order.clientName,
+            composition_guid: order.compositionId,
+            composition: order.composition?.name ?? null,
+            description: order.productDescription,
+            declared_value: this.number(order.declaredValue),
+            currency: order.currency,
           },
         ]
       : [];
@@ -86,6 +92,18 @@ export class WarehouseController {
       },
     });
     if (!receiver) throw new NotFoundException('Receiver not found');
+    const composition = dto.composition_guid
+      ? await this.prisma.orderComposition.findUnique({
+          where: { id: dto.composition_guid },
+        })
+      : dto.composition_code
+        ? await this.prisma.orderComposition.findUnique({
+            where: { code: dto.composition_code.trim().toUpperCase() },
+          })
+        : null;
+    if ((dto.composition_guid || dto.composition_code) && !composition) {
+      throw new NotFoundException('Order composition not found');
+    }
     const existing = await this.prisma.shipmentOrder.findUnique({
       where: { trackingNumber: dto.tracking_number.trim() },
     });
@@ -100,6 +118,16 @@ export class WarehouseController {
         length: dto.length,
         width: dto.width,
         height: dto.height,
+        ...(composition ? { compositionId: composition.id } : {}),
+        ...(dto.description !== undefined
+          ? { productDescription: dto.description.trim() || null }
+          : {}),
+        ...(dto.declared_value !== undefined
+          ? { declaredValue: dto.declared_value }
+          : {}),
+        ...(dto.currency !== undefined
+          ? { currency: dto.currency.trim().toUpperCase() }
+          : {}),
       },
       create: {
         trackingNumber: dto.tracking_number.trim(),
@@ -111,6 +139,10 @@ export class WarehouseController {
         length: dto.length,
         width: dto.width,
         height: dto.height,
+        compositionId: composition?.id,
+        productDescription: dto.description?.trim() || null,
+        declaredValue: dto.declared_value,
+        currency: dto.currency?.trim().toUpperCase() || 'EUR',
       },
     });
     if (!existing) {
@@ -388,6 +420,11 @@ export class WarehouseController {
     clientCode: string | null;
     withBox: number;
     grossWeight: Prisma.Decimal | null;
+    compositionId: string | null;
+    productDescription: string | null;
+    declaredValue: Prisma.Decimal | null;
+    currency: string;
+    composition: { name: string } | null;
     receiverId: string | null;
     length: number | null;
     width: number | null;
@@ -400,6 +437,11 @@ export class WarehouseController {
       client_code: order.clientCode,
       with_box: order.withBox ? String(order.withBox) : null,
       gross_weight: this.number(order.grossWeight),
+      composition_guid: order.compositionId,
+      composition: order.composition?.name ?? null,
+      description: order.productDescription,
+      declared_value: this.number(order.declaredValue),
+      currency: order.currency,
       user_guid: order.receiverId,
       length: order.length,
       width: order.width,

@@ -10,6 +10,7 @@ import {
   IsString,
   Length,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
 import { Role } from './generated/prisma/client.js';
@@ -44,6 +45,11 @@ export class SaveOrderDto {
   @IsOptional() @IsInt() length?: number;
   @IsOptional() @IsInt() width?: number;
   @IsOptional() @IsInt() height?: number;
+  @IsOptional() @IsString() composition_guid?: string;
+  @IsOptional() @IsString() @MaxLength(50) composition_code?: string;
+  @IsOptional() @IsString() @MaxLength(500) description?: string;
+  @IsOptional() @IsNumber() @Min(0) declared_value?: number;
+  @IsOptional() @IsString() @Length(3, 3) currency?: string;
 }
 export class BoxDto {
   @IsOptional() @IsString() guid?: string;

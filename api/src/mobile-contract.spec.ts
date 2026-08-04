@@ -42,6 +42,11 @@ describe('Mobile API contract', () => {
           length: 10,
           width: 20,
           height: 30,
+          compositionId: 'composition-1',
+          composition: { name: 'Одежда' },
+          productDescription: 'Куртка',
+          declaredValue: { toString: () => '49.90' },
+          currency: 'EUR',
         }),
       },
     } as unknown as PrismaService;
@@ -60,6 +65,11 @@ describe('Mobile API contract', () => {
         length: 10,
         width: 20,
         height: 30,
+        composition_guid: 'composition-1',
+        composition: 'Одежда',
+        description: 'Куртка',
+        declared_value: 49.9,
+        currency: 'EUR',
       },
     ]);
   });

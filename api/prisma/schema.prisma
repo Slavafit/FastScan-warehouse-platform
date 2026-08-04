@@ -120,27 +120,46 @@ model WarehouseBox {
 }
 
 model ShipmentOrder {
-  id             String        @id @default(uuid()) @db.Uuid
-  trackingNumber String        @unique @map("tracking_number") @db.VarChar(160)
-  clientName     String?       @map("client_name") @db.VarChar(240)
-  clientCode     String?       @map("client_code") @db.VarChar(50)
-  receiverId     String?       @map("receiver_id") @db.Uuid
-  withBox        Int           @default(0) @map("with_box")
-  grossWeight    Decimal?      @map("gross_weight") @db.Decimal(12, 3)
-  length         Int?
-  width          Int?
-  height         Int?
-  statusName     String        @default("REGISTERED") @map("status_name") @db.VarChar(100)
-  boxId          String?       @map("box_id") @db.Uuid
-  boxDescription String?       @map("box_description") @db.VarChar(240)
-  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
-  receiver       Receiver?     @relation(fields: [receiverId], references: [id], onDelete: SetNull)
-  box            WarehouseBox? @relation(fields: [boxId], references: [id], onDelete: SetNull)
+  id                 String            @id @default(uuid()) @db.Uuid
+  trackingNumber     String            @unique @map("tracking_number") @db.VarChar(160)
+  clientName         String?           @map("client_name") @db.VarChar(240)
+  clientCode         String?           @map("client_code") @db.VarChar(50)
+  receiverId         String?           @map("receiver_id") @db.Uuid
+  withBox            Int               @default(0) @map("with_box")
+  grossWeight        Decimal?          @map("gross_weight") @db.Decimal(12, 3)
+  length             Int?
+  width              Int?
+  height             Int?
+  statusName         String            @default("REGISTERED") @map("status_name") @db.VarChar(100)
+  boxId              String?           @map("box_id") @db.Uuid
+  boxDescription     String?           @map("box_description") @db.VarChar(240)
+  compositionId      String?           @map("composition_id") @db.Uuid
+  productDescription String?           @map("product_description") @db.VarChar(500)
+  declaredValue      Decimal?          @map("declared_value") @db.Decimal(12, 2)
+  currency           String            @default("EUR") @db.VarChar(3)
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+  receiver           Receiver?         @relation(fields: [receiverId], references: [id], onDelete: SetNull)
+  box                WarehouseBox?     @relation(fields: [boxId], references: [id], onDelete: SetNull)
+  composition        OrderComposition? @relation(fields: [compositionId], references: [id], onDelete: SetNull)
 
   @@index([receiverId])
   @@index([boxId])
+  @@index([compositionId])
   @@map("shipment_order")
+}
+
+model OrderComposition {
+  id        String          @id @default(uuid()) @db.Uuid
+  code      String          @unique @db.VarChar(50)
+  name      String          @db.VarChar(120)
+  enabled   Boolean         @default(true)
+  sortOrder Int             @default(0) @map("sort_order")
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  orders    ShipmentOrder[]
+
+  @@index([enabled, sortOrder])
+  @@map("order_composition")
 }
 
 model ClientCodeConfig {
@@ -175,18 +194,25 @@ model Manifest {
 }
 
 model ManifestItem {
-  id              String   @id @default(uuid()) @db.Uuid
-  manifestId      String   @map("manifest_id") @db.Uuid
-  sourceOrderId   String   @map("source_order_id") @db.Uuid
-  trackingNumber  String   @map("tracking_number") @db.VarChar(160)
-  clientCode      String?  @map("client_code") @db.VarChar(50)
-  clientName      String?  @map("client_name") @db.VarChar(240)
-  clientPhone     String?  @map("client_phone") @db.VarChar(40)
-  clientAddress   String?  @map("client_address") @db.VarChar(500)
-  grossWeight     Decimal? @map("gross_weight") @db.Decimal(12, 3)
-  boxTrackingCode String   @map("box_tracking_code") @db.VarChar(160)
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
-  manifest        Manifest @relation(fields: [manifestId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(uuid()) @db.Uuid
+  manifestId         String   @map("manifest_id") @db.Uuid
+  sourceOrderId      String   @map("source_order_id") @db.Uuid
+  trackingNumber     String   @map("tracking_number") @db.VarChar(160)
+  clientCode         String?  @map("client_code") @db.VarChar(50)
+  clientName         String?  @map("client_name") @db.VarChar(240)
+  clientFirstName    String?  @map("client_first_name") @db.VarChar(120)
+  clientLastName     String?  @map("client_last_name") @db.VarChar(120)
+  clientEmail        String?  @map("client_email") @db.VarChar(320)
+  clientPhone        String?  @map("client_phone") @db.VarChar(40)
+  clientAddress      String?  @map("client_address") @db.VarChar(500)
+  compositionName    String?  @map("composition_name") @db.VarChar(120)
+  productDescription String?  @map("product_description") @db.VarChar(500)
+  declaredValue      Decimal? @map("declared_value") @db.Decimal(12, 2)
+  currency           String?  @db.VarChar(3)
+  grossWeight        Decimal? @map("gross_weight") @db.Decimal(12, 3)
+  boxTrackingCode    String   @map("box_tracking_code") @db.VarChar(160)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  manifest           Manifest @relation(fields: [manifestId], references: [id], onDelete: Cascade)
 
   @@unique([manifestId, sourceOrderId])
   @@index([clientCode])

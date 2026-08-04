@@ -7,6 +7,12 @@ import { AppModule } from './../src/app.module.js';
 interface HealthResponse {
   status: string;
   service: string;
+  version: string;
+  uptime_seconds: number;
+  checks: {
+    api: { status: string };
+    database?: { status: string; response_time_ms: number };
+  };
 }
 
 interface LoginResponse {
@@ -35,6 +41,25 @@ describe('FastScan API (e2e)', () => {
         const health = body as HealthResponse;
         expect(health.status).toBe('ok');
         expect(health.service).toBe('fastscan-api');
+        expect(health.version).toBe('0.4.0');
+        expect(health.uptime_seconds).toBeGreaterThanOrEqual(0);
+        expect(health.checks.api.status).toBe('up');
+        expect(health.checks.database?.status).toBe('up');
+        expect(health.checks.database?.response_time_ms).toBeGreaterThanOrEqual(
+          0,
+        );
+      });
+  });
+
+  it('reports process liveness separately from dependencies', () => {
+    return request(app.getHttpServer())
+      .get('/health/live')
+      .expect(200)
+      .expect(({ body }) => {
+        const health = body as HealthResponse;
+        expect(health.status).toBe('ok');
+        expect(health.checks.api.status).toBe('up');
+        expect(health.checks.database).toBeUndefined();
       });
   });
 

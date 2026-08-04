@@ -24,6 +24,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      APP_VERSION: ${APP_VERSION:-0.4.0}
       DATABASE_URL: postgresql://${POSTGRES_USER:-fastscan}:${POSTGRES_PASSWORD:-fastscan}@postgres:5432/${POSTGRES_DB:-fastscan}
       JWT_SECRET: ${JWT_SECRET:-development-only-secret-change-before-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-only-refresh-secret-change-before-production}
@@ -32,6 +33,12 @@ services:
       FASTSCAN_ADMIN_PASSWORD: ${FASTSCAN_ADMIN_PASSWORD:-admin}
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/health/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   fastscan_postgres_data:

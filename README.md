@@ -37,6 +37,9 @@ docker compose up --build
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui`
 - OpenAPI JSON: `http://localhost:8080/openapi.json`
+- Detailed health: `http://localhost:8080/health`
+- Liveness probe: `http://localhost:8080/health/live`
+- Readiness probe: `http://localhost:8080/health/ready`
 
 Web запускается отдельно:
 

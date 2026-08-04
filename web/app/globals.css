@@ -53,19 +53,19 @@ input:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(57,198,163,.
 .form-error { padding: 10px 12px; color: #9e3e35; background: #fff0ed; font-size: 13px; }
 
 .app-shell { min-height: 100vh; display: grid; grid-template-columns: 238px 1fr; }
-.sidebar { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; padding: 28px 18px 20px; color: #fff; background: var(--ink); z-index: 20; }
-.sidebar-brand { display: flex; gap: 14px; align-items: center; padding: 4px 10px 32px; border-bottom: 1px solid #203e48; }
+.sidebar { position: sticky; top: 0; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding: 28px 18px 20px; color: #fff; background: var(--ink); z-index: 20; }
+.sidebar-brand { flex: 0 0 auto; display: flex; gap: 14px; align-items: center; padding: 4px 10px 32px; border-bottom: 1px solid #203e48; }
 .sidebar-brand div:last-child { display: flex; flex-direction: column; }
 .sidebar-brand strong { font-size: 19px; }
 .sidebar-brand small { color: #728e95; font-size: 10px; text-transform: uppercase; letter-spacing: .09em; }
-.sidebar nav { display: grid; gap: 5px; padding-top: 25px; }
+.sidebar nav { flex: 1 1 auto; min-height: 0; display: grid; align-content: start; gap: 5px; overflow-y: auto; overscroll-behavior: contain; padding: 25px 0 12px; scrollbar-width: thin; }
 .sidebar nav button { display: flex; align-items: center; gap: 14px; border: 0; padding: 13px 14px; color: #8fa5aa; background: transparent; text-align: left; font-weight: 650; }
 .sidebar nav button span { width: 20px; color: #58757b; font-size: 17px; text-align: center; }
 .sidebar nav button.active { color: var(--ink); background: var(--lime); }
 .sidebar nav button.active span { color: var(--ink); }
-.sidebar-foot { margin-top: auto; padding: 18px 10px 0; border-top: 1px solid #203e48; color: #789197; font-size: 12px; }
+.sidebar-foot { flex: 0 0 auto; margin-top: auto; padding: 18px 10px 0; border-top: 1px solid #203e48; color: #789197; font-size: 12px; }
 .sidebar-foot .signal-dot { margin-right: 7px; width: 7px; height: 7px; }
-.sidebar-foot button { display: block; border: 0; margin-top: 16px; padding: 0; color: #b5c5c7; background: transparent; }
+.sidebar-foot button { display: block; width: 100%; border: 0; margin-top: 8px; padding: 10px 0; color: #b5c5c7; background: transparent; text-align: left; }
 .workspace { min-width: 0; }
 .topbar { height: 96px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(24px, 4vw, 54px); border-bottom: 1px solid var(--line); background: rgba(242,245,239,.94); }
 .topbar h2 { margin: 0; font-size: 28px; letter-spacing: -.03em; }
@@ -167,7 +167,7 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
   .login-panel { padding: 20px; }
   .login-card { padding: 30px 24px; }
   .app-shell { display: block; }
-  .sidebar { position: fixed; left: -260px; width: 238px; transition: left .2s ease; }
+  .sidebar { position: fixed; inset: 0 auto 0 -260px; width: 238px; height: 100dvh; padding-bottom: max(16px, env(safe-area-inset-bottom)); transition: left .2s ease; }
   .sidebar.open { left: 0; box-shadow: 18px 0 40px rgba(0,0,0,.22); }
   .topbar { height: 82px; padding: 0 18px; }
   .topbar > div:nth-child(2) { flex: 1; margin-left: 14px; }

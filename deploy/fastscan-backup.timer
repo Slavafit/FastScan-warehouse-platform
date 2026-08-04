@@ -1,0 +1,11 @@
+[Unit]
+Description=Run FastScan PostgreSQL backup every day
+
+[Timer]
+OnCalendar=*-*-* 02:15:00
+Persistent=true
+RandomizedDelaySec=10m
+Unit=fastscan-backup.service
+
+[Install]
+WantedBy=timers.target

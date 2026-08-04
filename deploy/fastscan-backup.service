@@ -1,0 +1,14 @@
+[Unit]
+Description=FastScan PostgreSQL backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/fastscan
+EnvironmentFile=-/opt/fastscan/.env
+Environment=FASTSCAN_PROJECT_DIR=/opt/fastscan
+Environment=FASTSCAN_BACKUP_DIR=/var/backups/fastscan
+Environment=FASTSCAN_BACKUP_RETENTION_DAYS=7
+# Keep the lock for the entire backup so timed jobs cannot overlap.
+ExecStart=/usr/bin/flock --nonblock /run/fastscan-backup.lock /opt/fastscan/deploy/backup.sh

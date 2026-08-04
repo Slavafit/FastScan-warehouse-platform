@@ -25,5 +25,6 @@ local.properties
 **/.idea/
 *.iml
 *.log
+*.dump
 .DS_Store
 Thumbs.db

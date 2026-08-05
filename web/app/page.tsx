@@ -63,6 +63,41 @@ type BatchSummary = {
   status: number;
 };
 
+type BoxSummary = {
+  guid: string;
+  codeid: string;
+  partial: string;
+  tracking_code: string;
+  warehouse: string;
+  warehouse_name: string;
+  warehouse_guid: string | null;
+  width: number;
+  height: number;
+  length: number;
+  v_weight: number;
+  gross_weight: number;
+  date_created: string;
+  orderCount: number;
+};
+
+type BoxOrder = {
+  guid: string;
+  tracking_number: string;
+  client: string | null;
+  client_code: string | null;
+  with_box: string;
+  gross_weight: number | null;
+  user_guid: string | null;
+  length: number | null;
+  width: number | null;
+  height: number | null;
+  composition_guid: string | null;
+  composition: string | null;
+  description: string | null;
+  declared_value: number | null;
+  currency: string | null;
+};
+
 type ManifestOrder = {
   guid: string;
   tracking_number: string;
@@ -353,8 +388,8 @@ export default function FastScanWeb() {
           {view === "overview" && <Overview client={role === "CLIENT"} />}
           {view === "clients" && (session && (role === "ADMIN" || role === "WORKER") ? <StaffClients session={session} /> : <Clients />)}
           {view === "orders" && <Orders client={role === "CLIENT"} session={session} demo={demo} />}
-          {view === "boxes" && <Boxes />}
-          {view === "batches" && <Batches />}
+          {view === "boxes" && <Boxes session={session} demo={demo} />}
+          {view === "batches" && <Batches session={session} demo={demo} />}
           {view === "manifests" && <Manifests session={session} />}
           {view === "notifications" && <Notifications client={role === "CLIENT"} />}
           {view === "audit" && <Audit />}
@@ -619,12 +654,171 @@ function OrdersTable({ compact = false, title = "Последние заказы
   );
 }
 
-function Boxes() {
-  return <section className="card-list">{["BX-1048","BX-1047","BX-1046"].map((box, i) => <article className="box-card" key={box}><p className="eyebrow dark">КОРОБКА</p><h3>{box}</h3><div className="box-visual"><span style={{ width: `${72 - i * 13}%` }} /></div><p><strong>{[18,12,7][i]}</strong> заказов <b>{[24.8,17.2,9.6][i]} кг</b></p><small>Создана сегодня · BMG</small><button>Открыть →</button></article>)}</section>;
+function Boxes({ session, demo }: { session: Session | null; demo: boolean }) {
+  const [boxes, setBoxes] = useState<BoxSummary[]>([]);
+  const [active, setActive] = useState<BoxSummary | null>(null);
+  const [orders, setOrders] = useState<BoxOrder[]>([]);
+  const [queryDraft, setQueryDraft] = useState("");
+  const [query, setQuery] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function load() {
+    if (!session || demo) return;
+    setMessage("");
+    try {
+      setBoxes(await apiRequest<BoxSummary[]>("/api/order/box", {}, session));
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить коробки");
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, [session, demo]);
+
+  async function openBox(box: BoxSummary) {
+    if (!session || demo) return;
+    setActive(box);
+    setMessage("");
+    try {
+      setOrders(await apiRequest<BoxOrder[]>(`/api/order/order-tracking-code?boxId=${box.guid}`, {}, session));
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить состав коробки");
+    }
+  }
+
+  function updateSearch(value: string) {
+    setQueryDraft(value);
+    const normalized = value.trim();
+    setQuery(normalized.length >= 3 ? normalized : "");
+  }
+
+  const visibleBoxes = filterBoxes(boxes, query);
+
+  if (!session || demo) {
+    return <OrdersTable title="Коробки" />;
+  }
+
+  return <>
+    <section className="panel table-panel">
+      <div className="panel-title"><div><p className="eyebrow dark">КОРОБКИ</p><h3>Список коробок</h3></div><button className="action-button" onClick={load}>Обновить</button></div>
+      <div className="order-tools">
+        <label><span>Поиск по треку или складу</span><input value={queryDraft} onChange={(event) => updateSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") setQuery(queryDraft.trim()); }} placeholder="Минимум 3 символа или Enter" /></label>
+        <div className="status-pills"><span>{boxes.length} всего</span><span>{boxes.filter((box) => !box.partial).length} без партии</span></div>
+      </div>
+      {message && <p className="form-error">{message}</p>}
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Склад</th><th>Заказы</th><th>Вес</th><th>Размеры</th><th>Партия</th><th></th></tr></thead><tbody>{visibleBoxes.map((box) => <tr key={box.guid}><td><strong>{box.tracking_code}</strong></td><td>{box.warehouse_name || box.warehouse}</td><td>{box.orderCount}</td><td>{formatWeight(box.gross_weight)}</td><td>{box.length}×{box.width}×{box.height}</td><td>{box.partial ? <span className="status good">В партии</span> : <span className="status">Открыта</span>}</td><td><button className="table-action" onClick={() => openBox(box)}>Открыть</button></td></tr>)}</tbody></table></div>
+      {!visibleBoxes.length && <p className="empty-state">Коробки не найдены.</p>}
+    </section>
+    {active && <section className="panel editor-card">
+      <div className="panel-title"><div><p className="eyebrow dark">СОСТАВ</p><h3>{active.tracking_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
+      <div className="summary-strip"><div><small>Склад</small><strong>{active.warehouse_name || active.warehouse}</strong></div><div><small>Заказы</small><strong>{orders.length}</strong></div><div><small>Вес</small><strong>{formatWeight(active.gross_weight)}</strong></div><div><small>Размеры</small><strong>{active.length}×{active.width}×{active.height}</strong></div><div><small>Объемный вес</small><strong>{formatWeight(active.v_weight)}</strong></div></div>
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Клиент</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th></tr></thead><tbody>{orders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td>{order.client_code ? <code>{order.client_code}</code> : "—"} {order.client || ""}</td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td></tr>)}</tbody></table></div>
+      {!orders.length && <p className="empty-state">В коробке пока нет заказов.</p>}
+    </section>}
+  </>;
 }
 
-function Batches() {
-  return <section className="panel"><div className="panel-title"><div><p className="eyebrow dark">ОТПРАВКА</p><h3>Активные партии</h3></div><button className="action-button">+ Создать партию</button></div>{["ML-0726 · Málaga","MD-0725 · Madrid","BC-0724 · Barcelona"].map((name, i) => <div className="batch-row" key={name}><span>0{i + 1}</span><div><strong>{name}</strong><small>{[8,5,3][i]} коробок · {[126,84,41][i]} кг</small></div><div className="progress"><i style={{ width: `${[82,55,34][i]}%` }} /></div><b>{[82,55,34][i]}%</b></div>)}</section>;
+function Batches({ session, demo }: { session: Session | null; demo: boolean }) {
+  const [batches, setBatches] = useState<BatchSummary[]>([]);
+  const [active, setActive] = useState<BatchSummary | null>(null);
+  const [boxes, setBoxes] = useState<BoxSummary[]>([]);
+  const [queryDraft, setQueryDraft] = useState("");
+  const [query, setQuery] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function load() {
+    if (!session || demo) return;
+    setMessage("");
+    try {
+      setBatches(await apiRequest<BatchSummary[]>("/api/order/partial", {}, session));
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить партии");
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, [session, demo]);
+
+  async function openBatch(batch: BatchSummary) {
+    if (!session || demo) return;
+    setActive(batch);
+    setMessage("");
+    try {
+      setBoxes(await apiRequest<BoxSummary[]>(`/api/order/partial-box?guid=${batch.guid}`, {}, session));
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить коробки партии");
+    }
+  }
+
+  async function completeBatch(batch: BatchSummary) {
+    if (!session || demo) return;
+    setMessage("");
+    try {
+      await apiRequest("/api/order/send-partial", {
+        method: "POST",
+        body: JSON.stringify({ partial: batch.guid }),
+      }, session);
+      await load();
+      setActive(null);
+      setMessage("Партия завершена");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось завершить партию");
+    }
+  }
+
+  function updateSearch(value: string) {
+    setQueryDraft(value);
+    const normalized = value.trim();
+    setQuery(normalized.length >= 3 ? normalized : "");
+  }
+
+  const visibleBatches = filterBatches(batches, query);
+
+  if (!session || demo) {
+    return <section className="panel"><div className="panel-title"><div><p className="eyebrow dark">ОТПРАВКА</p><h3>Активные партии</h3></div></div></section>;
+  }
+
+  return <>
+    <section className="panel table-panel">
+      <div className="panel-title"><div><p className="eyebrow dark">ОТПРАВКА</p><h3>Партии</h3></div><button className="action-button" onClick={load}>Обновить</button></div>
+      <div className="order-tools">
+        <label><span>Поиск по коду или складу</span><input value={queryDraft} onChange={(event) => updateSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") setQuery(queryDraft.trim()); }} placeholder="Минимум 3 символа или Enter" /></label>
+        <div className="status-pills"><span>{batches.length} всего</span><span>{batches.filter((batch) => batch.status === 0).length} открыто</span><span>{batches.filter((batch) => batch.status === 1).length} завершено</span></div>
+      </div>
+      {message && <p className="save-notice">{message}</p>}
+      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Название</th><th>Склад</th><th>Коробки</th><th>Вес</th><th>Статус</th><th></th></tr></thead><tbody>{visibleBatches.map((batch) => <tr key={batch.guid}><td><code>{batch.partial_code}</code></td><td><strong>{batch.partial_name}</strong></td><td>{batch.warehouse_name}</td><td>{batch.boxCount}</td><td>{formatWeight(batch.gross_weight)}</td><td>{batch.status === 1 ? <span className="status good">Завершена</span> : <span className="status">Открыта</span>}</td><td><button className="table-action" onClick={() => openBatch(batch)}>Открыть</button></td></tr>)}</tbody></table></div>
+      {!visibleBatches.length && <p className="empty-state">Партии не найдены.</p>}
+    </section>
+    {active && <section className="panel editor-card">
+      <div className="panel-title"><div><p className="eyebrow dark">ДЕТАЛИ ПАРТИИ</p><h3>{active.partial_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
+      <div className="summary-strip"><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{boxes.length}</strong></div><div><small>Вес</small><strong>{formatWeight(active.gross_weight)}</strong></div><div><small>Статус</small><strong>{active.status === 1 ? "Завершена" : "Открыта"}</strong></div><div><small>Дата</small><strong>{formatDate(active.date_created)}</strong></div></div>
+      {active.status === 0 && <button className="primary-button narrow" onClick={() => completeBatch(active)}>Завершить партию</button>}
+      <div className="table-scroll"><table><thead><tr><th>Трек коробки</th><th>Размеры</th><th>Вес</th><th>Склад</th></tr></thead><tbody>{boxes.map((box) => <tr key={box.guid}><td><strong>{box.tracking_code}</strong></td><td>{box.length}×{box.width}×{box.height}</td><td>{formatWeight(box.gross_weight)}</td><td>{box.warehouse_name || active.warehouse_name}</td></tr>)}</tbody></table></div>
+      {!boxes.length && <p className="empty-state">В партии пока нет коробок.</p>}
+    </section>}
+  </>;
+}
+
+function filterBoxes(boxes: BoxSummary[], query: string) {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return boxes;
+  return boxes.filter((box) =>
+    box.tracking_code.toLowerCase().includes(normalized) ||
+    box.warehouse.toLowerCase().includes(normalized) ||
+    box.warehouse_name.toLowerCase().includes(normalized),
+  );
+}
+
+function filterBatches(batches: BatchSummary[], query: string) {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return batches;
+  return batches.filter((batch) =>
+    batch.partial_code.toLowerCase().includes(normalized) ||
+    batch.partial_name.toLowerCase().includes(normalized) ||
+    batch.warehouse_name.toLowerCase().includes(normalized),
+  );
 }
 
 function Manifests({ session }: { session: Session | null }) {

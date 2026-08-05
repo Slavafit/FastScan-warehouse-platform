@@ -16,6 +16,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Real client order page in Web with order analytics, tracking search, composition, description, declared value, weight, and box data.
 - Admin dictionaries for order composition, warehouses, countries, order statuses, currencies, and packaging types with enable/disable instead of deletion.
 - Three-character search and Enter-to-search behavior for client order tracking and admin dictionary screens.
+- Real Web pages for boxes and batches: database-backed lists, search, box contents, batch boxes, and batch completion.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

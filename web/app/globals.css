@@ -49,6 +49,7 @@ input:focus, select:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgb
 .primary-button { width: 100%; border: 0; padding: 15px 20px; margin-top: 12px; background: var(--ink); color: #fff; font-weight: 800; }
 .primary-button:hover { background: var(--ink-soft); }
 .primary-button:disabled { opacity: .6; }
+.primary-button.narrow { width: auto; min-width: 220px; margin: 0 0 18px; }
 .demo-button { width: 100%; border: 0; padding: 13px; margin-top: 8px; background: transparent; color: #4c6962; font-weight: 700; }
 .form-error { padding: 10px 12px; color: #9e3e35; background: #fff0ed; font-size: 13px; }
 

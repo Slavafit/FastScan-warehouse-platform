@@ -13,7 +13,7 @@ import {
   Min,
   MinLength,
 } from 'class-validator';
-import { Role } from './generated/prisma/client.js';
+import { DictionaryType, Role } from './generated/prisma/client.js';
 
 export class LoginDto {
   @IsString() @IsNotEmpty() login!: string;
@@ -113,6 +113,19 @@ export class StaffUserDto {
 
 export class StaffUserStatusDto {
   @IsBoolean() enabled!: boolean;
+}
+
+export class OrderCompositionDto {
+  @IsString() @IsNotEmpty() @MaxLength(50) code!: string;
+  @IsString() @IsNotEmpty() @MaxLength(120) name!: string;
+  @IsOptional() @IsInt() sort_order = 0;
+}
+
+export class DictionaryItemDto {
+  @IsEnum(DictionaryType) type!: DictionaryType;
+  @IsString() @IsNotEmpty() @MaxLength(50) code!: string;
+  @IsString() @IsNotEmpty() @MaxLength(120) name!: string;
+  @IsOptional() @IsInt() sort_order = 0;
 }
 
 export class StaffClientUpdateDto {

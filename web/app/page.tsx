@@ -123,6 +123,38 @@ type ClientAnalytics = {
   unread_notifications: number;
 };
 
+type DictionaryType =
+  | "WAREHOUSE"
+  | "COUNTRY"
+  | "ORDER_STATUS"
+  | "CURRENCY"
+  | "PACKAGING_TYPE";
+
+type DictionaryItem = {
+  guid: string;
+  type?: DictionaryType;
+  code: string;
+  name: string;
+  enabled: boolean;
+  sort_order: number;
+  used_count: number;
+};
+
+type DictionaryDraft = {
+  guid?: string;
+  code: string;
+  name: string;
+  sort_order: number;
+};
+
+const dictionaryTypes: Array<[DictionaryType, string]> = [
+  ["WAREHOUSE", "Склады"],
+  ["COUNTRY", "Страны"],
+  ["ORDER_STATUS", "Статусы"],
+  ["CURRENCY", "Валюты"],
+  ["PACKAGING_TYPE", "Упаковка"],
+];
+
 const warehouseNav: Array<[View, string, string]> = [
   ["overview", "Обзор", "⌂"],
   ["clients", "Клиенты", "◎"],
@@ -494,6 +526,7 @@ function Orders({ client, session, demo }: { client: boolean; session: Session |
 function ClientOrders({ session }: { session: Session }) {
   const [orders, setOrders] = useState<ClientOrder[]>([]);
   const [analytics, setAnalytics] = useState<ClientAnalytics | null>(null);
+  const [queryDraft, setQueryDraft] = useState("");
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -519,6 +552,16 @@ function ClientOrders({ session }: { session: Session }) {
     load();
   }, [session]);
 
+  function updateTrackSearch(value: string) {
+    setQueryDraft(value);
+    const normalized = value.trim();
+    setQuery(normalized.length >= 3 ? normalized : "");
+  }
+
+  function applyTrackSearch() {
+    setQuery(queryDraft.trim());
+  }
+
   const normalizedQuery = query.trim().toLowerCase();
   const visibleOrders = normalizedQuery
     ? orders.filter((order) => order.tracking_number.toLowerCase().includes(normalizedQuery))
@@ -538,7 +581,7 @@ function ClientOrders({ session }: { session: Session }) {
         <button className="action-button" type="button" onClick={load}>Обновить</button>
       </div>
       <div className="order-tools">
-        <label><span>Поиск по треку</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Например CA912770346ES" /></label>
+        <label><span>Поиск по треку</span><input value={queryDraft} onChange={(event) => updateTrackSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") applyTrackSearch(); }} placeholder="Минимум 3 символа или Enter" /></label>
         <div className="status-pills">
           {statusItems.length ? statusItems.map(([status, count]) => <span key={status}>{status || "Без статуса"} · {count}</span>) : <span>Статусы появятся после загрузки заказов</span>}
         </div>
@@ -699,7 +742,159 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
     <button className="primary-button" onClick={save}>Сохранить</button>
     {notice && <p className="save-notice">{notice}</p>}
     {!client && <StaffUsers session={session} demo={demo} />}
+    {!client && <AdminDictionaries session={session} demo={demo} />}
   </article><article className="panel system-card"><p className="eyebrow dark">СИСТЕМА</p><h3>FastScan API</h3><dl><div><dt>Склад</dt><dd>{platform.warehouse || "BMG"}</dd></div><div><dt>Страна</dt><dd>{platform.country || "España"}</dd></div><div><dt>API</dt><dd>v0.4.0</dd></div><div><dt>Состояние</dt><dd><span className="signal-dot" /> Работает</dd></div></dl></article></section>;
+}
+
+function AdminDictionaries({ session, demo }: { session: Session | null; demo: boolean }) {
+  const [compositions, setCompositions] = useState<DictionaryItem[]>([]);
+  const [items, setItems] = useState<DictionaryItem[]>([]);
+  const [selectedType, setSelectedType] = useState<DictionaryType>("WAREHOUSE");
+  const [compositionDraft, setCompositionDraft] = useState<DictionaryDraft>({ code: "", name: "", sort_order: 0 });
+  const [dictionaryDraft, setDictionaryDraft] = useState<DictionaryDraft>({ code: "", name: "", sort_order: 0 });
+  const [compositionSearchDraft, setCompositionSearchDraft] = useState("");
+  const [compositionSearch, setCompositionSearch] = useState("");
+  const [dictionarySearchDraft, setDictionarySearchDraft] = useState("");
+  const [dictionarySearch, setDictionarySearch] = useState("");
+  const [message, setMessage] = useState("");
+
+  async function loadCompositions() {
+    if (!session || demo) return;
+    setCompositions(await apiRequest<DictionaryItem[]>("/api/admin/order-compositions", {}, session));
+  }
+
+  async function loadDictionary(type = selectedType) {
+    if (!session || demo) return;
+    setItems(await apiRequest<DictionaryItem[]>(`/api/admin/dictionaries?type=${type}`, {}, session));
+  }
+
+  useEffect(() => {
+    Promise.all([loadCompositions(), loadDictionary()]).catch((exception) =>
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить справочники"),
+    );
+  }, [session, demo]);
+
+  useEffect(() => {
+    setDictionaryDraft({ code: "", name: "", sort_order: 0 });
+    setDictionarySearchDraft("");
+    setDictionarySearch("");
+    loadDictionary(selectedType).catch((exception) =>
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить справочник"),
+    );
+  }, [selectedType]);
+
+  function updateSearch(value: string, draft: (value: string) => void, apply: (value: string) => void) {
+    draft(value);
+    const normalized = value.trim();
+    apply(normalized.length >= 3 ? normalized : "");
+  }
+
+  function filterDictionary(values: DictionaryItem[], search: string) {
+    const normalized = search.trim().toLowerCase();
+    if (!normalized) return values;
+    return values.filter((item) =>
+      item.code.toLowerCase().includes(normalized) ||
+      item.name.toLowerCase().includes(normalized),
+    );
+  }
+
+  async function saveComposition(event: FormEvent) {
+    event.preventDefault();
+    if (!session || demo) {
+      setMessage("Демо: состав не сохранен на сервере");
+      return;
+    }
+    setMessage("");
+    try {
+      await apiRequest(compositionDraft.guid ? `/api/admin/order-compositions/${compositionDraft.guid}` : "/api/admin/order-compositions", {
+        method: compositionDraft.guid ? "PUT" : "POST",
+        body: JSON.stringify(compositionDraft),
+      }, session);
+      setCompositionDraft({ code: "", name: "", sort_order: 0 });
+      await loadCompositions();
+      setMessage(compositionDraft.guid ? "Состав заказа обновлен" : "Состав заказа сохранен");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось сохранить состав");
+    }
+  }
+
+  async function saveDictionary(event: FormEvent) {
+    event.preventDefault();
+    if (!session || demo) {
+      setMessage("Демо: значение не сохранено на сервере");
+      return;
+    }
+    setMessage("");
+    try {
+      await apiRequest(dictionaryDraft.guid ? `/api/admin/dictionaries/${dictionaryDraft.guid}` : "/api/admin/dictionaries", {
+        method: dictionaryDraft.guid ? "PUT" : "POST",
+        body: JSON.stringify({ ...dictionaryDraft, type: selectedType }),
+      }, session);
+      setDictionaryDraft({ code: "", name: "", sort_order: 0 });
+      await loadDictionary();
+      setMessage(dictionaryDraft.guid ? "Значение справочника обновлено" : "Значение справочника сохранено");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось сохранить значение");
+    }
+  }
+
+  async function toggleComposition(item: DictionaryItem) {
+    if (!session || demo) return;
+    const updated = await apiRequest<DictionaryItem>(`/api/admin/order-compositions/${item.guid}/enabled`, {
+      method: "PUT",
+      body: JSON.stringify({ enabled: !item.enabled }),
+    }, session);
+    setCompositions((current) => current.map((entry) => entry.guid === updated.guid ? updated : entry));
+  }
+
+  async function toggleDictionary(item: DictionaryItem) {
+    if (!session || demo) return;
+    const updated = await apiRequest<DictionaryItem>(`/api/admin/dictionaries/${item.guid}/enabled`, {
+      method: "PUT",
+      body: JSON.stringify({ enabled: !item.enabled }),
+    }, session);
+    setItems((current) => current.map((entry) => entry.guid === updated.guid ? updated : entry));
+  }
+
+  return <section className="admin-dictionaries">
+    <div className="section-title"><div><p className="eyebrow dark">СПРАВОЧНИКИ</p><h4>Состав заказа</h4></div><button className="action-button" type="button" onClick={loadCompositions}>Обновить</button></div>
+    <form className="dictionary-form" onSubmit={saveComposition}>
+      <label><span>Код</span><input value={compositionDraft.code} onChange={(event) => setCompositionDraft({ ...compositionDraft, code: event.target.value.toUpperCase() })} /></label>
+      <label><span>Название</span><input value={compositionDraft.name} onChange={(event) => setCompositionDraft({ ...compositionDraft, name: event.target.value })} /></label>
+      <label><span>Порядок</span><input type="number" value={compositionDraft.sort_order} onChange={(event) => setCompositionDraft({ ...compositionDraft, sort_order: Number(event.target.value) })} /></label>
+      <button className="primary-button" disabled={!compositionDraft.code.trim() || !compositionDraft.name.trim()}>{compositionDraft.guid ? "Сохранить" : "Добавить"}</button>
+    </form>
+    {compositionDraft.guid && <button className="demo-button compact" type="button" onClick={() => setCompositionDraft({ code: "", name: "", sort_order: 0 })}>Отменить редактирование</button>}
+    <label className="dictionary-search"><span>Поиск по коду или названию</span><input value={compositionSearchDraft} onChange={(event) => updateSearch(event.target.value, setCompositionSearchDraft, setCompositionSearch)} onKeyDown={(event) => { if (event.key === "Enter") setCompositionSearch(compositionSearchDraft.trim()); }} placeholder="Минимум 3 символа или Enter" /></label>
+    <DictionaryRows items={filterDictionary(compositions, compositionSearch)} toggle={toggleComposition} edit={(item) => setCompositionDraft({ guid: item.guid, code: item.code, name: item.name, sort_order: item.sort_order })} />
+
+    <div className="section-title"><div><p className="eyebrow dark">НАСТРОЙКИ</p><h4>Системные значения</h4></div></div>
+    <div className="dictionary-tabs">{dictionaryTypes.map(([type, label]) => <button key={type} type="button" className={selectedType === type ? "active" : ""} onClick={() => setSelectedType(type)}>{label}</button>)}</div>
+    <form className="dictionary-form" onSubmit={saveDictionary}>
+      <label><span>Код</span><input value={dictionaryDraft.code} onChange={(event) => setDictionaryDraft({ ...dictionaryDraft, code: event.target.value.toUpperCase() })} /></label>
+      <label><span>Название</span><input value={dictionaryDraft.name} onChange={(event) => setDictionaryDraft({ ...dictionaryDraft, name: event.target.value })} /></label>
+      <label><span>Порядок</span><input type="number" value={dictionaryDraft.sort_order} onChange={(event) => setDictionaryDraft({ ...dictionaryDraft, sort_order: Number(event.target.value) })} /></label>
+      <button className="primary-button" disabled={!dictionaryDraft.code.trim() || !dictionaryDraft.name.trim()}>{dictionaryDraft.guid ? "Сохранить" : "Добавить"}</button>
+    </form>
+    {dictionaryDraft.guid && <button className="demo-button compact" type="button" onClick={() => setDictionaryDraft({ code: "", name: "", sort_order: 0 })}>Отменить редактирование</button>}
+    <label className="dictionary-search"><span>Поиск по коду или названию</span><input value={dictionarySearchDraft} onChange={(event) => updateSearch(event.target.value, setDictionarySearchDraft, setDictionarySearch)} onKeyDown={(event) => { if (event.key === "Enter") setDictionarySearch(dictionarySearchDraft.trim()); }} placeholder="Минимум 3 символа или Enter" /></label>
+    <DictionaryRows items={filterDictionary(items, dictionarySearch)} toggle={toggleDictionary} edit={(item) => setDictionaryDraft({ guid: item.guid, code: item.code, name: item.name, sort_order: item.sort_order })} />
+    <p className="field-note">Используемые значения не удаляются: их можно отключить, чтобы скрыть из новых операций и сохранить историю.</p>
+    {message && <p className="save-notice">{message}</p>}
+  </section>;
+}
+
+function DictionaryRows({ items, toggle, edit }: { items: DictionaryItem[]; toggle: (item: DictionaryItem) => void; edit: (item: DictionaryItem) => void }) {
+  return <div className="dictionary-list">
+    {items.map((item) => <div className="dictionary-row" key={item.guid}>
+      <code>{item.code}</code>
+      <div><strong>{item.name}</strong><small>Порядок {item.sort_order} · используется {item.used_count}</small></div>
+      <span className={item.enabled ? "status good" : "status blocked"}>{item.enabled ? "Активно" : "Отключено"}</span>
+      <button className="table-action" type="button" onClick={() => edit(item)}>Изменить</button>
+      <button className="table-action" type="button" onClick={() => toggle(item)}>{item.enabled ? "Отключить" : "Включить"}</button>
+    </div>)}
+    {!items.length && <p className="empty-state">Значения пока не добавлены.</p>}
+  </div>;
 }
 
 function StaffUsers({ session, demo }: { session: Session | null; demo: boolean }) {

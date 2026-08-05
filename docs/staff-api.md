@@ -14,6 +14,19 @@
 - `POST /api/admin/users` — создание сотрудника с ролью `WORKER`.
 - `PUT /api/admin/users/{id}/enabled` — блокировка или разблокировка сотрудника.
 
+## Справочники
+
+- `GET /api/admin/order-compositions` — список значений состава заказа с количеством использований;
+- `POST /api/admin/order-compositions` — создание значения состава заказа;
+- `PUT /api/admin/order-compositions/{id}` — изменение кода, названия и порядка;
+- `PUT /api/admin/order-compositions/{id}/enabled` — включение или отключение значения;
+- `GET /api/admin/dictionaries?type=...` — список системных справочников;
+- `POST /api/admin/dictionaries` — создание значения справочника;
+- `PUT /api/admin/dictionaries/{id}` — изменение значения справочника;
+- `PUT /api/admin/dictionaries/{id}/enabled` — включение или отключение значения.
+
+Используемые значения не удаляются, чтобы не ломать историю заказов, коробок, партий и манифестов. Для новых операций значение можно отключить.
+
 ## Клиенты
 
 - `GET /api/staff/clients` — список клиентов;

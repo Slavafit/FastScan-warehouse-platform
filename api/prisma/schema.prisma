@@ -22,6 +22,14 @@ enum NotificationType {
   ORDER_UNPACKED
 }
 
+enum DictionaryType {
+  WAREHOUSE
+  COUNTRY
+  ORDER_STATUS
+  CURRENCY
+  PACKAGING_TYPE
+}
+
 model User {
   id           String         @id @default(uuid()) @db.Uuid
   login        String         @unique @db.VarChar(254)
@@ -160,6 +168,20 @@ model OrderComposition {
 
   @@index([enabled, sortOrder])
   @@map("order_composition")
+}
+
+model DictionaryItem {
+  id        String         @id @default(uuid()) @db.Uuid
+  type      DictionaryType
+  code      String         @db.VarChar(50)
+  name      String         @db.VarChar(120)
+  enabled   Boolean        @default(true)
+  sortOrder Int            @default(0) @map("sort_order")
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([type, code])
+  @@index([type, enabled, sortOrder])
+  @@map("dictionary_item")
 }
 
 model ClientCodeConfig {

@@ -17,6 +17,17 @@ export const NotificationType = {
 export type NotificationType =
   (typeof NotificationType)[keyof typeof NotificationType];
 
+export const DictionaryType = {
+  WAREHOUSE: 'WAREHOUSE',
+  COUNTRY: 'COUNTRY',
+  ORDER_STATUS: 'ORDER_STATUS',
+  CURRENCY: 'CURRENCY',
+  PACKAGING_TYPE: 'PACKAGING_TYPE',
+} as const;
+
+export type DictionaryType =
+  (typeof DictionaryType)[keyof typeof DictionaryType];
+
 export const Prisma = {};
 
 export class PrismaClient {}

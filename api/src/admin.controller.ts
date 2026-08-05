@@ -12,12 +12,18 @@ import {
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { hash } from 'bcryptjs';
 import {
+  DictionaryItemDto,
   NotificationDto,
+  OrderCompositionDto,
   PlatformSettingsDto,
   StaffUserDto,
   StaffUserStatusDto,
 } from './dto.js';
-import { NotificationType, Role } from './generated/prisma/client.js';
+import {
+  DictionaryType,
+  NotificationType,
+  Role,
+} from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
 import { PrismaService } from './prisma.service.js';
@@ -111,6 +117,117 @@ export class AdminController {
     };
   }
 
+  @Get('order-compositions')
+  async orderCompositions() {
+    const items = await this.prisma.orderComposition.findMany({
+      include: { _count: { select: { orders: true } } },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    return items.map((item) => ({
+      guid: item.id,
+      code: item.code,
+      name: item.name,
+      enabled: item.enabled,
+      sort_order: item.sortOrder,
+      used_count: item._count.orders,
+    }));
+  }
+
+  @Post('order-compositions')
+  async createOrderComposition(@Body() dto: OrderCompositionDto) {
+    const code = dto.code.trim().toUpperCase();
+    if (await this.prisma.orderComposition.findUnique({ where: { code } })) {
+      throw new ConflictException('Order composition already exists');
+    }
+    const item = await this.prisma.orderComposition.create({
+      data: {
+        code,
+        name: dto.name.trim(),
+        sortOrder: dto.sort_order,
+      },
+      include: { _count: { select: { orders: true } } },
+    });
+    return this.orderCompositionResponse(item);
+  }
+
+  @Put('order-compositions/:id')
+  async updateOrderComposition(
+    @Param('id') id: string,
+    @Body() dto: OrderCompositionDto,
+  ) {
+    const code = dto.code.trim().toUpperCase();
+    const existing = await this.prisma.orderComposition.findUnique({
+      where: { code },
+    });
+    if (existing && existing.id !== id) {
+      throw new ConflictException('Order composition already exists');
+    }
+    const item = await this.prisma.orderComposition.update({
+      where: { id },
+      data: {
+        code,
+        name: dto.name.trim(),
+        sortOrder: dto.sort_order,
+      },
+      include: { _count: { select: { orders: true } } },
+    });
+    return this.orderCompositionResponse(item);
+  }
+
+  @Put('order-compositions/:id/enabled')
+  async setOrderCompositionEnabled(
+    @Param('id') id: string,
+    @Body() dto: StaffUserStatusDto,
+  ) {
+    const item = await this.prisma.orderComposition.update({
+      where: { id },
+      data: { enabled: dto.enabled },
+      include: { _count: { select: { orders: true } } },
+    });
+    return this.orderCompositionResponse(item);
+  }
+
+  @Get('dictionaries')
+  async dictionaries(@Query('type') type?: DictionaryType) {
+    const items = await this.prisma.dictionaryItem.findMany({
+      where: type ? { type } : {},
+      orderBy: [{ type: 'asc' }, { sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    return Promise.all(items.map((item) => this.dictionaryResponse(item)));
+  }
+
+  @Post('dictionaries')
+  async createDictionaryItem(@Body() dto: DictionaryItemDto) {
+    const item = await this.prisma.dictionaryItem.create({
+      data: this.dictionaryData(dto),
+    });
+    return this.dictionaryResponse(item);
+  }
+
+  @Put('dictionaries/:id')
+  async updateDictionaryItem(
+    @Param('id') id: string,
+    @Body() dto: DictionaryItemDto,
+  ) {
+    const item = await this.prisma.dictionaryItem.update({
+      where: { id },
+      data: this.dictionaryData(dto),
+    });
+    return this.dictionaryResponse(item);
+  }
+
+  @Put('dictionaries/:id/enabled')
+  async setDictionaryItemEnabled(
+    @Param('id') id: string,
+    @Body() dto: StaffUserStatusDto,
+  ) {
+    const item = await this.prisma.dictionaryItem.update({
+      where: { id },
+      data: { enabled: dto.enabled },
+    });
+    return this.dictionaryResponse(item);
+  }
+
   @Put('client-code-settings')
   async updateCodeSettings(@Body() dto: PlatformSettingsDto) {
     const prefix = dto.prefix.trim().toUpperCase();
@@ -181,5 +298,92 @@ export class AdminController {
       user: log.user,
       created_at: log.createdAt.toISOString(),
     }));
+  }
+
+  private orderCompositionResponse(item: {
+    id: string;
+    code: string;
+    name: string;
+    enabled: boolean;
+    sortOrder: number;
+    _count: { orders: number };
+  }) {
+    return {
+      guid: item.id,
+      code: item.code,
+      name: item.name,
+      enabled: item.enabled,
+      sort_order: item.sortOrder,
+      used_count: item._count.orders,
+    };
+  }
+
+  private dictionaryData(dto: DictionaryItemDto) {
+    return {
+      type: dto.type,
+      code: dto.code.trim().toUpperCase(),
+      name: dto.name.trim(),
+      sortOrder: dto.sort_order,
+    };
+  }
+
+  private async dictionaryResponse(item: {
+    id: string;
+    type: DictionaryType;
+    code: string;
+    name: string;
+    enabled: boolean;
+    sortOrder: number;
+  }) {
+    return {
+      guid: item.id,
+      type: item.type,
+      code: item.code,
+      name: item.name,
+      enabled: item.enabled,
+      sort_order: item.sortOrder,
+      used_count: await this.dictionaryUsage(item.type, item.code, item.name),
+    };
+  }
+
+  private async dictionaryUsage(
+    type: DictionaryType,
+    code: string,
+    name: string,
+  ) {
+    if (type === DictionaryType.CURRENCY) {
+      return this.prisma.shipmentOrder.count({ where: { currency: code } });
+    }
+    if (type === DictionaryType.ORDER_STATUS) {
+      return this.prisma.shipmentOrder.count({
+        where: { OR: [{ statusName: code }, { statusName: name }] },
+      });
+    }
+    if (type === DictionaryType.WAREHOUSE) {
+      const [boxes, batches, manifests] = await Promise.all([
+        this.prisma.warehouseBox.count({
+          where: { OR: [{ warehouse: code }, { warehouse: name }] },
+        }),
+        this.prisma.partialBatch.count({
+          where: { OR: [{ warehouseName: code }, { warehouseName: name }] },
+        }),
+        this.prisma.manifest.count({
+          where: { OR: [{ warehouseName: code }, { warehouseName: name }] },
+        }),
+      ]);
+      return boxes + batches + manifests;
+    }
+    if (type === DictionaryType.COUNTRY) {
+      const [settings, manifests] = await Promise.all([
+        this.prisma.clientCodeConfig.count({
+          where: { OR: [{ country: code }, { country: name }] },
+        }),
+        this.prisma.manifest.count({
+          where: { OR: [{ country: code }, { country: name }] },
+        }),
+      ]);
+      return settings + manifests;
+    }
+    return 0;
   }
 }

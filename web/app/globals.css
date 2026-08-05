@@ -171,6 +171,18 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 .staff-row small { color: var(--muted); font-size: 11px; }
 .status.blocked { color: #9e3e35; background: #fff0ed; }
 .table-action:disabled { opacity: .45; cursor: not-allowed; }
+.admin-dictionaries { margin-top: 10px; }
+.dictionary-form { display: grid; grid-template-columns: minmax(120px, .7fr) minmax(180px, 1fr) 110px 120px; gap: 12px; align-items: end; margin-bottom: 14px; }
+.dictionary-form label, .dictionary-form .primary-button { margin: 0; }
+.dictionary-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.dictionary-tabs button { border: 1px solid #bac9c0; padding: 9px 11px; color: var(--ink); background: transparent; font-size: 12px; font-weight: 800; }
+.dictionary-tabs button.active { border-color: var(--ink); color: #fff; background: var(--ink); }
+.dictionary-search { margin: 0 0 12px; }
+.dictionary-list { display: grid; gap: 1px; margin: 0 0 16px; border: 1px solid var(--line); background: var(--line); }
+.dictionary-row { display: grid; grid-template-columns: 112px minmax(180px, 1fr) 100px 92px 110px; gap: 12px; align-items: center; padding: 12px; background: #f8faf7; }
+.dictionary-row div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dictionary-row small { color: var(--muted); font-size: 11px; }
+.demo-button.compact { width: auto; padding: 8px 0; margin: -6px 0 12px; text-align: left; }
 .system-card dl { margin: 24px 0 0; }
 .system-card dl div { display: flex; justify-content: space-between; padding: 14px 0; border-top: 1px solid var(--line); }
 .system-card dt { color: var(--muted); }
@@ -216,4 +228,5 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
   .manifest-controls, .summary-strip { grid-template-columns: 1fr; }
   .staff-create, .staff-row { grid-template-columns: 1fr; }
   .order-tools { grid-template-columns: 1fr; }
+  .dictionary-form, .dictionary-row { grid-template-columns: 1fr; }
 }

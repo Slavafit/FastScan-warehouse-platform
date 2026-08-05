@@ -97,6 +97,32 @@ type ManifestRecord = {
   orders: ManifestOrder[];
 };
 
+type ClientOrder = {
+  guid: string;
+  tracking_number: string;
+  status_name: string;
+  gross_weight: number | null;
+  with_box: boolean;
+  box_tracking_code: string | null;
+  composition_guid: string | null;
+  composition: string | null;
+  description: string | null;
+  declared_value: number | null;
+  currency: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type ClientAnalytics = {
+  total_orders: number;
+  packed_orders: number;
+  unpacked_orders: number;
+  total_weight: number;
+  boxes_count: number;
+  status_breakdown: Record<string, number>;
+  unread_notifications: number;
+};
+
 const warehouseNav: Array<[View, string, string]> = [
   ["overview", "Обзор", "⌂"],
   ["clients", "Клиенты", "◎"],
@@ -294,7 +320,7 @@ export default function FastScanWeb() {
         <div className="content">
           {view === "overview" && <Overview client={role === "CLIENT"} />}
           {view === "clients" && (session && (role === "ADMIN" || role === "WORKER") ? <StaffClients session={session} /> : <Clients />)}
-          {view === "orders" && <Orders client={role === "CLIENT"} />}
+          {view === "orders" && <Orders client={role === "CLIENT"} session={session} demo={demo} />}
           {view === "boxes" && <Boxes />}
           {view === "batches" && <Batches />}
           {view === "manifests" && <Manifests session={session} />}
@@ -460,8 +486,83 @@ function StaffClients({ session }: { session: Session }) {
   </>;
 }
 
-function Orders({ client }: { client: boolean }) {
+function Orders({ client, session, demo }: { client: boolean; session: Session | null; demo: boolean }) {
+  if (client && session && !demo) return <ClientOrders session={session} />;
   return <OrdersTable title={client ? "Мои заказы" : "Все заказы"} />;
+}
+
+function ClientOrders({ session }: { session: Session }) {
+  const [orders, setOrders] = useState<ClientOrder[]>([]);
+  const [analytics, setAnalytics] = useState<ClientAnalytics | null>(null);
+  const [query, setQuery] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  async function load() {
+    setLoading(true);
+    setMessage("");
+    try {
+      const [loadedOrders, loadedAnalytics] = await Promise.all([
+        apiRequest<ClientOrder[]>("/api/client/orders", {}, session),
+        apiRequest<ClientAnalytics>("/api/client/analytics", {}, session),
+      ]);
+      setOrders(loadedOrders);
+      setAnalytics(loadedAnalytics);
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить заказы");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    load();
+  }, [session]);
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleOrders = normalizedQuery
+    ? orders.filter((order) => order.tracking_number.toLowerCase().includes(normalizedQuery))
+    : orders;
+  const statusItems = Object.entries(analytics?.status_breakdown ?? {});
+
+  return <>
+    <section className="metric-grid client-analytics">
+      <article className="metric-card"><span className="metric-index i0">01</span><p>Всего заказов</p><strong>{analytics?.total_orders ?? 0}</strong><small>{analytics?.unpacked_orders ?? 0} без коробки</small></article>
+      <article className="metric-card"><span className="metric-index i1">02</span><p>Упаковано</p><strong>{analytics?.packed_orders ?? 0}</strong><small>{analytics?.boxes_count ?? 0} коробок</small></article>
+      <article className="metric-card"><span className="metric-index i2">03</span><p>Общий вес</p><strong>{(analytics?.total_weight ?? 0).toFixed(2)} кг</strong><small>По всем заказам</small></article>
+      <article className="metric-card"><span className="metric-index i3">04</span><p>Уведомления</p><strong>{analytics?.unread_notifications ?? 0}</strong><small>Непрочитанные</small></article>
+    </section>
+    <section className="panel table-panel">
+      <div className="panel-title">
+        <div><p className="eyebrow dark">ТРЕКИНГ</p><h3>Мои заказы</h3></div>
+        <button className="action-button" type="button" onClick={load}>Обновить</button>
+      </div>
+      <div className="order-tools">
+        <label><span>Поиск по треку</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Например CA912770346ES" /></label>
+        <div className="status-pills">
+          {statusItems.length ? statusItems.map(([status, count]) => <span key={status}>{status || "Без статуса"} · {count}</span>) : <span>Статусы появятся после загрузки заказов</span>}
+        </div>
+      </div>
+      {message && <p className="form-error">{message}</p>}
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th><th>Коробка</th><th>Обновлен</th></tr></thead>
+        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={`status ${order.with_box ? "good" : ""}`}>{order.status_name || "На складе"}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
+      </table></div>
+      {loading && <p className="empty-state">Загружаем заказы...</p>}
+      {!loading && !visibleOrders.length && <p className="empty-state">{query.trim() ? "По этому треку заказ не найден." : "Заказы пока не найдены."}</p>}
+    </section>
+  </>;
+}
+
+function formatWeight(value: number | null) {
+  return value == null ? "—" : `${value.toFixed(3)} кг`;
+}
+
+function formatMoney(value: number | null, currency: string | null) {
+  return value == null ? "—" : `${value.toFixed(2)} ${currency || "EUR"}`;
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("ru", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
 }
 
 function OrdersTable({ compact = false, title = "Последние заказы" }: { compact?: boolean; title?: string }) {

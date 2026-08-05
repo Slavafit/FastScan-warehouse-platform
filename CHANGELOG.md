@@ -13,6 +13,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Манифест завершённой партии: неизменяемый снимок всех заказов из её коробок с клиентскими контактами, общим количеством и весом.
 - Административные методы создания и просмотра сотрудников с ролью `WORKER`.
 - Admin employee management in Web: create `WORKER` accounts and block or unblock staff access.
+- Real client order page in Web with order analytics, tracking search, composition, description, declared value, weight, and box data.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

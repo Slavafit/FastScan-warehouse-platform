@@ -115,6 +115,11 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 .editor-card, .manifest-detail { margin-top: 16px; }
 .manifest-controls { display: grid; grid-template-columns: minmax(260px, 1fr) 220px; gap: 16px; align-items: end; }
 .manifest-controls .primary-button { margin: 18px 0; }
+.client-analytics { margin-bottom: 16px; }
+.order-tools { display: grid; grid-template-columns: minmax(260px, .45fr) 1fr; gap: 16px; align-items: end; margin-bottom: 18px; }
+.order-tools label { margin: 0; }
+.status-pills { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.status-pills span { padding: 8px 10px; color: #31574d; background: #edf4ef; border: 1px solid #d8e5dc; font-size: 12px; font-weight: 750; }
 .summary-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin: 20px 0; background: var(--line); border: 1px solid var(--line); }
 .summary-strip div { display: grid; gap: 6px; padding: 16px; background: #f8faf7; }
 .summary-strip small { color: var(--muted); }
@@ -210,4 +215,5 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
   .form-columns { grid-template-columns: 1fr; }
   .manifest-controls, .summary-strip { grid-template-columns: 1fr; }
   .staff-create, .staff-row { grid-template-columns: 1fr; }
+  .order-tools { grid-template-columns: 1fr; }
 }

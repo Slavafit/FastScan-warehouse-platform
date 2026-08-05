@@ -21,7 +21,7 @@ class OpenBoxesAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
-//диалог добавления коробки
+//Add box dialog
     inner class ViewHolder(private val binding: ItemOpenBoxBinding) : RecyclerView.ViewHolder(binding.root) {
 
         private val context = binding.root.context
@@ -32,7 +32,7 @@ class OpenBoxesAdapter(
                 R.string.sizes, box.width, box.height, box.length)
             binding.tvGrossWeight.text = context.getString(R.string.weight_format, box.gross_weight)
             binding.tvVWeight.text = context.getString(R.string.volume_weight, box.v_weight)
-            //binding.tvOrderCount.text = "Заказов: ${box.orderCount}"
+            //binding.tvOrderCount.text = "Orders: ${box.orderCount}"
 
             binding.root.setOnClickListener {
                 onClick(box)
@@ -41,7 +41,7 @@ class OpenBoxesAdapter(
     }
 }
 
-// Тот же DiffCallback, что и для других адаптеров
+// Same DiffCallback as the other adapters
 class BoxDiffCallback : DiffUtil.ItemCallback<BoxInPartial>() {
     override fun areItemsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial) = oldItem.guid == newItem.guid
     override fun areContentsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial) = oldItem == newItem

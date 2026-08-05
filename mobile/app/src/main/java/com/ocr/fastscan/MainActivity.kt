@@ -32,18 +32,18 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    // Смена языка и темы при запуске приложения
+    // Apply language and theme on app startup
     override fun attachBaseContext(newBase: Context) {
-        // Сначала читаем настройки
+        // Read settings first
         val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
         val lang = prefs.getString("language", LanguageHelper.SYSTEM_LANGUAGE)
             ?: LanguageHelper.SYSTEM_LANGUAGE
         val theme = prefs.getString("theme", "system") ?: "system"
 
-        // Применяем язык
+        // Apply language
         val updatedContext = LanguageHelper.applyLanguage(newBase, lang)
 
-        // Применяем тему (важно делать до super)
+        // Apply theme before calling super
         ThemeHelper.applyTheme(theme)
 
         super.attachBaseContext(updatedContext)
@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Авто-логин и проверка лицензии
+        // Auto-login and license check
         lifecycleScope.launch {
             val token = AppDependencies.tokenManager.getToken()
             if (token.isNullOrEmpty()) {
@@ -84,7 +84,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } else {
                 Log.d("Auth", "Токен найден")
-                // Можно добавить проверку валидности токена позже
+                // Token validity check can be added later
             }
 
             val checker = LicenseChecker(email)
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
             if (licenseResult.hasAccess) {
                 setupNavigation(savedInstanceState)
 
-                // Показываем статус лицензии
+                // Show license status
                 Toast.makeText(this@MainActivity, licenseResult.toUserMessage(), Toast.LENGTH_LONG).show()
             } else {
                 Toast.makeText(this@MainActivity, licenseResult.toUserMessage(), Toast.LENGTH_LONG).show()

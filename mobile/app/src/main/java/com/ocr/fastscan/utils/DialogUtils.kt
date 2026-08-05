@@ -35,7 +35,7 @@ object DialogUtils {
 
         val dialog = builder.create()
 
-        // Слушатель для обновления preview в реальном времени
+        // Listener for live preview updates
         val textWatcher = object : android.text.TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) {
                 calculateAndShowPreview(dialogBinding)
@@ -45,30 +45,30 @@ object DialogUtils {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
 
-        // Привязываем слушатели к полям
+        // Attach listeners to fields
         dialogBinding.etLength.addTextChangedListener(textWatcher)
         dialogBinding.etWidth.addTextChangedListener(textWatcher)
         dialogBinding.etHeight.addTextChangedListener(textWatcher)
 
-        // ЛОГИКА ТВОЕЙ КНОПКИ СОХРАНЕНИЯ (btnApplyVolume)
+        // Save button logic (btnApplyVolume)
         dialogBinding.btnApplyVolume.setOnClickListener {
             val length = dialogBinding.etLength.text.toString().toIntOrNull() ?: 0
             val width  = dialogBinding.etWidth.text.toString().toIntOrNull()  ?: 0
             val height = dialogBinding.etHeight.text.toString().toIntOrNull() ?: 0
 
-            // Проверка на заполненность
+            // Validate required fields
             if (length <= 0 || width <= 0 || height <= 0) {
                 Toast.makeText(
                     context,
                     (R.string.dimensions_more_0),
                     Toast.LENGTH_SHORT)
                     .show()
-                return@setOnClickListener // Прерываем выполнение, диалог не закрываем
+                return@setOnClickListener // Stop execution and keep the dialog open
             }
-            // Финальный расчёт (переводим одно из чисел в Double до деления, чтобы сохранить дроби)
+            // Final calculation; cast one value to Double before division to preserve fractions
             val divider = context.getVolWeightDivider()
             val vWeight = (length.toDouble() * width * height) / divider
-            // Форматируем до 2 знаков после запятой
+            // Format to 2 decimal places
             val vWeightFormatted = String.format(Locale.US,"%.2f", vWeight).toDouble()
 
             val result = OrderDimensions(
@@ -77,7 +77,7 @@ object DialogUtils {
                 width = width,
                 height = height
             )
-            //Log.d("SaveOrderJSON", "Отправляем: $result")
+            //Log.d("SaveOrderJSON", "Sending: $result")
 
             onResult(result)
             dialog.dismiss()
@@ -86,7 +86,7 @@ object DialogUtils {
         builder.setNegativeButton(R.string.cancel) { _, _ ->
             dialog.dismiss()
         }
-        // Показываем диалог
+        // Show dialog
         dialog.show()
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         dialogBinding.etLength.post {
@@ -102,11 +102,11 @@ object DialogUtils {
     fun showAddNewBoxDialog(
         lifecycleOwner: LifecycleOwner,
         context: Context,
-        onSuccess: (String) -> Unit,  // колбэк успеха — передаёт trackingCode
-        onError: (String) -> Unit = {}  // колбэк ошибки — опционально
+        onSuccess: (String) -> Unit,  // success callback that passes trackingCode
+        onError: (String) -> Unit = {}  // failure callback — optional
     ) {
         val dialogBinding = DialogAddBoxBinding.inflate(LayoutInflater.from(context))
-        //Log.d("DialogUtils", "Dialog binding создан")
+        //Log.d("DialogUtils", "Dialog binding created")
 
         val generatedTrackingCode = generateTrackingCode()
         dialogBinding.tvTrackingCode.text = context.getString(
@@ -114,7 +114,7 @@ object DialogUtils {
             generatedTrackingCode
         )
 
-        //Log.d("DialogUtils", "Сгенерирован tracking_code: $generatedTrackingCode")
+        //Log.d("DialogUtils", "Generated tracking_code: $generatedTrackingCode")
 
         val dialog = AlertDialog.Builder(context)
             .setView(dialogBinding.root)
@@ -151,7 +151,7 @@ object DialogUtils {
                         dialog.setCanceledOnTouchOutside(false)
                         dialog.setCancelable(false)
 
-                        //вызов конструктора для передачи
+                        //Constructor call for passing data
                         val request = BoxRequest(
                             guid = "",
                             codeid = "",
@@ -171,7 +171,7 @@ object DialogUtils {
                                 Toast.LENGTH_SHORT)
                                 .show()
                             soundManager.playSuccess()
-                            onSuccess(generatedTrackingCode)  // ← передаём код коробки в колбэк
+                            onSuccess(generatedTrackingCode)  // pass box code to callback
                             dialog.dismiss()
                         } else {
                             val errorMsg = response.body()?.message ?: context.getString(R.string.error_create)
@@ -212,7 +212,7 @@ object DialogUtils {
         dialog.show()
     }
 
-    // Функция генерации кода (перенеси сюда, если она была в фрагменте)
+    // Code generation function; keep it here if it was moved from the fragment
     private fun generateTrackingCode(): String {
         val date = SimpleDateFormat("MMdd", Locale.getDefault()).format(Date())
         val time = SimpleDateFormat("HHmm", Locale.getDefault()).format(Date())
@@ -220,7 +220,7 @@ object DialogUtils {
         return "NBX$date$time$random"
     }
 }
-// Отдельная функция для расчёта и показа preview
+// Separate function for calculation and preview display
 private fun calculateAndShowPreview(binding: DialogVolumeBinding) {
     val length = binding.etLength.text.toString().toIntOrNull() ?: 0
     val width  = binding.etWidth.text.toString().toIntOrNull()  ?: 0
@@ -229,7 +229,7 @@ private fun calculateAndShowPreview(binding: DialogVolumeBinding) {
     if (length > 0 && width > 0 && height > 0) {
         val divider = binding.root.context.getVolWeightDivider()
         val vWeight = (length * width * height / divider)
-        //binding.tvResultPreview.text = String.format(java.util.Locale.US, "Вес: %.2f кг", vWeight)
+        //binding.tvResultPreview.text = String.format(java.util.Locale.US, "Weight: %.2f kg", vWeight)
 
         binding.tvResultPreview.text = binding.root.context.getString(R.string.weight_format, vWeight)
     } else {

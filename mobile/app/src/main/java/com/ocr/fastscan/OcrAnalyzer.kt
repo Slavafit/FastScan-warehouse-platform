@@ -21,12 +21,12 @@ class OcrAnalyzer(
         val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
         if (mode == "weight") {
-            // Вес теперь приходит с сервера — ничего не делаем здесь
+            // Weight now comes from the server, so no local action is needed here
             imageProxy.close()
             return
         }
 
-        // Режим KG — сканирование кода клиента
+        // KG mode scans the client code
         if (mode == "kg") {
             recognizer.process(image)
                 .addOnSuccessListener { visionText ->

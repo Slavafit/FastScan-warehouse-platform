@@ -18,7 +18,7 @@
         <item>es</item>
     </string-array>
 
-    <!-- Темы приложения -->
+    <!-- App themes -->
     <string name="theme_title">Тема приложения</string>
     <string-array name="theme_entries">
         <item>Как в системе</item>
@@ -106,13 +106,13 @@
 
 
 
-    <string name="scan_track">Сканировать трек заказа</string>
+    <string name="scan_track">Сканировать order tracking code</string>
     <string name="save_sizes">Сохранить размеры</string>
     <string name="print_label">🖨️ Печать лейбла</string>
     <string name="scan_or_input">Скан или ввод…</string>
     <string name="generate_track">✨ ГЕНЕРИРОВАТЬ ONZA</string>
 
-    <!-- кнопки -->
+    <!-- Buttons -->
     <string name="refresh">Обновить</string>
     <string name="back">↩️ Hазад</string>
     <string name="save">Сохранить</string>
@@ -180,7 +180,7 @@
 
 
 
-    <!-- фрагмент сканирование -->
+    <!-- Scan fragment -->
     <string name="scan_wait">⌛ Ожидание сканирования…</string>
     <string name="scan_wait_client">Сканирование кода клиента…</string>
     <string name="hint_scan_kg">Наведите на код клиента (KG…)</string>
@@ -208,7 +208,7 @@
 
 
 
-<!-- фрагмент коробки -->
+<!-- Box fragment -->
     <string name="new_box">Новая коробка %s</string>
     <string name="open_boxes">Открытые коробки</string>
     <string name="all_boxes">Все коробки</string>
@@ -235,7 +235,7 @@
 
 
 
-    <!-- фрагмент партии -->
+    <!-- Batch fragment -->
     <string name="part_title">Партия</string>
     <string name="part">Партия %1$s</string>
     <string name="no_party_name">Без названия</string>
@@ -263,7 +263,7 @@
     <string name="party_restored">Партия возвращена в работу</string>
     <string name="finished_label"> (Завершена)</string>
 
-    <!-- фрагмент незакрытые -->
+    <!-- Open orders fragment -->
     <string name="unclosed">Незакрытые</string>
     <string name="unpacked_orders_title">📊 Незакрытые заказы</string>
     <string name="unpacked_count_default">Всего заказов: <b>%1$d</b></string>
@@ -278,7 +278,7 @@
     <string name="no_data_to_send">❌ Нет данных для отправки</string>
 
 
-    <!-- Диалог поиска клиента -->
+    <!-- Client search dialog -->
     <string name="first_name">Имя</string>
     <string name="last_name">Фамилия</string>
     <string name="search_client_title">🕵🏻 Поиск по имени и фамилии</string>
@@ -287,20 +287,20 @@
     <string name="no_client_found">🙅🏻‍♀️ Клиент не найден</string>
     <string name="clients_found">Найдено несколько клиентов</string>
 
-    <!-- Диалог поиска трека -->
+    <!-- Tracking search dialog -->
     <string name="input_track">Введите трек-номер</string>
     <string name="for_example">Например: 28038252</string>
     <string name="select_box">Выберите коробку для добавления</string>
     <string name="orders">Заказов: 0</string>
     <string name="edit_dimensions_and_weight">✏️ Редактирование размеров и веса</string>
 
-    <!-- Диалог превышения веса -->
+    <!-- Weight limit dialog -->
     <string name="weight_limit_title">⚠️ Проверьте вес</string>
     <string name="weight_limit_message">Введенный вес %.2f кг превышает 8 кг.\nВы уверены, что всё верно?</string>
     <string name="weight_limit_positive">✔ Да, отправить</string>
     <string name="weight_limit_negative">✘ Нет, изменить</string>
 
-    <!-- Диалог Глобального поиска -->
+    <!-- Global search dialog -->
     <string name="title_find">🕵🏻 Глобальный поиск</string>
     <string name="find">Найти</string>
     <string name="finding">Ищем %s… </string>
@@ -345,11 +345,11 @@
     <string name="app_version_summary">Версия %1$s (код %2$d)</string>
     <string name="party_detail_info">Склад: %1$s | Коробок: %2$d</string>
     <string name="party_detail_info_placeholder">Склад: - | Коробок: 0</string>
-    <string name="edit_box_tracking_title">Редактировать трек коробки</string>
-    <string name="box_tracking_empty">Введите трек коробки</string>
+    <string name="edit_box_tracking_title">Редактировать box tracking code</string>
+    <string name="box_tracking_empty">Введите box tracking code</string>
     <string name="box_tracking_unchanged">Трек не изменен</string>
     <string name="box_tracking_updated">Трек коробки обновлен</string>
-    <string name="error_update_box_tracking">Не удалось обновить трек коробки</string>
+    <string name="error_update_box_tracking">Не удалось обновить box tracking code</string>
     <string name="current_box_tracking">Текущий трек: %1$s</string>
     <string name="paste_from_clipboard">Вставить</string>
     <string name="paste_order_track_from_clipboard">Вставить трек из буфера</string>

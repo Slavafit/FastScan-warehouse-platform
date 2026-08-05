@@ -137,7 +137,7 @@ class ScanFragment : BaseFragment() {
                 currentOrderDimensions = result
                 binding.etWeight.setText("%.2f".format(result.grossWeight))
                 
-                // Отображаем размеры в UI
+                // Show dimensions in the UI
                 currentLength = result.length
                 currentWidth  = result.width
                 currentHeight = result.height
@@ -148,7 +148,7 @@ class ScanFragment : BaseFragment() {
             }
         }
 
-        // Добавляем возможность удаления размеров долгим нажатием
+        // Allow removing dimensions with a long press
         binding.btnVolumeCalc.setOnLongClickListener {
             clearDimensions()
             Toast.makeText(requireContext(), R.string.dimensions_cleared, Toast.LENGTH_SHORT).show()
@@ -257,7 +257,7 @@ class ScanFragment : BaseFragment() {
                     binding.etClientCode.setText(details.clientCode ?: "")
                     binding.etWeight.setText(details.grossWeight?.toString() ?: "")
                     
-                    // Обновляем UI и внутренние переменные
+                    // Update UI and internal variables
                     currentLength = details.length ?: 0
                     currentWidth = details.width ?: 0
                     currentHeight = details.height ?: 0
@@ -371,7 +371,7 @@ class ScanFragment : BaseFragment() {
                 soundManager.playSent()
                 Toast.makeText(requireContext(), getString(R.string.order_saved), Toast.LENGTH_SHORT).show()
                 ScanUtils.clearFieldsAll(binding, requireContext())
-                clearDimensions() // Сбрасываем размеры после отправки
+                clearDimensions() // Clear dimensions after sending
                 currentReceiverGuid = null
                 binding.btnSubmit.isEnabled = true
             },
@@ -391,14 +391,14 @@ class ScanFragment : BaseFragment() {
             .setTitle(R.string.search_client_title)
             .setCancelable(false)
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.search, null) // Обработаем клик вручную для скрытия клавиатуры
+            .setPositiveButton(R.string.search, null) // Handle click manually to hide the keyboard
             .setNegativeButton(R.string.cancel, null)
             .create()
 
         dialog.setOnShowListener {
             val searchBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             searchBtn.setOnClickListener {
-                // Прячем клавиатуру перед выполнением поиска
+                // Hide keyboard before running search
                 hideKeyboard(dialog.currentFocus ?: dialogBinding.root)
 
                 val first = dialogBinding.etFirstName.text.toString().trim()
@@ -412,7 +412,7 @@ class ScanFragment : BaseFragment() {
             }
         }
 
-        // Позволяем запустить поиск кнопкой Enter/Search на клавиатуре
+        // Allow search via the keyboard Enter/Search action
         val editorActionListener = android.widget.TextView.OnEditorActionListener { v, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
                 hideKeyboard(v)

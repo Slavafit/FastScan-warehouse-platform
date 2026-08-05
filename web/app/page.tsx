@@ -31,6 +31,14 @@ type PlatformSettings = {
   country: string;
 };
 
+type StaffUser = {
+  id: string;
+  login: string;
+  role: Role;
+  enabled: boolean;
+  createdAt: string;
+};
+
 type StaffClient = {
   guid: string;
   client_code: string;
@@ -299,6 +307,8 @@ export default function FastScanWeb() {
               setPlatform={setPlatform}
               profile={profile}
               setProfile={setProfile}
+              session={session}
+              demo={demo}
               notice={notice}
               save={async () => {
                 if (!session || demo) { setNotice("Демо: настройка сохранена локально"); return; }
@@ -550,12 +560,14 @@ function Audit() {
   return <section className="panel table-panel"><div className="panel-title"><div><p className="eyebrow dark">АУДИТ</p><h3>Журнал операций</h3></div><span>Последние 100 записей</span></div><div className="audit-list">{["POST /api/order/set-user","POST /api/order/box-order","PUT /api/admin/client-code-settings","DELETE /api/order/partial-box"].map((route, i) => <div key={route}><code>{route}</code><span>{["admin","worker.malaga","admin","worker.madrid"][i]}</span><small>{i * 7 + 2} мин назад</small><b>SUCCESS</b></div>)}</div></section>;
 }
 
-function Settings({ client, platform, setPlatform, profile, setProfile, save, notice }: {
+function Settings({ client, platform, setPlatform, profile, setProfile, session, demo, save, notice }: {
   client: boolean;
   platform: PlatformSettings;
   setPlatform: (value: PlatformSettings) => void;
   profile: ClientProfile;
   setProfile: (value: ClientProfile) => void;
+  session: Session | null;
+  demo: boolean;
   save: () => void;
   notice: string;
 }) {
@@ -585,5 +597,94 @@ function Settings({ client, platform, setPlatform, profile, setProfile, save, no
     </>}
     <button className="primary-button" onClick={save}>Сохранить</button>
     {notice && <p className="save-notice">{notice}</p>}
+    {!client && <StaffUsers session={session} demo={demo} />}
   </article><article className="panel system-card"><p className="eyebrow dark">СИСТЕМА</p><h3>FastScan API</h3><dl><div><dt>Склад</dt><dd>{platform.warehouse || "BMG"}</dd></div><div><dt>Страна</dt><dd>{platform.country || "España"}</dd></div><div><dt>API</dt><dd>v0.4.0</dd></div><div><dt>Состояние</dt><dd><span className="signal-dot" /> Работает</dd></div></dl></article></section>;
+}
+
+function StaffUsers({ session, demo }: { session: Session | null; demo: boolean }) {
+  const [users, setUsers] = useState<StaffUser[]>([]);
+  const [loginValue, setLoginValue] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function loadUsers() {
+    if (!session || demo) return;
+    try {
+      setUsers(await apiRequest<StaffUser[]>("/api/admin/users", {}, session));
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить сотрудников");
+    }
+  }
+
+  useEffect(() => {
+    loadUsers();
+  }, [session, demo]);
+
+  async function createWorker(event: FormEvent) {
+    event.preventDefault();
+    if (!session || demo) {
+      setMessage("Демо: сотрудник не создан на сервере");
+      return;
+    }
+    setBusy(true);
+    setMessage("");
+    try {
+      await apiRequest("/api/admin/users", {
+        method: "POST",
+        body: JSON.stringify({
+          login: loginValue.trim().toLowerCase(),
+          password,
+          role: "WORKER",
+        }),
+      }, session);
+      setLoginValue("");
+      setPassword("");
+      setMessage("Сотрудник создан");
+      await loadUsers();
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось создать сотрудника");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function setEnabled(user: StaffUser, enabled: boolean) {
+    if (!session || demo) {
+      setMessage("Демо: доступ изменен локально");
+      setUsers((current) => current.map((item) => item.id === user.id ? { ...item, enabled } : item));
+      return;
+    }
+    setMessage("");
+    try {
+      const updated = await apiRequest<StaffUser>(`/api/admin/users/${user.id}/enabled`, {
+        method: "PUT",
+        body: JSON.stringify({ enabled }),
+      }, session);
+      setUsers((current) => current.map((item) => item.id === updated.id ? updated : item));
+      setMessage(enabled ? "Сотрудник разблокирован" : "Сотрудник заблокирован");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось изменить доступ");
+    }
+  }
+
+  return <section className="staff-users">
+    <div className="section-title"><div><p className="eyebrow dark">ДОСТУП</p><h4>Сотрудники</h4></div><button className="action-button" type="button" onClick={loadUsers}>Обновить</button></div>
+    <form className="staff-create" onSubmit={createWorker}>
+      <label><span>Логин сотрудника</span><input value={loginValue} onChange={(event) => setLoginValue(event.target.value)} autoComplete="off" /></label>
+      <label><span>Временный пароль</span><input type="password" value={password} minLength={8} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" /></label>
+      <button className="primary-button" disabled={busy || !loginValue.trim() || password.length < 8}>{busy ? "Создание..." : "Создать WORKER"}</button>
+    </form>
+    <div className="staff-list">
+      {users.map((user) => <div className="staff-row" key={user.id}>
+        <div><strong>{user.login}</strong><small>{user.role} · {user.enabled ? "доступ активен" : "заблокирован"}</small></div>
+        <span className={user.enabled ? "status good" : "status blocked"}>{user.enabled ? "Активен" : "Блок"}</span>
+        <button className="table-action" disabled={user.role === "ADMIN"} onClick={() => setEnabled(user, !user.enabled)}>
+          {user.enabled ? "Заблокировать" : "Разблокировать"}
+        </button>
+      </div>)}
+    </div>
+    {!users.length && <p className="empty-state">Сотрудники пока не загружены.</p>}
+    {message && <p className="save-notice">{message}</p>}
+  </section>;
 }

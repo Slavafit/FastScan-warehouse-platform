@@ -12,6 +12,7 @@
 
 - `GET /api/admin/users` — список администраторов и сотрудников;
 - `POST /api/admin/users` — создание сотрудника с ролью `WORKER`.
+- `PUT /api/admin/users/{id}/enabled` — блокировка или разблокировка сотрудника.
 
 ## Клиенты
 

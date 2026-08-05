@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
-    <!-- Показываем будущий номер коробки -->
+    <!-- Show the future box number -->
     <TextView
         android:id="@+id/tvTrackingCode"
         android:layout_width="match_parent"

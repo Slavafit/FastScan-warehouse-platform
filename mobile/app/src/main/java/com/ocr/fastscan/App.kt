@@ -6,7 +6,7 @@ import com.ocr.fastscan.utils.AppDependencies
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        // Инициализируем зависимости один раз на всё время жизни приложения
+        // Initialize dependencies once for the app lifetime
         AppDependencies.init(this)
     }
 }

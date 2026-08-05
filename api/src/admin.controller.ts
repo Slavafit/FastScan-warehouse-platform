@@ -4,13 +4,19 @@ import {
   ConflictException,
   Controller,
   Get,
+  Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { hash } from 'bcryptjs';
-import { NotificationDto, PlatformSettingsDto, StaffUserDto } from './dto.js';
+import {
+  NotificationDto,
+  PlatformSettingsDto,
+  StaffUserDto,
+  StaffUserStatusDto,
+} from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
@@ -63,6 +69,32 @@ export class AdminController {
       role: user.role,
       enabled: user.enabled,
     };
+  }
+
+  @Put('users/:id/enabled')
+  async setUserEnabled(
+    @Param('id') id: string,
+    @Body() dto: StaffUserStatusDto,
+  ) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user || user.role === Role.CLIENT) {
+      throw new BadRequestException('Staff user not found');
+    }
+    if (user.role === Role.ADMIN && !dto.enabled) {
+      throw new BadRequestException('Admin accounts cannot be blocked here');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: { enabled: dto.enabled },
+      select: {
+        id: true,
+        login: true,
+        role: true,
+        enabled: true,
+        createdAt: true,
+      },
+    });
+    return updated;
   }
 
   @Get('client-code-settings')

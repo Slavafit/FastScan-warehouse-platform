@@ -111,6 +111,10 @@ export class StaffUserDto {
   @IsEnum(Role) role!: Role;
 }
 
+export class StaffUserStatusDto {
+  @IsBoolean() enabled!: boolean;
+}
+
 export class StaffClientUpdateDto {
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(120) first_name?: string;
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(120) last_name?: string;

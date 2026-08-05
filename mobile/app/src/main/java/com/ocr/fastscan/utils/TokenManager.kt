@@ -9,7 +9,7 @@ class TokenManager(private val appContext: Context) {
     private val prefs: SharedPreferences =
         appContext.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
 
-    // Сохраняем токены в SharedPreferences
+    // Save tokens in SharedPreferences
     fun saveTokens(accessToken: String, refreshToken: String) {
         prefs.edit().apply {
             putString("bearer_token", accessToken)
@@ -28,7 +28,7 @@ class TokenManager(private val appContext: Context) {
         Log.d("TokenManager", "Все токены очищены")
     }
 
-    // Исправленный метод обновления токена
+    // Fixed token refresh method
     suspend fun refreshToken(): Boolean {
         val refresh = getRefreshToken() ?: return false
         Log.d("TokenManager", "Попытка обновления токена...")

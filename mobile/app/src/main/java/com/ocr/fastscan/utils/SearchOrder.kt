@@ -28,7 +28,7 @@ class SearchOrder(private val fragment: Fragment) {
             .setTitle(R.string.title_find)
             .setView(dialogView)
             .setPositiveButton(R.string.find) { _, _ ->
-                hideKeyboard(input) // Прячем клавиатуру при запуске поиска
+                hideKeyboard(input) // Hide keyboard when starting search
                 val track = input.text.toString().trim()
                 if (track.isNotEmpty()) startGlobalSearch(track)
             }

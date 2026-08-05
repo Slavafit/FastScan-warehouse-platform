@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Активная вкладка (выбрана) -->
+    <!-- Active selected tab -->
     <item android:color="@color/bottom_nav_active" android:state_checked="true" />
 
-    <!-- Неактивная вкладка -->
+    <!-- Inactive tab -->
     <item android:color="@color/bottom_nav_inactive" />
 
 </selector>

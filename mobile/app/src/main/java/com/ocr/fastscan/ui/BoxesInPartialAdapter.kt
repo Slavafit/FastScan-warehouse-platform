@@ -48,7 +48,7 @@ class BoxesInPartialAdapter(
 
 class BoxInPartialDiffCallback : DiffUtil.ItemCallback<BoxInPartial>() {
     override fun areItemsTheSame(oldItem: BoxInPartial, newItem: BoxInPartial): Boolean {
-        // Используем комбинацию guid и tracking_code для максимальной точности
+        // Use guid plus tracking_code for maximum accuracy
         return oldItem.guid == newItem.guid && oldItem.tracking_code == newItem.tracking_code
     }
 

@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 class SenderManager(
     private val apiService: OnzaApiService,
     private val firebaseManager: FirebaseManager,
-    private val context: Context  // для Toast и других UI-операций
+    private val context: Context  // for Toast and other UI operations
 ) {
 
     private val uiScope = CoroutineScope(Dispatchers.Main)
@@ -29,17 +29,17 @@ class SenderManager(
             try {
                 val response = apiService.saveOrder(request)
                 if (response.isSuccessful) {
-                    // Создаём объект для Firestore
+                    // Create object for Firestore
                     val shipment = FirestoreShipment(
                         trackingNumber = request.trackingNumber,
                         clientCode = request.clientCode,
                         clientName = request.clientName,
                         weight = request.grossWeight ?: 0.0,
                         withBox = request.withBox?.toString() ?: "0",
-                        // createdAt и dateString заполняются автоматически в модели
+                        // createdAt and dateString are filled automatically in the model
                     )
 
-                    // Сохраняем в Firestore
+                    // Save to Firestore
                     firebaseManager.saveShipment(
                         shipment = shipment,
                         onSuccess = {
@@ -68,7 +68,7 @@ class SenderManager(
         }
     }
 
-    // Если нужно показать Toast внутри класса — можно сделать отдельный метод
+    // Add a separate method if Toast is needed inside this class
     private fun showToast(message: String) {
         uiScope.launch {
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()

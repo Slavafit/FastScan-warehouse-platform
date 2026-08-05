@@ -21,7 +21,7 @@ object LanguageHelper {
      */
     fun applyLanguage(context: Context, language: String): Context {
         val locale = when (language) {
-            SYSTEM_LANGUAGE -> Locale.getDefault()           // язык системы
+            SYSTEM_LANGUAGE -> Locale.getDefault()           // system language
             else -> Locale(language)
         }
 

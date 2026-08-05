@@ -36,7 +36,7 @@ object WeightServerHelper {
 
             if (response.isSuccessful) {
                 val json = response.body?.string() ?: ""
-                //Log.d("WeightServer", "Ответ от сервера: $json")
+                //Log.d("WeightServer", "Server response: $json")
 
                 val weightResponse = Gson().fromJson(json, WeightResponse::class.java)
                 String.format("%.2f", weightResponse.weight)

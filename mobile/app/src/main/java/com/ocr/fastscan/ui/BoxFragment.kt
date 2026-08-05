@@ -376,11 +376,11 @@ class BoxFragment : BaseFragment() {
     private fun formatBoxDate(isoDate: String?): String {
         if (isoDate.isNullOrBlank()) return ""
         return try {
-            // Попытка распарсить стандартный ISO формат
+            // Try parsing the standard ISO format
             val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).apply {
                 timeZone = TimeZone.getTimeZone("UTC")
             }
-            // Очищаем строку от миллисекунд и Z для стабильности парсинга вручную, если нужно
+            // Remove milliseconds and Z for stable manual parsing when needed
             val cleanedDate = isoDate.split(".")[0].replace("Z", "")
             val date = inputFormat.parse(cleanedDate) ?: return isoDate
             

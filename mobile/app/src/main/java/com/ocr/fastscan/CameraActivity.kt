@@ -42,14 +42,14 @@ class CameraActivity : AppCompatActivity() {
 
         mode = intent.getStringExtra("scan_mode") ?: "barcode"
 
-        // Текст подсказки (убедись, что tvHint есть в XML)
+        // Hint text; tvHint must exist in XML
         binding.tvHint?.text = when (mode) {
             "kg" -> getString(R.string.hint_scan_kg)
             "weight" -> getString(R.string.hint_scan_weight)
             else -> getString(R.string.hint_scan_track)
         }
 
-        // Показываем нужные кнопки в зависимости от режима
+        // Show buttons according to the mode
         when (mode) {
             "weight" -> {
                 binding.exposureControls.visibility = View.VISIBLE
@@ -61,7 +61,7 @@ class CameraActivity : AppCompatActivity() {
                 binding.btnFlashToggle.text = getString(R.string.flashlight_on)
             }
         }
-        // Обработчики кнопок
+        // Button handlers
         binding.btnDarker.setOnClickListener { adjustExposure(-2) }
         binding.btnBrighter.setOnClickListener { adjustExposure(2) }
 
@@ -111,12 +111,12 @@ class CameraActivity : AppCompatActivity() {
 
                 cameraControl = camera.cameraControl
 
-            // Начальная экспозиция только для режима weight
+            // Initial exposure only for weight mode
                 if (mode == "weight") {
                     val exposureState = camera.cameraInfo.exposureState
                     if (exposureState.isExposureCompensationSupported) {
                         cameraControl?.setExposureCompensationIndex(currentExposureIndex)
-                        //Log.d("CAMERA_EXPOSURE", "Экспозиция установлена: $currentExposureIndex")
+                        //Log.d("CAMERA_EXPOSURE", "Exposure set: $currentExposureIndex")
                     }
                 }
             } catch (exc: Exception) {
@@ -129,19 +129,19 @@ class CameraActivity : AppCompatActivity() {
         currentExposureIndex += delta
         currentExposureIndex = currentExposureIndex.coerceIn(-20, 2)
         cameraControl?.setExposureCompensationIndex(currentExposureIndex)
-        //Log.d("CAMERA_EXPOSURE", "Новая экспозиция: $currentExposureIndex")
+        //Log.d("CAMERA_EXPOSURE", "New exposure: $currentExposureIndex")
     }
 
     private fun setFlash(on: Boolean) {
         cameraControl?.enableTorch(on)
-        //Log.d("CAMERA_FLASH", "Фонарик: ${if (on) "ВКЛ" else "ВЫКЛ"}")
+        //Log.d("CAMERA_FLASH", "Flashlight: ${if (on) "ON" else "OFF"}")
     }
 
     private fun returnResult(value: String) {
         if (isProcessing) return
         isProcessing = true
 
-        //Log.d("DEBUG_SCAN", "Результат найден ($mode): $value")
+        //Log.d("DEBUG_SCAN", "Result found ($mode): $value")
 
         val intent = Intent()
         intent.putExtra("scan_result", value)

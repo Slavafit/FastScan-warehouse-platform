@@ -105,7 +105,7 @@ class BoxDetailFragment : BaseFragment() {
         loadBoxInfo()
         loadOrdersInBox()
         
-        // Загружаем имя партии только если оно не передано или является дефолтным
+        // Load the batch name only when it was not provided or is the default
         if (partialName == "KG" || partialName == "España" || partialName.isBlank()) {
             loadPartialName()
         }
@@ -403,14 +403,14 @@ class BoxDetailFragment : BaseFragment() {
     private fun loadPartialName() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Загружаем только открытые партии (typePartial = 0)
+                // Load only open batches (typePartial = 0)
                 val response = apiService.getPartials(0)
                 if (_binding == null || !isAdded) return@launch
 
                 if (response.isSuccessful) {
                     val parties = response.body() ?: emptyList()
                     if (parties.isNotEmpty()) {
-                        // Сортируем по дате убыванию, чтобы взять самую свежую
+                        // Sort by date descending to pick the newest one
                         val latestParty = parties.sortedByDescending { it.date_created }.first()
                         partialName = latestParty.partial_name.trim()
                         Log.d("BoxDetail", "Загружено актуальное имя партии: $partialName")

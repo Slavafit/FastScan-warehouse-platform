@@ -19,7 +19,7 @@
         android:padding="8dp"
         android:text="@string/scan_mode" />
 
-    <!-- Кнопки экспозиции (только для weight) -->
+    <!-- Exposure buttons, weight mode only -->
     <LinearLayout
         android:id="@+id/exposureControls"
         android:layout_width="match_parent"
@@ -44,7 +44,7 @@
             android:layout_marginStart="16dp" />
     </LinearLayout>
 
-    <!-- Кнопка фонарика (для barcode и kg) -->
+    <!-- Flashlight button for barcode and kg modes -->
     <Button
         android:id="@+id/btnFlashToggle"
         android:layout_width="wrap_content"

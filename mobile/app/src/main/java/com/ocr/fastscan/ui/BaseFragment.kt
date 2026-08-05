@@ -43,5 +43,5 @@ abstract class BaseFragment : Fragment() {
         Toast.makeText(requireContext(), message, duration).show()
     }
 
-    // Здесь можно будет позже добавить общие методы (toast, hideKeyboard и т.д.)
+    // Common methods such as toast and hideKeyboard can be added here later
 }

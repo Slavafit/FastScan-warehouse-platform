@@ -3,7 +3,7 @@
 
     <style name="Theme.FastScan" parent="Theme.Material3.DayNight.NoActionBar">
 
-        <!-- Твой зелёный цвет -->
+        <!-- Primary green color -->
         <item name="colorPrimary">@color/app_primary</item>
         <item name="colorPrimaryVariant">@color/app_primary_dark</item>
         <item name="colorOnPrimary">@color/app_on_primary</item>
@@ -18,7 +18,7 @@
         <item name="android:windowBackground">@color/app_background</item>
         <item name="android:navigationBarColor">@color/app_surface</item>
 
-        <!-- Статус бар -->
+        <!-- Status bar -->
         <item name="android:statusBarColor">@color/app_primary_dark</item>
         <item name="android:windowLightStatusBar">false</item>
 

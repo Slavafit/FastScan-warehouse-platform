@@ -18,13 +18,13 @@ object NetworkModule {
         val baseUrl = normalizeBaseUrl(prefs.getString("api_url", "https://onza-api.ibm.kg"))
         val tokenManager = TokenManager(context)
 
-        // Добавляет Bearer токен в каждый запрос
+        // Adds the Bearer token to every request
         val authInterceptor = Interceptor { chain ->
             var request = chain.request()
             tokenManager.getToken()?.let { request = request.newBuilder().addHeader("Authorization", "Bearer $it").build() }
             var response = chain.proceed(request)
-            if (response.code == 401) {  // Обработка 401
-                runBlocking {  // FIX: runBlocking для suspend refreshToken
+            if (response.code == 401) {  // Handle 401
+                runBlocking {  // FIX: runBlocking for suspend refreshToken
                     if (tokenManager.refreshToken()) {
                         response.close()
                         request = request.newBuilder().addHeader("Authorization", "Bearer ${tokenManager.getToken()}").build()

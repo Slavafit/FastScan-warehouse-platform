@@ -12,30 +12,30 @@ interface OnzaApiService {
     @POST("/api/admin/auth/refresh")
     suspend fun refresh(@Body credentials: Map<String, String>): Response<AuthResponse>
 
-    // Поиск по треку (возвращает объект OrderDetails)
+    // Search by tracking code; returns OrderDetails
     @GET("/api/order/order-tracking-code")
     suspend fun getOrderDetailsBox(@Query("boxId") boxId: String): Response<List<OrderDetails>>
 
-    // Поиск по треку в коробке (возвращает объект OrderDetails)
+    // Search by tracking code inside a box; returns OrderDetails
     @GET("/api/order/order-tracking-code")
     suspend fun getOrderDetails(@Query("tcode") boxId: String): Response<List<OrderDetails>>
 
     @POST("/api/order/set-user")
     suspend fun saveOrder(@Body data: SaveOrderRequest): Response<SaveResponse>
 
-    // запрос для получения имени и флагов по KG-коду
+    // Request name and flags by KG code
     @GET("/api/common/reciever")
     suspend fun getReceiverByCode(@Query("client_code") clientCode: String): Response<List<ReceiverResponse>>
-    //поиск по имени
+    //Search by name
     @GET("/api/common/all-reciever")
     suspend fun getAllReceivers(): Response<List<ReceiverItem>>
 
-    // Новые методы для коробок
+    // New box methods
     @GET("/api/order/box")
     suspend fun getBoxes(
         @Query("guid") guid: String? = "",
         @Query("tCode") tCode: String? = "",
-        @Query("status") status: Int? = null  // status=0 для открытых, null для всех
+        @Query("status") status: Int? = null  // status=0 for open items, null for all
     ): Response<List<BoxItem>>
 
     @POST("/api/order/box")
@@ -50,37 +50,37 @@ interface OnzaApiService {
     @HTTP(method = "DELETE", path = "/api/order/box-order", hasBody = true)
     suspend fun removeOrderFromBox(@Body request: RemoveOrderRequest): Response<RemoveOrderResponse>
 
-    // Список партий. typePartial=0 для открытых, null для всех
+    // Batch list. typePartial=0 for open batches, null for all
     @GET("/api/order/partial")
     suspend fun getPartials(@Query("typePartial") type: Int? = null): Response<List<Partial>>
 
-    // Создать партию
+    // Create batch
     @POST("/api/order/partial")
     suspend fun createPartial(@Body request: PartialCreateRequest): Response<PartialCreateResponse>
 
-    // Обновить партию (смена статуса и т.д.)
+    // Update batch, including status changes
     @POST("/api/order/partial")
     suspend fun updatePartial(@Body request: PartialUpdateRequest): Response<PartialCreateResponse>
 
-    // Отправить партию
+    // Send batch
     @POST("/api/order/send-partial")
     suspend fun sendPartial(@Body request: SendPartialRequest): Response<SendPartialResponse>
 
-    // Список коробок в партии
+    // List boxes in a batch
     @GET("/api/order/partial-box")
     suspend fun getBoxesInPartial(@Query("guid") guid: String): Response<List<BoxInPartial>>
 
-    // Список открытых коробок (для выбора)
+    // List open boxes for selection
     @GET("/api/order/box")
-    suspend fun getOpenBoxes(@Query("status") status: Int = 0): Response<List<BoxInPartial>>  // предполагаем, что возвращает те же поля
+    suspend fun getOpenBoxes(@Query("status") status: Int = 0): Response<List<BoxInPartial>>  // Assume it returns the same fields
 
-    // Привязать коробку к партии
+    // Attach box to batch
     @POST("/api/order/box")
     suspend fun addBoxToPartial(@Body request: AddBoxRequest): Response<AddBoxResponse>
 
 
-    // Удаление коробки из партии (пока заглушка — замени на реальный путь)
-    //@DELETE("/api/order/partial-box")  // уточни путь
+    // Remove box from batch; placeholder until the real path is confirmed
+    //@DELETE("/api/order/partial-box")  // confirm the path
     //suspend fun removeBoxFromPartial(@Query("guid") boxGuid: String, @Query("partial") partialGuid: String): Response<Any>
 
     @HTTP(method = "DELETE", path = "/api/order/partial-box", hasBody = true)

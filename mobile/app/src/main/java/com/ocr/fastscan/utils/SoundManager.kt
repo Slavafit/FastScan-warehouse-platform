@@ -18,7 +18,7 @@ class SoundManager(private val context: Context) {
     private var printPlayer: MediaPlayer? = null
     private var scanPlayer: MediaPlayer? = null
     private var warningPlayer: MediaPlayer? = null
-    private var sentPlayer: MediaPlayer? = null   // ← новый звук отправления
+    private var sentPlayer: MediaPlayer? = null   // new sent sound
 
     init {
         loadSounds()
@@ -49,8 +49,8 @@ class SoundManager(private val context: Context) {
     }
     fun playPrint()   = playMediaPlayer(printPlayer,   ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 300)
     fun playScanBeep()= playMediaPlayer(scanPlayer,    ToneGenerator.TONE_PROP_BEEP, 150)
-    fun playWarning() = playMediaPlayer(warningPlayer, ToneGenerator.TONE_SUP_ERROR, 500)  // исправлено
-    fun playSent()    = playMediaPlayer(sentPlayer,    ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 450)  // новый звук
+    fun playWarning() = playMediaPlayer(warningPlayer, ToneGenerator.TONE_SUP_ERROR, 500)  // fixed
+    fun playSent()    = playMediaPlayer(sentPlayer,    ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD, 450)  // new sound
 
     private fun playMediaPlayer(player: MediaPlayer?, fallbackTone: Int, fallbackDuration: Int) {
         try {
@@ -58,7 +58,7 @@ class SoundManager(private val context: Context) {
                 if (mp.isPlaying) mp.seekTo(0)
                 mp.start()
             } ?: run {
-                // Fallback на системный звук
+                // Fallback to system sound
                 val tg = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 90)
                 tg.startTone(fallbackTone, fallbackDuration)
             }
@@ -89,7 +89,7 @@ class SoundManager(private val context: Context) {
         }
     }
 
-    // Короткие вспомогательные сигналы
+    // Short helper tones
     fun playShortBeep() {
         val tg = ToneGenerator(AudioManager.STREAM_NOTIFICATION, 80)
         tg.startTone(ToneGenerator.TONE_PROP_BEEP, 80)

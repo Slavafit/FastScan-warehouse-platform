@@ -13,13 +13,13 @@ class FirebaseManager() {
     private val db = FirebaseFirestore.getInstance()
 
     fun saveShipment(
-        shipment: FirestoreShipment,    // ← основной параметр — объект с данными
-        onSuccess: () -> Unit,          // колбэк успеха
-        onFailure: (Exception) -> Unit) // колбэк ошибки
+        shipment: FirestoreShipment,    // ← main parameter: data object
+        onSuccess: () -> Unit,          // success callback
+        onFailure: (Exception) -> Unit) // failure callback
     {
         db.collection("shipments")
-            .document(shipment.trackingNumber) // Устанавливаем ID документа равным номеру трека
-            .set(shipment) // .set перезапишет данные, если ID уже существует
+            .document(shipment.trackingNumber) // Set document ID to the tracking number
+            .set(shipment) // .set overwrites data when the ID already exists
             .addOnSuccessListener {
                 Log.d("FirebaseManager", "Data saved/updated in Firestore: ${shipment.trackingNumber}")
                 onSuccess()
@@ -31,12 +31,12 @@ class FirebaseManager() {
     }
     fun saveBoxEntry
                 (entry: BoxEntry,
-                 onSuccess: () -> Unit = {},          // колбэк успеха
-                 onFailure: (Exception) -> Unit = {}     // колбэк ошибки)
+                 onSuccess: () -> Unit = {},          // success callback
+                 onFailure: (Exception) -> Unit = {}     // failure callback)
     )    {
-        val collection = db.collection("box_entries")  // твоя коллекция
-            // Используем трек как ID документа — если запись уже есть, она перезапишется
-            collection.document(entry.orderTracking)  // ← трек как document ID
+        val collection = db.collection("box_entries")  // collection name
+            // Use tracking code as document ID; existing entries are overwritten
+            collection.document(entry.orderTracking)  // tracking code as document ID
             .set(entry)
             .addOnSuccessListener {
                 Log.d("FirebaseManager", "Box entry saved: order ${entry.orderTracking} in box ${entry.boxTracking}")
@@ -50,7 +50,7 @@ class FirebaseManager() {
 
     suspend fun findOrderEverywhere(track: String): SearchResult {
         return try {
-            // Выполняем запросы
+            // Execute queries
             val shipmentSnap = db.collection("shipments")
                 .whereEqualTo("trackingNumber", track)
                 .limit(1)
@@ -68,12 +68,12 @@ class FirebaseManager() {
                 boxEntry = boxSnap.documents.firstOrNull()?.toObject<BoxEntry>()
             )
         } catch (e: Exception) {
-            // Если ошибка в запросе, возвращаем пустой результат
+            // Return an empty result when the query fails
             Log.e("FirebaseSearch", "Ошибка конвертации: ${e.message}", e)
             SearchResult(null, null)
         }
     }
-    // Получить ВСЕ зарегистрированные заказы
+    // Get all registered orders
     suspend fun getAllShipments(): List<FirestoreShipment> {
         return try {
             val snapshot = db.collection("shipments")
@@ -86,7 +86,7 @@ class FirebaseManager() {
         }
     }
 
-    // Получить ВСЕ записи об упаковке в коробки
+    // Get all box packing records
     suspend fun getAllBoxEntries(): List<BoxEntry> {
         return try {
             val snapshot = db.collection("box_entries")
@@ -98,7 +98,7 @@ class FirebaseManager() {
             emptyList()
         }
     }
-    // Получить заказы (shipments) после определённой даты
+    // Get shipments after a specific date
     suspend fun getShipmentsAfter(date: Date): List<FirestoreShipment> {
         return try {
             val snapshot = db.collection("shipments")
@@ -112,7 +112,7 @@ class FirebaseManager() {
         }
     }
 
-    // Получить записи об упаковке после определённой даты
+    // Get packing records after a specific date
     suspend fun getBoxEntriesAfter(date: Date): List<BoxEntry> {
         return try {
             val snapshot = db.collection("box_entries")

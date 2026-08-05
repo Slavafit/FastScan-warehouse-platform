@@ -643,6 +643,108 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("ru", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }).format(new Date(value));
 }
 
+function escapeHtml(value: unknown) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function manifestCurrencyTotals(manifest: ManifestRecord) {
+  const totals = new Map<string, number>();
+  for (const order of manifest.orders) {
+    if (order.declared_value == null) continue;
+    const currency = order.currency || "EUR";
+    totals.set(currency, (totals.get(currency) ?? 0) + order.declared_value);
+  }
+  return [...totals.entries()].sort(([left], [right]) => left.localeCompare(right));
+}
+
+function manifestRowsHtml(manifest: ManifestRecord) {
+  return manifest.orders.map((order, index) => `<tr>
+    <td>${index + 1}</td>
+    <td>${escapeHtml(order.tracking_number)}</td>
+    <td>${escapeHtml(order.box_tracking_code)}</td>
+    <td>${escapeHtml(order.client_code)}</td>
+    <td>${escapeHtml(order.client_first_name)}</td>
+    <td>${escapeHtml(order.client_last_name)}</td>
+    <td>${escapeHtml(order.client_address)}</td>
+    <td>${escapeHtml(order.composition)}</td>
+    <td>${escapeHtml(order.description)}</td>
+    <td>${order.gross_weight.toFixed(3)}</td>
+    <td>${order.declared_value.toFixed(2)}</td>
+    <td>${escapeHtml(order.currency || "EUR")}</td>
+    <td>${escapeHtml(order.client_email)}</td>
+    <td>${escapeHtml(order.client_phone)}</td>
+  </tr>`).join("");
+}
+
+function downloadTextFile(filename: string, content: string, type: string) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadManifestExcel(manifest: ManifestRecord) {
+  const totals = manifestCurrencyTotals(manifest)
+    .map(([currency, value]) => `${escapeHtml(currency)} ${value.toFixed(2)}`)
+    .join("; ");
+  const html = `<!doctype html><html><head><meta charset="utf-8" /></head><body>
+    <table>
+      <tr><th colspan="14">Manifest ${escapeHtml(manifest.manifest_code)}</th></tr>
+      <tr><td>Number</td><td>${escapeHtml(manifest.manifest_code)}</td><td>Date</td><td>${escapeHtml(formatDate(manifest.created_at))}</td></tr>
+      <tr><td>Warehouse</td><td>${escapeHtml(manifest.warehouse_name)}</td><td>Country</td><td>${escapeHtml(manifest.country)}</td></tr>
+      <tr><td>Boxes</td><td>${manifest.box_count}</td><td>Orders</td><td>${manifest.order_count}</td><td>Weight</td><td>${manifest.gross_weight.toFixed(3)}</td><td>Value totals</td><td>${totals}</td></tr>
+      <tr><th>#</th><th>Order tracking</th><th>Box tracking</th><th>Client code</th><th>First name</th><th>Last name</th><th>Address</th><th>Composition</th><th>Description</th><th>Weight kg</th><th>Declared value</th><th>Currency</th><th>Email</th><th>Phone</th></tr>
+      ${manifestRowsHtml(manifest)}
+    </table>
+  </body></html>`;
+  downloadTextFile(`${manifest.manifest_code}.xls`, html, "application/vnd.ms-excel;charset=utf-8");
+}
+
+function printManifest(manifest: ManifestRecord) {
+  const totals = manifestCurrencyTotals(manifest)
+    .map(([currency, value]) => `${escapeHtml(currency)} ${value.toFixed(2)}`)
+    .join(", ") || "—";
+  const html = `<!doctype html><html><head><meta charset="utf-8" />
+    <title>${escapeHtml(manifest.manifest_code)}</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #111; margin: 24px; }
+      h1 { margin: 0 0 6px; font-size: 22px; }
+      .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0; }
+      .meta div { border: 1px solid #ddd; padding: 8px; }
+      .meta small { display: block; color: #555; margin-bottom: 4px; }
+      table { width: 100%; border-collapse: collapse; font-size: 10px; }
+      th, td { border: 1px solid #ddd; padding: 5px; text-align: left; vertical-align: top; }
+      th { background: #f2f2f2; }
+      @media print { body { margin: 10mm; } }
+    </style></head><body>
+    <h1>Manifest ${escapeHtml(manifest.manifest_code)}</h1>
+    <p>Immutable snapshot created ${escapeHtml(formatDate(manifest.created_at))}</p>
+    <section class="meta">
+      <div><small>Batch</small><strong>${escapeHtml(manifest.partial_code)}</strong></div>
+      <div><small>Warehouse</small><strong>${escapeHtml(manifest.warehouse_name)}</strong></div>
+      <div><small>Country</small><strong>${escapeHtml(manifest.country)}</strong></div>
+      <div><small>Total declared value</small><strong>${totals}</strong></div>
+      <div><small>Boxes</small><strong>${manifest.box_count}</strong></div>
+      <div><small>Orders</small><strong>${manifest.order_count}</strong></div>
+      <div><small>Gross weight</small><strong>${manifest.gross_weight.toFixed(3)} kg</strong></div>
+      <div><small>Created by</small><strong>${escapeHtml(manifest.created_by.login)}</strong></div>
+    </section>
+    <table><thead><tr><th>#</th><th>Order tracking</th><th>Box tracking</th><th>Client code</th><th>First name</th><th>Last name</th><th>Address</th><th>Composition</th><th>Description</th><th>Weight kg</th><th>Value</th><th>Currency</th><th>Email</th><th>Phone</th></tr></thead><tbody>${manifestRowsHtml(manifest)}</tbody></table>
+    <script>window.addEventListener("load", () => window.print());</script>
+  </body></html>`;
+  const popup = window.open("", "_blank");
+  if (!popup) return;
+  popup.document.write(html);
+  popup.document.close();
+}
+
 function OrdersTable({ compact = false, title = "Последние заказы" }: { compact?: boolean; title?: string }) {
   return (
     <section className="panel table-panel">
@@ -882,8 +984,9 @@ function Manifests({ session }: { session: Session | null }) {
       {!manifests.length && <p className="empty-state">Манифесты ещё не созданы.</p>}
     </section>
     {active && <section className="panel manifest-detail">
-      <div className="panel-title"><div><p className="eyebrow dark">МАНИФЕСТ</p><h3>{active.manifest_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
+      <div className="panel-title"><div><p className="eyebrow dark">МАНИФЕСТ</p><h3>{active.manifest_code}</h3></div><div className="button-row"><button className="action-button" onClick={() => printManifest(active)}>Печать / PDF</button><button className="action-button" onClick={() => downloadManifestExcel(active)}>Excel</button><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div></div>
       <div className="summary-strip"><div><small>Партия</small><strong>{active.partial_code}</strong></div><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{active.box_count}</strong></div><div><small>Заказы</small><strong>{active.order_count}</strong></div><div><small>Общий вес</small><strong>{active.gross_weight.toFixed(3)} кг</strong></div></div>
+      <div className="summary-strip currency-summary">{manifestCurrencyTotals(active).map(([currency, total]) => <div key={currency}><small>Стоимость {currency}</small><strong>{total.toFixed(2)} {currency}</strong></div>)}{!manifestCurrencyTotals(active).length && <div><small>Стоимость</small><strong>Нет данных</strong></div>}</div>
       <div className="table-scroll"><table><thead><tr><th>Трек заказа</th><th>Трек коробки</th><th>Имя</th><th>Фамилия</th><th>Адрес</th><th>Состав</th><th>Описание товара</th><th>Вес</th><th>Стоимость</th><th>Email</th><th>Телефон</th></tr></thead><tbody>{active.orders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><code>{order.box_tracking_code}</code></td><td>{order.client_first_name || "—"}</td><td>{order.client_last_name || "—"}</td><td>{order.client_address || "—"}</td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{order.gross_weight.toFixed(3)} кг</td><td>{order.declared_value.toFixed(2)} {order.currency || "EUR"}</td><td>{order.client_email || "—"}</td><td>{order.client_phone || "—"}</td></tr>)}</tbody></table></div>
     </section>}
   </>;

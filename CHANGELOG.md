@@ -17,6 +17,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Admin dictionaries for order composition, warehouses, countries, order statuses, currencies, and packaging types with enable/disable instead of deletion.
 - Three-character search and Enter-to-search behavior for client order tracking and admin dictionary screens.
 - Real Web pages for boxes and batches: database-backed lists, search, box contents, batch boxes, and batch completion.
+- Manifest detail exports from the immutable saved snapshot: print/PDF view, Excel-compatible download, and declared value totals by currency.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

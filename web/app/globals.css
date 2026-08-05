@@ -111,6 +111,7 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 .status { padding: 5px 9px; color: #6a5941; background: #fff2d8; font-size: 11px; font-weight: 800; }
 .status.good { color: #1e6e5b; background: #dcf5eb; }
 .action-button { border: 1px solid #bac9c0; padding: 10px 14px; color: var(--ink); background: transparent; font-size: 12px; font-weight: 800; }
+.button-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .table-action { border: 0; padding: 7px 10px; color: #174f42; background: #e1f3eb; font-size: 11px; font-weight: 800; }
 .empty-state { padding: 18px 0 0; color: var(--muted); }
 .editor-card, .manifest-detail { margin-top: 16px; }
@@ -122,6 +123,7 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 .status-pills { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .status-pills span { padding: 8px 10px; color: #31574d; background: #edf4ef; border: 1px solid #d8e5dc; font-size: 12px; font-weight: 750; }
 .summary-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin: 20px 0; background: var(--line); border: 1px solid var(--line); }
+.summary-strip.currency-summary { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
 .summary-strip div { display: grid; gap: 6px; padding: 16px; background: #f8faf7; }
 .summary-strip small { color: var(--muted); }
 .card-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }

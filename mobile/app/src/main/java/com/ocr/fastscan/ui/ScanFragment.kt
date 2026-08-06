@@ -295,7 +295,7 @@ class ScanFragment : BaseFragment() {
                         val first = receivers[0]
                         binding.tvClientName.text = first.fullName?.trim() ?: getString(R.string.name_not_specified)
                         binding.tvClientName.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
-                        currentReceiverGuid = first.recieverGuid
+                        currentReceiverGuid = first.receiverGuid
                         binding.cbShoesBox.isChecked = first.shoesBox == 1
                         binding.cbBagBox.isChecked = first.bagBox == 1
                         soundManager.playSuccess()
@@ -336,7 +336,7 @@ class ScanFragment : BaseFragment() {
             clientName = binding.tvClientName.text.toString(),
             trackingNumber = track,
             grossWeight = grossWeight,
-            recieverGuid = currentReceiverGuid!!,
+            receiverGuid = currentReceiverGuid!!,
             userGuid = currentReceiverGuid!!,
             withBox = if (binding.cbWithBox.isChecked) 1 else 0,
             length = currentLength,

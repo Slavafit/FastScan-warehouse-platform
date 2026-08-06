@@ -37,8 +37,8 @@ The compatibility response shapes are covered by `api/src/mobile-contract.spec.t
 
 ## Modern mobile API
 
-New Android development should use `/api/mobile/*`. Legacy `/api/order/*` and
-`/api/common/reciever` remain available only as a temporary migration layer.
+Android uses `/api/mobile/*`. Legacy `/api/order/*` and
+`/api/common/reciever` remain available only as a temporary fallback layer.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -56,12 +56,18 @@ New Android development should use `/api/mobile/*`. Legacy `/api/order/*` and
 | GET | `/api/mobile/boxes/{guid}/orders` | List orders in a box |
 | POST | `/api/mobile/boxes/{guid}/orders` | Add order to a box |
 | DELETE | `/api/mobile/boxes/{guid}/orders/{orderGuid}` | Remove order from a box |
+| POST | `/api/mobile/boxes/orders` | Add order to a box using the current Android request body |
+| DELETE | `/api/mobile/boxes/orders` | Remove order from a box using the current Android request body |
 | GET | `/api/mobile/batches` | List or filter batches |
 | POST | `/api/mobile/batches` | Create a batch |
 | PUT | `/api/mobile/batches/{guid}` | Update batch name, code or status |
 | POST | `/api/mobile/batches/{guid}/complete` | Complete a batch |
+| POST | `/api/mobile/batches/complete` | Complete a batch using the current Android request body |
 | GET | `/api/mobile/batches/{guid}/boxes` | List boxes in a batch |
 | POST | `/api/mobile/batches/{guid}/boxes` | Add box to a batch |
 | DELETE | `/api/mobile/batches/{guid}/boxes/{boxGuid}` | Remove box from a batch |
+| GET | `/api/mobile/batches/boxes?guid=` | List boxes in a batch using the current Android query |
+| POST | `/api/mobile/batches/boxes` | Add box to a batch using the current Android request body |
+| DELETE | `/api/mobile/batches/boxes` | Remove box from a batch using the current Android request body |
 
 The modern response shapes are covered by `api/src/mobile-modern-contract.spec.ts`.

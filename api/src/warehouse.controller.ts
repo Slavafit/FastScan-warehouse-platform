@@ -86,7 +86,7 @@ export class WarehouseController {
     const receiver = await this.prisma.receiver.findFirst({
       where: {
         OR: [
-          { id: dto.reciever_guid },
+          { id: dto.reciever_guid || dto.receiver_guid },
           { clientCode: dto.client_code.trim().toUpperCase() },
         ],
       },

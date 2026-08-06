@@ -35,7 +35,7 @@ data class OrderDetails(
 )
 data class ReceiverResponse(
     @SerializedName("full_name") val fullName: String?,
-    @SerializedName("guid")  val recieverGuid: String?,
+    @SerializedName("guid") val receiverGuid: String?,
     @SerializedName("package_shoes")  val shoesBox: Int?,
     @SerializedName("bag_package")  val bagBox: Int?
 )
@@ -62,7 +62,7 @@ data class SaveOrderRequest(
     @SerializedName("tracking_number") val trackingNumber: String,
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("with_box") val withBox: Any?,
-    @SerializedName("reciever_guid") val recieverGuid: String,
+    @SerializedName("receiver_guid") val receiverGuid: String,
     @SerializedName("user_guid") val userGuid: String,
     @SerializedName("length") val length: Int?,
     @SerializedName("width") val width: Int?,
@@ -83,7 +83,7 @@ data class ReceiverItem(
 )
 // New box models
 
-// Box model from GET /api/order/box
+// Box model from GET /api/mobile/boxes
 data class BoxItem(
     @SerializedName("guid") val guid: String?,
     @SerializedName("codeid") val codeid: String?,
@@ -93,13 +93,13 @@ data class BoxItem(
     @SerializedName("width") val width: Int?,
     @SerializedName("height") val height: Int?,
     @SerializedName("length") val length: Int?,
-    @SerializedName("v_weight") val vWeight: Double?,
+    @SerializedName(value = "v_weight", alternate = ["volume_weight"]) val vWeight: Double?,
     @SerializedName("gross_weight") val grossWeight: Double?,
-    @SerializedName("date_created") val dateCreated: String?,
-    @SerializedName("orderCount") val orderCount: Int?
+    @SerializedName(value = "date_created", alternate = ["created_at"]) val dateCreated: String?,
+    @SerializedName(value = "orderCount", alternate = ["orders_count"]) val orderCount: Int?
 )
 
-// Request to create/update a box via POST /api/order/box
+// Request to create/update a box via POST /api/mobile/boxes
 data class BoxRequest(
     @SerializedName("guid") val guid: String? = null,
     @SerializedName("codeid") val codeid: String?,
@@ -111,7 +111,7 @@ data class BoxRequest(
     @SerializedName("gross_weight") val weight: Double? = null,
 )
 
-// Response from POST /api/order/box
+// Response from POST /api/mobile/boxes
 data class BoxResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("message") val message: String,
@@ -122,7 +122,7 @@ data class BoxResultItem(
     @SerializedName("NewCodeID") val newCodeID: Int?
 )
 
-// Order model from GET /api/order/order-search?tcode=...
+// Order model from GET /api/mobile/orders?tracking_number=...
 data class OrderSearchResponse(
     @SerializedName("guid") val guid: String?,
     @SerializedName("tracking_number") val trackingNumber: String?,
@@ -133,14 +133,14 @@ data class OrderSearchResponse(
     @SerializedName("client") val client: String?
 )
 
-// Request to add an order to a box via POST /api/order/box-order
+// Request to add an order to a box via POST /api/mobile/boxes/orders
 data class BoxOrderRequest(
     @SerializedName("order") val order: String,  // order guid
     @SerializedName("box") val box: String,  // box guid
     @SerializedName("desc") val desc: String = "España"
 )
 
-// Response from POST /api/order/box-order
+// Response from POST /api/mobile/boxes/orders
 data class BoxOrderResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("message") val message: String,
@@ -150,18 +150,18 @@ data class BoxOrderResponse(
 
     )
 
-// Request to remove an order from a box via DELETE /api/order/box-order
+// Request to remove an order from a box via DELETE /api/mobile/boxes/orders
 data class RemoveOrderRequest(
     @SerializedName("guid") val guid: String  // order guid
 )
 
-// Response from DELETE /api/order/box-order
+// Response from DELETE /api/mobile/boxes/orders
 data class RemoveOrderResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("message") val message: String
 )
 
-// Order-in-box model from GET /api/order/order-tracking-code?boxId=...
+// Order-in-box model from GET /api/mobile/orders?box_tracking_code=...
 data class OrderInBox(
     @SerializedName("guid") val guid: String?,
     @SerializedName("tracking_number") val trackingNumber: String?,
@@ -184,12 +184,12 @@ data class BoxEntry(
 data class Partial(
     val guid: String,
     val codeid: String,
-    val partial: String,
-    val partial_code: String,
-    val partial_name: String,
+    @SerializedName(value = "partial", alternate = ["guid"]) val partial: String,
+    @SerializedName(value = "partial_code", alternate = ["batch_code"]) val partial_code: String,
+    @SerializedName(value = "partial_name", alternate = ["batch_name"]) val partial_name: String,
     val warehouse_name: String,
-    val date_created: String,
-    val boxCount: Int,
+    @SerializedName(value = "date_created", alternate = ["created_at"]) val date_created: String,
+    @SerializedName(value = "boxCount", alternate = ["boxes_count"]) val boxCount: Int,
     val status: Int,  // 0 - open, 1 - completed
     val gross_weight: Double? = null
 )
@@ -198,14 +198,14 @@ data class Partial(
 data class BoxInPartial(
     val guid: String,
     val codeid: String,
-    val partial: String,
+    @SerializedName(value = "partial", alternate = ["batch_guid"]) val partial: String,
     val tracking_code: String,
     val width: Int,
     val height: Int,
     val length: Int,
-    val v_weight: Double,
+    @SerializedName(value = "v_weight", alternate = ["volume_weight"]) val v_weight: Double,
     val gross_weight: Double,
-    val date_created: String,
+    @SerializedName(value = "date_created", alternate = ["created_at"]) val date_created: String,
     val warehouse_name: String
 )
 

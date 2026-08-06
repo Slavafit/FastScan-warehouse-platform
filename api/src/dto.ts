@@ -40,7 +40,8 @@ export class SaveOrderDto {
   @IsString() @IsNotEmpty() tracking_number!: string;
   @IsOptional() @IsNumber() gross_weight?: number;
   @IsOptional() with_box?: unknown;
-  @IsString() @IsNotEmpty() reciever_guid!: string;
+  @IsOptional() @IsString() reciever_guid?: string;
+  @IsOptional() @IsString() receiver_guid?: string;
   @IsOptional() @IsString() user_guid?: string;
   @IsOptional() @IsInt() length?: number;
   @IsOptional() @IsInt() width?: number;

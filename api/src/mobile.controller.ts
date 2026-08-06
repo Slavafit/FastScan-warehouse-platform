@@ -94,7 +94,21 @@ export class MobileController {
 
   @Get('orders')
   @ApiQuery({ name: 'tracking_number', required: false, type: String })
-  async orders(@Query('tracking_number') trackingNumber?: string) {
+  @ApiQuery({ name: 'box_tracking_code', required: false, type: String })
+  async orders(
+    @Query('tracking_number') trackingNumber?: string,
+    @Query('box_tracking_code') boxTrackingCode?: string,
+  ) {
+    if (boxTrackingCode) {
+      const box = await this.findBox(boxTrackingCode);
+      if (!box) return [];
+      const orders = await this.prisma.shipmentOrder.findMany({
+        where: { boxId: box.id },
+        include: { receiver: true, composition: true, box: true },
+        orderBy: { createdAt: 'asc' },
+      });
+      return orders.map((order) => this.orderResponse(order));
+    }
     if (!trackingNumber) return [];
     const order = await this.prisma.shipmentOrder.findUnique({
       where: { trackingNumber: trackingNumber.trim() },
@@ -108,7 +122,7 @@ export class MobileController {
     const receiver = await this.prisma.receiver.findFirst({
       where: {
         OR: [
-          { id: dto.reciever_guid },
+          { id: dto.receiver_guid || dto.reciever_guid },
           { clientCode: dto.client_code.trim().toUpperCase() },
         ],
       },
@@ -195,21 +209,44 @@ export class MobileController {
   async createBox(@Body() dto: BoxDto) {
     if (!dto.tracking_code?.trim())
       throw new NotFoundException('tracking_code is required');
-    const box = await this.prisma.warehouseBox.create({
-      data: {
-        codeId:
-          dto.codeid?.trim() ||
-          String((await this.prisma.warehouseBox.count()) + 1),
-        trackingCode: dto.tracking_code.trim(),
-        width: dto.width ?? 0,
-        height: dto.height ?? 0,
-        length: dto.length ?? 0,
-        volumeWeight: dto.v_weight ?? 0,
-        grossWeight: dto.gross_weight,
-        warehouse: (await this.platformSettings()).warehouseName,
-      },
-    });
-    return { success: true, guid: box.id, codeid: box.codeId };
+    const existing = dto.guid
+      ? await this.prisma.warehouseBox.findUnique({ where: { id: dto.guid } })
+      : await this.prisma.warehouseBox.findUnique({
+          where: { trackingCode: dto.tracking_code.trim() },
+        });
+    const box = existing
+      ? await this.prisma.warehouseBox.update({
+          where: { id: existing.id },
+          data: {
+            trackingCode: dto.tracking_code.trim(),
+            width: dto.width,
+            height: dto.height,
+            length: dto.length,
+            volumeWeight: dto.v_weight,
+            grossWeight: dto.gross_weight,
+          },
+        })
+      : await this.prisma.warehouseBox.create({
+          data: {
+            codeId:
+              dto.codeid?.trim() ||
+              String((await this.prisma.warehouseBox.count()) + 1),
+            trackingCode: dto.tracking_code.trim(),
+            width: dto.width ?? 0,
+            height: dto.height ?? 0,
+            length: dto.length ?? 0,
+            volumeWeight: dto.v_weight ?? 0,
+            grossWeight: dto.gross_weight,
+            warehouse: (await this.platformSettings()).warehouseName,
+          },
+        });
+    return {
+      success: true,
+      message: existing ? 'Box updated' : 'Box created',
+      guid: box.id,
+      codeid: box.codeId,
+      result: [{ NewCodeID: Number(box.codeId) || null }],
+    };
   }
 
   @Put('boxes/:guid')
@@ -247,11 +284,29 @@ export class MobileController {
     @Param('guid') guid: string,
     @Body() dto: MobileBoxOrderDto,
   ) {
-    return this.assignOrderToBox({ order: dto.order_guid, box: guid, desc: dto.description });
+    return this.assignOrderToBox({
+      order: dto.order_guid,
+      box: guid,
+      desc: dto.description,
+    });
+  }
+
+  @Post('boxes/orders')
+  async addOrderToBoxByBody(@Body() dto: BoxOrderDto) {
+    return [await this.assignOrderToBox(dto)];
   }
 
   @Delete('boxes/:guid/orders/:orderGuid')
   async removeOrderFromBox(@Param('orderGuid') orderGuid: string) {
+    return this.unassignOrderFromBox(orderGuid);
+  }
+
+  @Delete('boxes/orders')
+  async removeOrderFromBoxByBody(@Body() dto: { guid: string }) {
+    return this.unassignOrderFromBox(dto.guid);
+  }
+
+  private async unassignOrderFromBox(orderGuid: string) {
     const order = await this.prisma.shipmentOrder.update({
       where: { id: orderGuid },
       data: { boxId: null, boxDescription: null },
@@ -280,14 +335,23 @@ export class MobileController {
 
   @Post('batches')
   async createBatch(@Body() dto: PartialDto) {
-    const batch = await this.prisma.partialBatch.create({
-      data: {
-        codeId: String((await this.prisma.partialBatch.count()) + 1),
-        partialCode: dto.partial_code,
-        partialName: dto.partial_name,
-        warehouseName: (await this.platformSettings()).warehouseName,
-      },
-    });
+    const batch = dto.guid
+      ? await this.prisma.partialBatch.update({
+          where: { id: dto.guid },
+          data: {
+            partialCode: dto.partial_code,
+            partialName: dto.partial_name,
+            status: dto.status,
+          },
+        })
+      : await this.prisma.partialBatch.create({
+          data: {
+            codeId: String((await this.prisma.partialBatch.count()) + 1),
+            partialCode: dto.partial_code,
+            partialName: dto.partial_name,
+            warehouseName: (await this.platformSettings()).warehouseName,
+          },
+        });
     return { success: true, guid: batch.id, codeid: batch.codeId };
   }
 
@@ -306,15 +370,33 @@ export class MobileController {
 
   @Post('batches/:guid/complete')
   async completeBatch(@Param('guid') guid: string) {
+    return this.markBatchCompleted(guid);
+  }
+
+  @Post('batches/complete')
+  async completeBatchByBody(@Body() dto: { partial: string }) {
+    return this.markBatchCompleted(dto.partial);
+  }
+
+  private async markBatchCompleted(guid: string) {
     await this.prisma.partialBatch.update({
       where: { id: guid },
       data: { status: 1 },
     });
-    return { success: true, message: 'Batch completed' };
+    return { success: true, message: 'Batch completed', result: {} };
   }
 
   @Get('batches/:guid/boxes')
   async batchBoxes(@Param('guid') guid: string) {
+    return this.findBatchBoxes(guid);
+  }
+
+  @Get('batches/boxes')
+  async batchBoxesByQuery(@Query('guid') guid: string) {
+    return this.findBatchBoxes(guid);
+  }
+
+  private async findBatchBoxes(guid: string) {
     const boxes = await this.prisma.warehouseBox.findMany({
       where: { partialId: guid },
       include: { partial: true, _count: { select: { orders: true } } },
@@ -328,15 +410,38 @@ export class MobileController {
     @Param('guid') guid: string,
     @Body() dto: MobileBatchBoxDto,
   ) {
+    return this.assignBoxToBatch(guid, dto.box_guid);
+  }
+
+  @Post('batches/boxes')
+  async addBoxToBatchByBody(@Body() dto: { guid: string; partial: string }) {
+    return this.assignBoxToBatch(dto.partial, dto.guid);
+  }
+
+  private async assignBoxToBatch(batchGuid: string, boxGuid: string) {
     const box = await this.prisma.warehouseBox.update({
-      where: { id: dto.box_guid },
-      data: { partialId: guid },
+      where: { id: boxGuid },
+      data: { partialId: batchGuid },
     });
-    return { success: true, guid: box.id, message: 'Box added to batch' };
+    return {
+      success: true,
+      guid: box.id,
+      message: 'Box added to batch',
+      result: [{ UpdatedCodeID: box.codeId }],
+    };
   }
 
   @Delete('batches/:guid/boxes/:boxGuid')
   async removeBoxFromBatch(@Param('boxGuid') boxGuid: string) {
+    return this.unassignBoxFromBatch(boxGuid);
+  }
+
+  @Delete('batches/boxes')
+  async removeBoxFromBatchByBody(@Body() dto: { guid?: string; box?: string }) {
+    return this.unassignBoxFromBatch(dto.guid || dto.box || '');
+  }
+
+  private async unassignBoxFromBatch(boxGuid: string) {
     await this.prisma.warehouseBox.update({
       where: { id: boxGuid },
       data: { partialId: null },
@@ -367,6 +472,12 @@ export class MobileController {
       );
     }
     return { success: true, guid: saved.id, message: 'Order added to box' };
+  }
+
+  private findBox(value: string) {
+    return this.prisma.warehouseBox.findFirst({
+      where: { OR: [{ id: value }, { trackingCode: value.trim() }] },
+    });
   }
 
   private async findComposition(dto: SaveOrderDto) {
@@ -447,6 +558,7 @@ export class MobileController {
       declared_value: this.number(order.declaredValue),
       currency: order.currency,
       receiver_guid: order.receiverId,
+      user_guid: order.receiverId,
       length: order.length,
       width: order.width,
       height: order.height,
@@ -475,6 +587,7 @@ export class MobileController {
       guid: box.id,
       codeid: box.codeId,
       batch_guid: box.partialId,
+      partial: box.partialId ?? '',
       tracking_code: box.trackingCode,
       warehouse: box.warehouse,
       warehouse_name: box.partial?.warehouseName ?? box.warehouse,
@@ -483,9 +596,12 @@ export class MobileController {
       height: box.height,
       length: box.length,
       volume_weight: this.number(box.volumeWeight) ?? 0,
+      v_weight: this.number(box.volumeWeight) ?? 0,
       gross_weight: this.number(box.grossWeight) ?? 0,
       created_at: box.createdAt.toISOString(),
+      date_created: box.createdAt.toISOString(),
       orders_count: box._count?.orders ?? 0,
+      orderCount: box._count?.orders ?? 0,
     };
   }
 
@@ -504,10 +620,14 @@ export class MobileController {
       guid: batch.id,
       codeid: batch.codeId,
       batch_code: batch.partialCode,
+      partial_code: batch.partialCode,
       batch_name: batch.partialName,
+      partial_name: batch.partialName,
+      partial: batch.id,
       warehouse_name: batch.warehouseName,
       status: batch.status,
       boxes_count: batch.boxes.length,
+      boxCount: batch.boxes.length,
       gross_weight:
         this.number(batch.grossWeight) ??
         batch.boxes.reduce(
@@ -515,6 +635,7 @@ export class MobileController {
           0,
         ),
       created_at: batch.createdAt.toISOString(),
+      date_created: batch.createdAt.toISOString(),
     };
   }
 

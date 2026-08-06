@@ -1,3 +1,6 @@
+4.5 (code 34)
+- Switched Android Retrofit calls from legacy warehouse endpoints to the new `/api/mobile/*` API contract.
+
 4.4 (code 33)
 - Added a settings shortcut for switching Android to the new local test API and clearing old tokens before testing.
 

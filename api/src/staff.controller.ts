@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Get,
   NotFoundException,
@@ -10,8 +11,16 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { hash } from 'bcryptjs';
+import { randomInt } from 'node:crypto';
 import { AuthUser, Roles } from './auth.js';
-import { ManifestCreateDto, StaffClientUpdateDto } from './dto.js';
+import {
+  ManifestCreateDto,
+  PasswordResetDto,
+  StaffClientCreateDto,
+  StaffClientUpdateDto,
+  StaffUserStatusDto,
+} from './dto.js';
 import { Prisma, Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
 
@@ -26,12 +35,64 @@ export class StaffController {
   async clients() {
     const clients = await this.prisma.receiver.findMany({
       include: {
-        account: true,
+        account: { include: { user: true } },
         _count: { select: { orders: true } },
       },
       orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
     });
     return clients.map((client) => this.clientResponse(client));
+  }
+
+  @Post('clients')
+  async createClient(@Body() dto: StaffClientCreateDto) {
+    const clientCode =
+      dto.client_code?.trim().toUpperCase() || (await this.randomClientCode());
+    const email = dto.email?.trim().toLowerCase();
+    if (await this.prisma.receiver.findUnique({ where: { clientCode } })) {
+      throw new ConflictException('Client code already exists');
+    }
+    if (email) {
+      if (!dto.password) {
+        throw new BadRequestException('Password is required for client account');
+      }
+      const existing = await this.prisma.user.findUnique({
+        where: { login: email },
+      });
+      if (existing) throw new ConflictException('Client email already exists');
+    }
+
+    const receiver = await this.prisma.receiver.create({
+      data: {
+        clientCode,
+        firstName: dto.first_name.trim(),
+        lastName: dto.last_name.trim(),
+        packageShoes: dto.package_shoes,
+        bagPackage: dto.bag_package,
+        ...(email
+          ? {
+              account: {
+                create: {
+                  email,
+                  phone: this.optionalText(dto.phone),
+                  address: this.optionalText(dto.address),
+                  user: {
+                    create: {
+                      login: email,
+                      passwordHash: await hash(dto.password!, 12),
+                      role: Role.CLIENT,
+                    },
+                  },
+                },
+              },
+            }
+          : {}),
+      },
+      include: {
+        account: { include: { user: true } },
+        _count: { select: { orders: true } },
+      },
+    });
+    return this.clientResponse(receiver);
   }
 
   @Put('clients/:guid')
@@ -90,12 +151,106 @@ export class StaffController {
     const updated = await this.prisma.receiver.findUnique({
       where: { id: receiver.id },
       include: {
-        account: true,
+        account: { include: { user: true } },
         _count: { select: { orders: true } },
       },
     });
     if (!updated) throw new NotFoundException('Client not found');
     return this.clientResponse(updated);
+  }
+
+  @Put('clients/:guid/enabled')
+  async setClientEnabled(
+    @Param('guid') guid: string,
+    @Body() dto: StaffUserStatusDto,
+  ) {
+    const receiver = await this.prisma.receiver.findUnique({
+      where: { id: guid },
+      include: { account: true },
+    });
+    if (!receiver) throw new NotFoundException('Client not found');
+    if (!receiver.account) throw new BadRequestException('Client has no account');
+    await this.prisma.user.update({
+      where: { id: receiver.account.userId },
+      data: { enabled: dto.enabled },
+    });
+    return this.clientById(receiver.id);
+  }
+
+  @Post('clients/:guid/reset-password')
+  async resetClientPassword(
+    @Param('guid') guid: string,
+    @Body() dto: PasswordResetDto,
+  ) {
+    const receiver = await this.prisma.receiver.findUnique({
+      where: { id: guid },
+      include: { account: true },
+    });
+    if (!receiver) throw new NotFoundException('Client not found');
+    if (!receiver.account) throw new BadRequestException('Client has no account');
+    await this.prisma.user.update({
+      where: { id: receiver.account.userId },
+      data: { passwordHash: await hash(dto.password, 12) },
+    });
+    return { success: true };
+  }
+
+  @Get('clients/:guid/orders')
+  async clientOrders(@Param('guid') guid: string) {
+    const receiver = await this.prisma.receiver.findUnique({
+      where: { id: guid },
+    });
+    if (!receiver) throw new NotFoundException('Client not found');
+    const orders = await this.prisma.shipmentOrder.findMany({
+      where: { receiverId: receiver.id },
+      include: { box: true, composition: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return orders.map((order) => ({
+      guid: order.id,
+      tracking_number: order.trackingNumber,
+      status_name: order.statusName,
+      gross_weight: this.number(order.grossWeight),
+      with_box: order.withBox !== 0,
+      box_tracking_code: order.box?.trackingCode ?? null,
+      composition_guid: order.compositionId,
+      composition: order.composition?.name ?? null,
+      description: order.productDescription,
+      declared_value: this.number(order.declaredValue),
+      currency: order.currency,
+      created_at: order.createdAt.toISOString(),
+      updated_at: order.updatedAt.toISOString(),
+    }));
+  }
+
+  @Get('clients/:guid/analytics')
+  async clientAnalytics(@Param('guid') guid: string) {
+    const receiver = await this.prisma.receiver.findUnique({
+      where: { id: guid },
+    });
+    if (!receiver) throw new NotFoundException('Client not found');
+    const orders = await this.prisma.shipmentOrder.findMany({
+      where: { receiverId: receiver.id },
+      select: { grossWeight: true, boxId: true, statusName: true },
+    });
+    const statuses: Record<string, number> = {};
+    for (const order of orders) {
+      statuses[order.statusName] = (statuses[order.statusName] ?? 0) + 1;
+    }
+    const packed = orders.filter((order) => order.boxId).length;
+    return {
+      total_orders: orders.length,
+      packed_orders: packed,
+      unpacked_orders: orders.length - packed,
+      total_weight: orders.reduce(
+        (sum, order) => sum + this.number(order.grossWeight),
+        0,
+      ),
+      boxes_count: new Set(orders.map((order) => order.boxId).filter(Boolean))
+        .size,
+      status_breakdown: statuses,
+      unread_notifications: 0,
+    };
   }
 
   @Get('manifests')
@@ -247,6 +402,7 @@ export class StaffController {
       email: string;
       phone: string | null;
       address: string | null;
+      user?: { enabled: boolean };
     } | null;
     _count: { orders: number };
   }) {
@@ -259,10 +415,38 @@ export class StaffController {
       email: client.account?.email ?? null,
       phone: client.account?.phone ?? null,
       address: client.account?.address ?? null,
+      has_account: client.account !== null,
+      account_enabled: client.account?.user?.enabled ?? false,
       package_shoes: client.packageShoes,
       bag_package: client.bagPackage,
       orders_count: client._count.orders,
     };
+  }
+
+  private async clientById(id: string) {
+    const client = await this.prisma.receiver.findUnique({
+      where: { id },
+      include: {
+        account: { include: { user: true } },
+        _count: { select: { orders: true } },
+      },
+    });
+    if (!client) throw new NotFoundException('Client not found');
+    return this.clientResponse(client);
+  }
+
+  private async randomClientCode() {
+    const config = await this.prisma.clientCodeConfig.findUnique({
+      where: { id: 1 },
+    });
+    const prefix = config?.codePrefix ?? 'KG';
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const code = `${prefix}${randomInt(100_000, 1_000_000)}`;
+      if (!(await this.prisma.receiver.findUnique({ where: { clientCode: code } }))) {
+        return code;
+      }
+    }
+    throw new Error('Could not generate a unique client code');
   }
 
   private manifestResponse(
@@ -301,8 +485,8 @@ export class StaffController {
     };
   }
 
-  private optionalText(value: string) {
-    const normalized = value.trim();
+  private optionalText(value?: string) {
+    const normalized = value?.trim();
     return normalized || null;
   }
 

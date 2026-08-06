@@ -138,6 +138,22 @@ export class StaffClientUpdateDto {
   @IsOptional() @IsInt() bag_package?: number;
 }
 
+export class StaffClientCreateDto {
+  @IsOptional() @IsString() @MaxLength(50) client_code?: string;
+  @IsString() @IsNotEmpty() @MaxLength(120) first_name!: string;
+  @IsString() @IsNotEmpty() @MaxLength(120) last_name!: string;
+  @IsOptional() @IsEmail() email?: string;
+  @IsOptional() @IsString() @MinLength(8) @MaxLength(100) password?: string;
+  @IsOptional() @IsString() @MaxLength(40) phone?: string;
+  @IsOptional() @IsString() @MaxLength(500) address?: string;
+  @IsOptional() @IsInt() package_shoes = 0;
+  @IsOptional() @IsInt() bag_package = 0;
+}
+
+export class PasswordResetDto {
+  @IsString() @MinLength(8) @MaxLength(100) password!: string;
+}
+
 export class ManifestCreateDto {
   @IsString() @IsNotEmpty() partial_guid!: string;
 }

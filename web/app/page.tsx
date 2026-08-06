@@ -48,9 +48,22 @@ type StaffClient = {
   email: string | null;
   phone: string | null;
   address: string | null;
+  has_account: boolean;
+  account_enabled: boolean;
   package_shoes: number;
   bag_package: number;
   orders_count: number;
+};
+
+type ClientDraft = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  phone: string;
+  address: string;
+  package_shoes: number;
+  bag_package: number;
 };
 
 type BatchSummary = {
@@ -490,12 +503,29 @@ function Clients() {
 function StaffClients({ session }: { session: Session }) {
   const [clients, setClients] = useState<StaffClient[]>([]);
   const [editing, setEditing] = useState<StaffClient | null>(null);
+  const [clientOrders, setClientOrders] = useState<ClientOrder[]>([]);
+  const [clientAnalytics, setClientAnalytics] = useState<ClientAnalytics | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [draft, setDraft] = useState<ClientDraft>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+    phone: "",
+    address: "",
+    package_shoes: 0,
+    bag_package: 0,
+  });
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
+  async function loadClients() {
     apiRequest<StaffClient[]>("/api/staff/clients", {}, session)
       .then(setClients)
       .catch((exception) => setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить клиентов"));
+  }
+
+  useEffect(() => {
+    loadClients();
   }, [session]);
 
   function updateEditing(patch: Partial<StaffClient>) {
@@ -526,16 +556,101 @@ function StaffClients({ session }: { session: Session }) {
     }
   }
 
+  async function createClient(event: FormEvent) {
+    event.preventDefault();
+    setMessage("");
+    try {
+      const created = await apiRequest<StaffClient>("/api/staff/clients", {
+        method: "POST",
+        body: JSON.stringify({
+          ...draft,
+          email: draft.email.trim() || undefined,
+          password: draft.password || undefined,
+        }),
+      }, session);
+      setClients((current) => [created, ...current]);
+      setDraft({ first_name: "", last_name: "", email: "", password: "", phone: "", address: "", package_shoes: 0, bag_package: 0 });
+      setMessage("Клиент создан");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось создать клиента");
+    }
+  }
+
+  async function openClient(client: StaffClient) {
+    setEditing(client);
+    setResetPassword("");
+    setMessage("");
+    try {
+      const [orders, analytics] = await Promise.all([
+        apiRequest<ClientOrder[]>(`/api/staff/clients/${client.guid}/orders`, {}, session),
+        apiRequest<ClientAnalytics>(`/api/staff/clients/${client.guid}/analytics`, {}, session),
+      ]);
+      setClientOrders(orders);
+      setClientAnalytics(analytics);
+    } catch (exception) {
+      setClientOrders([]);
+      setClientAnalytics(null);
+      setMessage(exception instanceof Error ? exception.message : "Не удалось загрузить данные клиента");
+    }
+  }
+
+  async function toggleClientAccess() {
+    if (!editing || !editing.has_account) return;
+    setMessage("");
+    try {
+      const updated = await apiRequest<StaffClient>(`/api/staff/clients/${editing.guid}/enabled`, {
+        method: "PUT",
+        body: JSON.stringify({ enabled: !editing.account_enabled }),
+      }, session);
+      setClients((current) => current.map((client) => client.guid === updated.guid ? updated : client));
+      setEditing(updated);
+      setMessage(updated.account_enabled ? "Кабинет клиента разблокирован" : "Кабинет клиента заблокирован");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось изменить доступ клиента");
+    }
+  }
+
+  async function saveResetPassword() {
+    if (!editing || resetPassword.length < 8) return;
+    setMessage("");
+    try {
+      await apiRequest(`/api/staff/clients/${editing.guid}/reset-password`, {
+        method: "POST",
+        body: JSON.stringify({ password: resetPassword }),
+      }, session);
+      setResetPassword("");
+      setMessage("Пароль клиента обновлен");
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось сбросить пароль");
+    }
+  }
+
   return <>
+    <section className="panel editor-card">
+      <div className="panel-title"><div><p className="eyebrow dark">НОВЫЙ КЛИЕНТ</p><h3>Создать клиента</h3></div></div>
+      <form className="form-columns" onSubmit={createClient}>
+        <label><span>Имя</span><input value={draft.first_name} onChange={(event) => setDraft({ ...draft, first_name: event.target.value })} /></label>
+        <label><span>Фамилия</span><input value={draft.last_name} onChange={(event) => setDraft({ ...draft, last_name: event.target.value })} /></label>
+        <label><span>Email кабинета</span><input type="email" value={draft.email} onChange={(event) => setDraft({ ...draft, email: event.target.value.toLowerCase() })} /></label>
+        <label><span>Временный пароль</span><input type="password" value={draft.password} minLength={8} onChange={(event) => setDraft({ ...draft, password: event.target.value })} /></label>
+        <label><span>Телефон</span><input value={draft.phone} onChange={(event) => setDraft({ ...draft, phone: event.target.value })} /></label>
+        <label><span>Адрес</span><input value={draft.address} onChange={(event) => setDraft({ ...draft, address: event.target.value })} /></label>
+        <label><span>Упаковка обуви</span><input type="number" value={draft.package_shoes} onChange={(event) => setDraft({ ...draft, package_shoes: Number(event.target.value) })} /></label>
+        <label><span>Пакет</span><input type="number" value={draft.bag_package} onChange={(event) => setDraft({ ...draft, bag_package: Number(event.target.value) })} /></label>
+        <button className="primary-button" disabled={!draft.first_name.trim() || !draft.last_name.trim() || (!!draft.email.trim() && draft.password.length < 8)}>Создать клиента</button>
+      </form>
+      <p className="field-note">Код клиента генерируется автоматически и не редактируется клиентом.</p>
+    </section>
     <section className="panel table-panel">
       <div className="panel-title"><div><p className="eyebrow dark">БАЗА</p><h3>Клиенты</h3></div><span>{clients.length} записей</span></div>
-      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Клиент</th><th>Email</th><th>Телефон</th><th>Заказы</th><th></th></tr></thead>
-        <tbody>{clients.map((client) => <tr key={client.guid}><td><code>{client.client_code}</code></td><td><strong>{client.full_name}</strong></td><td>{client.email || "—"}</td><td>{client.phone || "—"}</td><td>{client.orders_count}</td><td><button className="table-action" onClick={() => { setEditing(client); setMessage(""); }}>Изменить</button></td></tr>)}</tbody>
+      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Клиент</th><th>Email</th><th>Телефон</th><th>Кабинет</th><th>Заказы</th><th></th></tr></thead>
+        <tbody>{clients.map((client) => <tr key={client.guid}><td><code>{client.client_code}</code></td><td><strong>{client.full_name}</strong></td><td>{client.email || "—"}</td><td>{client.phone || "—"}</td><td>{client.has_account ? <span className={client.account_enabled ? "status good" : "status blocked"}>{client.account_enabled ? "Активен" : "Блок"}</span> : "—"}</td><td>{client.orders_count}</td><td><button className="table-action" onClick={() => openClient(client)}>Открыть</button></td></tr>)}</tbody>
       </table></div>
       {!clients.length && <p className="empty-state">Клиенты пока не найдены.</p>}
     </section>
     {editing && <section className="panel editor-card">
-      <div className="panel-title"><div><p className="eyebrow dark">РЕДАКТИРОВАНИЕ</p><h3>{editing.full_name}</h3></div><button className="action-button" onClick={() => setEditing(null)}>Закрыть</button></div>
+      <div className="panel-title"><div><p className="eyebrow dark">РЕДАКТИРОВАНИЕ</p><h3>{editing.full_name}</h3></div><div className="button-row">{editing.has_account && <button className="action-button" onClick={toggleClientAccess}>{editing.account_enabled ? "Заблокировать" : "Разблокировать"}</button>}<button className="action-button" onClick={() => setEditing(null)}>Закрыть</button></div></div>
+      <div className="summary-strip"><div><small>Заказы</small><strong>{clientAnalytics?.total_orders ?? editing.orders_count}</strong></div><div><small>Упаковано</small><strong>{clientAnalytics?.packed_orders ?? 0}</strong></div><div><small>Без коробки</small><strong>{clientAnalytics?.unpacked_orders ?? 0}</strong></div><div><small>Коробки</small><strong>{clientAnalytics?.boxes_count ?? 0}</strong></div><div><small>Вес</small><strong>{formatWeight(clientAnalytics?.total_weight ?? 0)}</strong></div></div>
       <div className="form-columns">
         <label><span>Код клиента</span><input className="readonly-field" value={editing.client_code} readOnly /></label>
         <label><span>Email</span><input type="email" value={editing.email || ""} onChange={(event) => updateEditing({ email: event.target.value })} /></label>
@@ -548,6 +663,9 @@ function StaffClients({ session }: { session: Session }) {
       </div>
       <p className="field-note">Код клиента нельзя изменить: он связан с заказами и кабинетом.</p>
       <button className="primary-button" onClick={saveClient}>Сохранить изменения</button>
+      {editing.has_account && <div className="inline-form"><label><span>Новый пароль</span><input type="password" value={resetPassword} minLength={8} onChange={(event) => setResetPassword(event.target.value)} /></label><button className="action-button" disabled={resetPassword.length < 8} onClick={saveResetPassword}>Сбросить пароль</button></div>}
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Стоимость</th><th>Вес</th><th>Коробка</th></tr></thead><tbody>{clientOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={order.with_box ? "status good" : "status"}>{order.status_name || "На складе"}</span></td><td>{order.composition || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td></tr>)}</tbody></table></div>
+      {!clientOrders.length && <p className="empty-state">История заказов пока пустая.</p>}
       {message && <p className="save-notice">{message}</p>}
     </section>}
   </>;

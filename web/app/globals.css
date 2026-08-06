@@ -154,6 +154,8 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
 .settings-card { max-width: 680px; }
 .settings-card h3, .system-card h3 { margin: 0; font-size: 24px; }
 .form-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.inline-form { display: grid; grid-template-columns: minmax(220px, 1fr) auto; gap: 12px; align-items: end; margin: 16px 0; }
+.inline-form label, .inline-form .action-button { margin: 0; }
 .code-preview { display: grid; gap: 7px; margin: 20px 0; padding: 18px; border-left: 4px solid var(--lime); background: #edf2ec; }
 .code-preview small, .code-preview span { color: var(--muted); }
 .code-preview strong { font: 800 24px monospace; letter-spacing: .05em; }
@@ -228,6 +230,7 @@ code { padding: 4px 7px; color: #244a40; background: #eaf2ec; font: 700 12px mon
   .audit-list > div { grid-template-columns: 1fr 80px; }
   .audit-list span { display: none; }
   .form-columns { grid-template-columns: 1fr; }
+  .inline-form { grid-template-columns: 1fr; }
   .manifest-controls, .summary-strip { grid-template-columns: 1fr; }
   .staff-create, .staff-row { grid-template-columns: 1fr; }
   .order-tools { grid-template-columns: 1fr; }

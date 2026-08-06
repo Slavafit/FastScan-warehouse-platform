@@ -84,3 +84,7 @@ staging-окружение;
 Ближайший практический шаг
 Сейчас лучше начать с реального раздела заказов во Web: список из базы, поиск, просмотр и редактирование состава, описания, стоимости, веса и клиента. После него — реальные коробки и партии, затем PDF/Excel-манифест.
 Монорепозиторий пока сохраняем. Разделять Android, API и Web на отдельные репозитории имеет смысл только после успешного переключения Android на новый backend.
+
+Deferred items / Backlog
+
+- Manifest versioning: when a completed manifest contains an error, keep the old immutable document unchanged and create a new manifest version for the corrected batch/document. Return to this after the first Web manifest export flow is stable.

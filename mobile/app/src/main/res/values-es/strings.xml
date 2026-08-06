@@ -8,6 +8,9 @@
     <string name="server_settings">💻⚙️ Configuración del servidor</string>
     <string name="server_url_title">URL del servidor</string>
     <string name="server_url_summary">Por defecto: https://onza-api.ibm.kg</string>
+    <string name="use_new_test_api_title">API nueva de prueba</string>
+    <string name="use_new_test_api_summary">Usar http://10.0.2.2:8080 y borrar tokens</string>
+    <string name="new_test_api_applied">API de prueba activada, tokens borrados</string>
     <string name="login_title">Login</string>
     <string name="password_title">Contraseña</string>
     <string name="vol_weight_title">Peso volumétrico</string>

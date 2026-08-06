@@ -30,7 +30,12 @@
 ## Клиенты
 
 - `GET /api/staff/clients` — список клиентов;
+- `POST /api/staff/clients` — создание клиента и, при наличии email/password, клиентского кабинета;
 - `PUT /api/staff/clients/{guid}` — изменение имени, телефона, адреса, email и настроек упаковки.
+- `PUT /api/staff/clients/{guid}/enabled` — блокировка или разблокировка клиентского кабинета;
+- `POST /api/staff/clients/{guid}/reset-password` — сброс пароля клиентского кабинета;
+- `GET /api/staff/clients/{guid}/orders` — история заказов клиента;
+- `GET /api/staff/clients/{guid}/analytics` — статистика клиента по заказам, коробкам, весу и статусам.
 
 Код клиента через этот метод не изменяется.
 

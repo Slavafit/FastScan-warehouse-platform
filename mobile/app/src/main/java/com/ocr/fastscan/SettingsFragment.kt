@@ -61,6 +61,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
+        findPreference<Preference>("use_new_test_api")?.setOnPreferenceClickListener {
+            val apiUrlPreference = findPreference<EditTextPreference>("api_url")
+            apiUrlPreference?.text = NEW_TEST_API_URL
+            apiUrlPreference?.summary = NEW_TEST_API_URL
+            AppDependencies.tokenManager.clear()
+            Toast.makeText(requireContext(), R.string.new_test_api_applied, Toast.LENGTH_SHORT).show()
+            true
+        }
+
         findPreference<EditTextPreference>("vol_weight")?.setOnPreferenceChangeListener { _, newValue ->
             val newDivider = (newValue as? String)?.toDoubleOrNull() ?: 6000.0
             requireContext().saveVolWeightDivider(newDivider)
@@ -205,5 +214,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     companion object {
         private const val DEVELOPER_URL = "https://t.me/slavafit"
+        private const val NEW_TEST_API_URL = "http://10.0.2.2:8080"
     }
 }

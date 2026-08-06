@@ -19,6 +19,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Real Web pages for boxes and batches: database-backed lists, search, box contents, batch boxes, and batch completion.
 - Manifest detail exports from the immutable saved snapshot: print/PDF view, Excel-compatible download, and declared value totals by currency.
 - Staff client management: create clients, block or unblock client accounts, reset passwords, and view client order history and analytics.
+- Android settings shortcut for switching to the new local test API and clearing old tokens before backend comparison.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

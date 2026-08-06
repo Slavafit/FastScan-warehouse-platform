@@ -39,6 +39,9 @@
     <string name="server_settings">💻⚙️ Настройки сервера</string>
     <string name="server_url_title">URL сервера</string>
     <string name="server_url_summary">По умолчанию: https://onza-api.ibm.kg</string>
+    <string name="use_new_test_api_title">Новый тестовый API</string>
+    <string name="use_new_test_api_summary">Подставить http://10.0.2.2:8080 и очистить токены</string>
+    <string name="new_test_api_applied">Тестовый API включён, токены очищены</string>
     <string name="login_title">Логин</string>
     <string name="password_title">Пароль</string>
 

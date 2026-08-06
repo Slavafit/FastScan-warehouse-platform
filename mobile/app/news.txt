@@ -1,3 +1,6 @@
+4.4 (code 33)
+- Added a settings shortcut for switching Android to the new local test API and clearing old tokens before testing.
+
 4.3 (code 32)
 - Added an up-to-date bilingual Russian and English README with features, setup, build instructions, and a GitHub project description.
 

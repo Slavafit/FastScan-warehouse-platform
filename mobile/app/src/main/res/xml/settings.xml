@@ -29,6 +29,11 @@
             app:defaultValue="https://onza-api.ibm.kg"
             app:useSimpleSummaryProvider="true" />
 
+        <Preference
+            app:key="use_new_test_api"
+            app:title="@string/use_new_test_api_title"
+            app:summary="@string/use_new_test_api_summary" />
+
         <EditTextPreference
             app:key="login"
             app:title="@string/login_title"

@@ -1,13 +1,16 @@
 package com.ocr.fastscan
 
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
+import com.ocr.fastscan.databinding.ActivitySettingsBinding
 import com.ocr.fastscan.utils.LanguageHelper
 import com.ocr.fastscan.utils.ThemeHelper
 
 class SettingsActivity : AppCompatActivity() {
+    private lateinit var binding: ActivitySettingsBinding
 
     override fun attachBaseContext(newBase: Context) {
         val prefs = PreferenceManager.getDefaultSharedPreferences(newBase)
@@ -21,9 +24,26 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        binding = ActivitySettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        supportFragmentManager.beginTransaction()
-            .replace(android.R.id.content, SettingsFragment())
-            .commit()
+        binding.btnBack.setOnClickListener { finish() }
+        binding.btnSave.setOnClickListener { closeAndReturnToApp() }
+
+        if (savedInstanceState == null) {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.settings_fragment_container, SettingsFragment())
+                .commit()
+        }
+    }
+
+    private fun closeAndReturnToApp() {
+        if (isTaskRoot) {
+            startActivity(
+                Intent(this, MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            )
+        }
+        finish()
     }
 }

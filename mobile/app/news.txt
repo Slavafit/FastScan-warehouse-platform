@@ -1,3 +1,6 @@
+4.6 (code 35)
+- Added explicit Back and Save actions to the Android settings screen so emulator users can leave settings reliably.
+
 4.5 (code 34)
 - Switched Android Retrofit calls from legacy warehouse endpoints to the new `/api/mobile/*` API contract.
 

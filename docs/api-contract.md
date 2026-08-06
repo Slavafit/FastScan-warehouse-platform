@@ -32,3 +32,36 @@ Authorization: Bearer <accessToken>
 ```
 
 OpenAPI JSON: `/openapi.json`; Swagger UI: `/swagger-ui`.
+
+The compatibility response shapes are covered by `api/src/mobile-contract.spec.ts`.
+
+## Modern mobile API
+
+New Android development should use `/api/mobile/*`. Legacy `/api/order/*` and
+`/api/common/reciever` remain available only as a temporary migration layer.
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/api/mobile/auth/login` | Login for Android workers |
+| POST | `/api/mobile/auth/refresh` | Refresh Android worker tokens |
+| GET | `/api/mobile/receivers?client_code=` | Find receiver by client code |
+| GET | `/api/mobile/receivers` | List receivers |
+| POST | `/api/mobile/receivers` | Create or update receiver |
+| GET | `/api/mobile/orders/{trackingNumber}` | Get order by tracking number |
+| GET | `/api/mobile/orders?tracking_number=` | Search order by tracking number |
+| POST | `/api/mobile/orders` | Create or update an order |
+| GET | `/api/mobile/boxes` | List or filter boxes |
+| POST | `/api/mobile/boxes` | Create a box |
+| PUT | `/api/mobile/boxes/{guid}` | Update box dimensions, weight or tracking code |
+| GET | `/api/mobile/boxes/{guid}/orders` | List orders in a box |
+| POST | `/api/mobile/boxes/{guid}/orders` | Add order to a box |
+| DELETE | `/api/mobile/boxes/{guid}/orders/{orderGuid}` | Remove order from a box |
+| GET | `/api/mobile/batches` | List or filter batches |
+| POST | `/api/mobile/batches` | Create a batch |
+| PUT | `/api/mobile/batches/{guid}` | Update batch name, code or status |
+| POST | `/api/mobile/batches/{guid}/complete` | Complete a batch |
+| GET | `/api/mobile/batches/{guid}/boxes` | List boxes in a batch |
+| POST | `/api/mobile/batches/{guid}/boxes` | Add box to a batch |
+| DELETE | `/api/mobile/batches/{guid}/boxes/{boxGuid}` | Remove box from a batch |
+
+The modern response shapes are covered by `api/src/mobile-modern-contract.spec.ts`.

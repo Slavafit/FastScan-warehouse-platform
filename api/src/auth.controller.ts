@@ -20,8 +20,18 @@ export class AuthController {
     return this.login(dto, false);
   }
 
+  @Post('api/mobile/auth/login')
+  async mobileLogin(@Body() dto: LoginDto) {
+    return this.login(dto, false);
+  }
+
   @Post('api/admin/auth/refresh')
   async warehouseRefresh(@Body() dto: RefreshDto) {
+    return this.refresh(dto, false);
+  }
+
+  @Post('api/mobile/auth/refresh')
+  async mobileRefresh(@Body() dto: RefreshDto) {
     return this.refresh(dto, false);
   }
 

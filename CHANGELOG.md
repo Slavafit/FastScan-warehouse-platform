@@ -20,6 +20,8 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Manifest detail exports from the immutable saved snapshot: print/PDF view, Excel-compatible download, and declared value totals by currency.
 - Staff client management: create clients, block or unblock client accounts, reset passwords, and view client order history and analytics.
 - Android settings shortcut for switching to the new local test API and clearing old tokens before backend comparison.
+- Expanded backend contract tests for the Android compatibility endpoints used by the Retrofit client.
+- Modern `/api/mobile/*` backend contract for Android with clear receiver, order, box, and batch endpoints while keeping legacy routes during migration.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

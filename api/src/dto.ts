@@ -67,6 +67,13 @@ export class BoxOrderDto {
   @IsString() @IsNotEmpty() box!: string;
   @IsOptional() @IsString() desc?: string;
 }
+export class MobileBoxOrderDto {
+  @IsString() @IsNotEmpty() order_guid!: string;
+  @IsOptional() @IsString() description?: string;
+}
+export class MobileBatchBoxDto {
+  @IsString() @IsNotEmpty() box_guid!: string;
+}
 export class GuidDto {
   @IsString() @IsNotEmpty() guid!: string;
 }

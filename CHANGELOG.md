@@ -23,6 +23,9 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Expanded backend contract tests for the Android compatibility endpoints used by the Retrofit client.
 - Modern `/api/mobile/*` backend contract for Android with clear receiver, order, box, and batch endpoints while keeping legacy routes during migration.
 - Android Retrofit calls now target the modern `/api/mobile/*` contract while keeping model aliases for a controlled migration.
+- Client portal shipment pre-registration by tracking or order number, visible to warehouse/mobile receiving before the parcel arrives.
+- Android warehouse receiving now moves pre-registered shipments to `AT_WAREHOUSE` instead of the generic `REGISTERED` status.
+- Composition, description, declared value, and currency are documented as Web/client-managed manifest data; Android receiving stays focused on scan, client, dimensions, box flag, and gross weight.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

@@ -138,7 +138,7 @@ model ShipmentOrder {
   length             Int?
   width              Int?
   height             Int?
-  statusName         String            @default("REGISTERED") @map("status_name") @db.VarChar(100)
+  statusName         String            @default("AT_WAREHOUSE") @map("status_name") @db.VarChar(100)
   boxId              String?           @map("box_id") @db.Uuid
   boxDescription     String?           @map("box_description") @db.VarChar(240)
   compositionId      String?           @map("composition_id") @db.Uuid

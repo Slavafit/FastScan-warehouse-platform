@@ -71,3 +71,9 @@ Android uses `/api/mobile/*`. Legacy `/api/order/*` and
 | DELETE | `/api/mobile/batches/boxes` | Remove box from a batch using the current Android request body |
 
 The modern response shapes are covered by `api/src/mobile-modern-contract.spec.ts`.
+
+Android receiving owns only the warehouse operation fields: tracking number,
+client code/name, dimensions, box flag, and gross weight. Composition,
+description, declared value, and currency belong to Web/client workflows and
+manifest generation. When Android receives a client pre-registered shipment,
+the order moves to `AT_WAREHOUSE` without clearing those Web-managed fields.

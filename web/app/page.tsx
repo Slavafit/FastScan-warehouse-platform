@@ -171,6 +171,14 @@ type ClientAnalytics = {
   unread_notifications: number;
 };
 
+type ClientOrderDraft = {
+  tracking_number: string;
+  composition_guid: string;
+  description: string;
+  declared_value: string;
+  currency: string;
+};
+
 type DictionaryType =
   | "WAREHOUSE"
   | "COUNTRY"
@@ -664,7 +672,7 @@ function StaffClients({ session }: { session: Session }) {
       <p className="field-note">Код клиента нельзя изменить: он связан с заказами и кабинетом.</p>
       <button className="primary-button" onClick={saveClient}>Сохранить изменения</button>
       {editing.has_account && <div className="inline-form"><label><span>Новый пароль</span><input type="password" value={resetPassword} minLength={8} onChange={(event) => setResetPassword(event.target.value)} /></label><button className="action-button" disabled={resetPassword.length < 8} onClick={saveResetPassword}>Сбросить пароль</button></div>}
-      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Стоимость</th><th>Вес</th><th>Коробка</th></tr></thead><tbody>{clientOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={order.with_box ? "status good" : "status"}>{order.status_name || "На складе"}</span></td><td>{order.composition || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Стоимость</th><th>Вес</th><th>Коробка</th></tr></thead><tbody>{clientOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={order.with_box ? "status good" : "status"}>{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td></tr>)}</tbody></table></div>
       {!clientOrders.length && <p className="empty-state">История заказов пока пустая.</p>}
       {message && <p className="save-notice">{message}</p>}
     </section>}
@@ -679,6 +687,14 @@ function Orders({ client, session, demo }: { client: boolean; session: Session |
 function ClientOrders({ session }: { session: Session }) {
   const [orders, setOrders] = useState<ClientOrder[]>([]);
   const [analytics, setAnalytics] = useState<ClientAnalytics | null>(null);
+  const [compositions, setCompositions] = useState<DictionaryItem[]>([]);
+  const [draft, setDraft] = useState<ClientOrderDraft>({
+    tracking_number: "",
+    composition_guid: "",
+    description: "",
+    declared_value: "",
+    currency: "EUR",
+  });
   const [queryDraft, setQueryDraft] = useState("");
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
@@ -703,6 +719,9 @@ function ClientOrders({ session }: { session: Session }) {
 
   useEffect(() => {
     load();
+    apiRequest<DictionaryItem[]>("/api/client/order-compositions", {}, session)
+      .then(setCompositions)
+      .catch(() => setCompositions([]));
   }, [session]);
 
   function updateTrackSearch(value: string) {
@@ -713,6 +732,39 @@ function ClientOrders({ session }: { session: Session }) {
 
   function applyTrackSearch() {
     setQuery(queryDraft.trim());
+  }
+
+  async function registerOrder(event: FormEvent) {
+    event.preventDefault();
+    setMessage("");
+    const trackingNumber = draft.tracking_number.trim();
+    if (!trackingNumber) {
+      setMessage("Введите трек или номер заказа");
+      return;
+    }
+    try {
+      await apiRequest<ClientOrder>("/api/client/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          tracking_number: trackingNumber,
+          composition_guid: draft.composition_guid || undefined,
+          description: draft.description.trim() || undefined,
+          declared_value: draft.declared_value.trim() ? Number(draft.declared_value) : undefined,
+          currency: draft.currency.trim().toUpperCase() || "EUR",
+        }),
+      }, session);
+      setDraft({
+        tracking_number: "",
+        composition_guid: "",
+        description: "",
+        declared_value: "",
+        currency: "EUR",
+      });
+      setMessage("Отправление зарегистрировано");
+      await load();
+    } catch (exception) {
+      setMessage(exception instanceof Error ? exception.message : "Не удалось зарегистрировать отправление");
+    }
   }
 
   const normalizedQuery = query.trim().toLowerCase();
@@ -733,6 +785,14 @@ function ClientOrders({ session }: { session: Session }) {
         <div><p className="eyebrow dark">ТРЕКИНГ</p><h3>Мои заказы</h3></div>
         <button className="action-button" type="button" onClick={load}>Обновить</button>
       </div>
+      <form className="client-order-form" onSubmit={registerOrder}>
+        <label><span>Трек или номер заказа</span><input value={draft.tracking_number} onChange={(event) => setDraft({ ...draft, tracking_number: event.target.value.trim().toUpperCase() })} /></label>
+        <label><span>Состав</span><select value={draft.composition_guid} onChange={(event) => setDraft({ ...draft, composition_guid: event.target.value })}><option value="">Не выбран</option>{compositions.map((item) => <option key={item.guid} value={item.guid}>{item.name}</option>)}</select></label>
+        <label><span>Стоимость</span><input type="number" min="0" step="0.01" value={draft.declared_value} onChange={(event) => setDraft({ ...draft, declared_value: event.target.value })} /></label>
+        <label><span>Валюта</span><input maxLength={3} value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value.toUpperCase() })} /></label>
+        <label className="wide"><span>Описание товара</span><input value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
+        <button className="primary-button" disabled={!draft.tracking_number.trim()}>Зарегистрировать</button>
+      </form>
       <div className="order-tools">
         <label><span>Поиск по треку</span><input value={queryDraft} onChange={(event) => updateTrackSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") applyTrackSearch(); }} placeholder="Минимум 3 символа или Enter" /></label>
         <div className="status-pills">
@@ -741,7 +801,7 @@ function ClientOrders({ session }: { session: Session }) {
       </div>
       {message && <p className="form-error">{message}</p>}
       <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th><th>Коробка</th><th>Обновлен</th></tr></thead>
-        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={`status ${order.with_box ? "good" : ""}`}>{order.status_name || "На складе"}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
+        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={`status ${order.with_box ? "good" : ""}`}>{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
       </table></div>
       {loading && <p className="empty-state">Загружаем заказы...</p>}
       {!loading && !visibleOrders.length && <p className="empty-state">{query.trim() ? "По этому треку заказ не найден." : "Заказы пока не найдены."}</p>}
@@ -755,6 +815,17 @@ function formatWeight(value: number | null) {
 
 function formatMoney(value: number | null, currency: string | null) {
   return value == null ? "—" : `${value.toFixed(2)} ${currency || "EUR"}`;
+}
+
+function formatStatus(status: string | null | undefined) {
+  const labels: Record<string, string> = {
+    CLIENT_REGISTERED: "Ожидает поступления",
+    AT_WAREHOUSE: "На складе",
+    REGISTERED: "На складе",
+    PACKED: "Упакован",
+    IN_BATCH: "В партии",
+  };
+  return labels[status || ""] || status || "На складе";
 }
 
 function formatDate(value: string) {

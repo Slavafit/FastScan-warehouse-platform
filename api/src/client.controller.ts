@@ -1,16 +1,19 @@
 import {
+  BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Get,
   NotFoundException,
   Param,
   Patch,
+  Post,
   Put,
   Query,
   Req,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { ProfileDto } from './dto.js';
+import { ClientOrderCreateDto, ProfileDto } from './dto.js';
 import { AuthUser, Roles } from './auth.js';
 import { Prisma, Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
@@ -70,6 +73,85 @@ export class ClientController {
       currency: order.currency,
       created_at: order.createdAt.toISOString(),
       updated_at: order.updatedAt.toISOString(),
+    }));
+  }
+
+  @Post('orders')
+  async createOrder(
+    @Req() request: { user: AuthUser },
+    @Body() dto: ClientOrderCreateDto,
+  ) {
+    const account = await this.account(request.user.sub);
+    const trackingNumber = dto.tracking_number.trim();
+    if (!trackingNumber)
+      throw new BadRequestException('Tracking number is required');
+
+    const existing = await this.prisma.shipmentOrder.findUnique({
+      where: { trackingNumber },
+    });
+    if (existing && existing.receiverId !== account.receiverId) {
+      throw new ConflictException('This tracking number is already registered');
+    }
+    if (dto.composition_guid) {
+      const composition = await this.prisma.orderComposition.findUnique({
+        where: { id: dto.composition_guid },
+      });
+      if (!composition || !composition.enabled) {
+        throw new NotFoundException('Order composition not found');
+      }
+    }
+
+    const order = await this.prisma.shipmentOrder.upsert({
+      where: { trackingNumber },
+      update: {
+        compositionId: dto.composition_guid || null,
+        productDescription: this.optionalText(dto.description),
+        declaredValue: dto.declared_value,
+        currency: dto.currency?.trim().toUpperCase() || 'EUR',
+      },
+      create: {
+        trackingNumber,
+        clientName:
+          `${account.receiver.firstName} ${account.receiver.lastName}`.trim(),
+        clientCode: account.receiver.clientCode,
+        receiverId: account.receiverId,
+        statusName: 'CLIENT_REGISTERED',
+        compositionId: dto.composition_guid || null,
+        productDescription: this.optionalText(dto.description),
+        declaredValue: dto.declared_value,
+        currency: dto.currency?.trim().toUpperCase() || 'EUR',
+      },
+      include: { box: true, composition: true },
+    });
+    return {
+      guid: order.id,
+      tracking_number: order.trackingNumber,
+      status_name: order.statusName,
+      gross_weight: this.number(order.grossWeight),
+      with_box: order.withBox !== 0,
+      box_tracking_code: order.box?.trackingCode ?? null,
+      composition_guid: order.compositionId,
+      composition: order.composition?.name ?? null,
+      description: order.productDescription,
+      declared_value: this.number(order.declaredValue),
+      currency: order.currency,
+      created_at: order.createdAt.toISOString(),
+      updated_at: order.updatedAt.toISOString(),
+    };
+  }
+
+  @Get('order-compositions')
+  async orderCompositions() {
+    const items = await this.prisma.orderComposition.findMany({
+      where: { enabled: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    return items.map((item) => ({
+      guid: item.id,
+      code: item.code,
+      name: item.name,
+      enabled: item.enabled,
+      sort_order: item.sortOrder,
     }));
   }
 

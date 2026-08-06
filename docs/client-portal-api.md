@@ -29,6 +29,8 @@ API личного кабинета использует отдельную ро
 | GET | `/api/client/profile` | Profile and notification preferences |
 | PUT | `/api/client/profile` | Update profile and preferences |
 | GET | `/api/client/orders` | Authenticated client orders only |
+| POST | `/api/client/orders` | Pre-register a shipment by tracking or order number |
+| GET | `/api/client/order-compositions` | Enabled order composition values |
 | GET | `/api/client/analytics` | Order, weight, box, status, and unread totals |
 | GET | `/api/client/notifications` | List notifications |
 | GET | `/api/client/notifications?unreadOnly=true` | List unread notifications |
@@ -49,6 +51,15 @@ API личного кабинета использует отдельную ро
 ```
 
 Требуется `Authorization: Bearer <client-access-token>`.
+
+Client-created orders use status `CLIENT_REGISTERED` until a warehouse worker
+receives the shipment in Android. Worker receiving updates the status to
+`AT_WAREHOUSE`, preserving the client, composition, description, declared value,
+and currency.
+
+Composition, description, declared value, and currency are managed by the client
+or manager in Web and are used later in manifests. Android receiving does not
+need to collect those fields.
 
 ## Оповещения
 

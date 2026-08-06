@@ -143,6 +143,7 @@ export class MobileController {
         length: dto.length,
         width: dto.width,
         height: dto.height,
+        statusName: 'AT_WAREHOUSE',
         ...(composition ? { compositionId: composition.id } : {}),
         ...(dto.description !== undefined
           ? { productDescription: dto.description.trim() || null }
@@ -159,6 +160,7 @@ export class MobileController {
         clientName: dto.client?.trim(),
         clientCode: dto.client_code.trim().toUpperCase(),
         receiverId: receiver.id,
+        statusName: 'AT_WAREHOUSE',
         withBox: this.flag(dto.with_box),
         grossWeight: dto.gross_weight,
         length: dto.length,

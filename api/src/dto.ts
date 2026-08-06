@@ -100,6 +100,13 @@ export class ProfileDto {
   @IsBoolean() email_notifications!: boolean;
   @IsBoolean() push_notifications!: boolean;
 }
+export class ClientOrderCreateDto {
+  @IsString() @IsNotEmpty() tracking_number!: string;
+  @IsOptional() @IsString() composition_guid?: string;
+  @IsOptional() @IsString() @MaxLength(500) description?: string;
+  @IsOptional() @IsNumber() @Min(0) declared_value?: number;
+  @IsOptional() @IsString() @Length(3, 3) currency?: string;
+}
 export class NotificationDto {
   @IsOptional() @IsString() client_code?: string;
   @IsOptional() @IsString() type = 'INFO';

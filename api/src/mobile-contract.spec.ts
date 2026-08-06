@@ -170,7 +170,7 @@ describe('Mobile API contract', () => {
         findUnique: jest.fn().mockResolvedValue({
           id: 'order-1',
           trackingNumber: 'TRACK-1',
-          statusName: 'REGISTERED',
+          statusName: 'AT_WAREHOUSE',
           grossWeight: { toString: () => '2.500' },
           clientCode: 'KG123456',
           clientName: 'Anna Client',
@@ -192,7 +192,7 @@ describe('Mobile API contract', () => {
         guid: 'order-1',
         tracking_number: 'TRACK-1',
         tracking_code: 'TRACK-1',
-        status_name: 'REGISTERED',
+        status_name: 'AT_WAREHOUSE',
         gross_weight: 2.5,
         client_code: 'KG123456',
         client: 'Anna Client',

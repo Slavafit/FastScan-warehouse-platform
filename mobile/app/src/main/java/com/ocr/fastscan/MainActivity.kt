@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
                 val loginOk = AppDependencies.performAutoLogin(this@MainActivity)
                 if (!loginOk) {
                     startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+                    finish()
                     return@launch
                 }
             } else {

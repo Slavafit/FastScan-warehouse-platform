@@ -97,6 +97,32 @@ describe('FastScan API (e2e)', () => {
     return request(app.getHttpServer()).get('/api/order/box').expect(401);
   });
 
+  it('seeds admin, worker and client test accounts', async () => {
+    await request(app.getHttpServer())
+      .post('/api/admin/auth/login')
+      .send({ login: 'admin', password: 'change-me' })
+      .expect(201)
+      .expect(({ body }) => {
+        expect((body as LoginResponse).role).toBe('ADMIN');
+      });
+
+    await request(app.getHttpServer())
+      .post('/api/admin/auth/login')
+      .send({ login: 'worker', password: 'change-me' })
+      .expect(201)
+      .expect(({ body }) => {
+        expect((body as LoginResponse).role).toBe('WORKER');
+      });
+
+    await request(app.getHttpServer())
+      .post('/api/client/auth/login')
+      .send({ login: 'client@test.com', password: 'change-me' })
+      .expect(201)
+      .expect(({ body }) => {
+        expect((body as LoginResponse).role).toBe('CLIENT');
+      });
+  });
+
   it('uses WORKER for staff permissions and rejects a MANAGER role', async () => {
     const adminLogin = await request(app.getHttpServer())
       .post('/api/admin/auth/login')

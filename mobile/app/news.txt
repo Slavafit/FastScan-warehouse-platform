@@ -1,3 +1,6 @@
+4.7 (code 36)
+- Fixed returning from settings after entering required emulator settings so the main fragments are created again.
+
 4.6 (code 35)
 - Added explicit Back and Save actions to the Android settings screen so emulator users can leave settings reliably.
 

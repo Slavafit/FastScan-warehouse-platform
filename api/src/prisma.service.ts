@@ -32,19 +32,70 @@ export class PrismaService
         country: 'España',
       },
     });
-    const login = this.config
-      .get<string>('FASTSCAN_ADMIN_LOGIN', 'admin')
-      .trim()
-      .toLowerCase();
-    const password = this.config.get<string>(
-      'FASTSCAN_ADMIN_PASSWORD',
-      'admin',
-    );
-    const role = this.config.get<Role>('FASTSCAN_ADMIN_ROLE', Role.ADMIN);
-    await this.user.upsert({
-      where: { login },
-      update: {},
-      create: { login, passwordHash: await hash(password, 12), role },
+    await this.seedTestUsers();
+  }
+
+  private async seedTestUsers() {
+    for (const user of TEST_USERS.filter((item) => item.role !== Role.CLIENT)) {
+      await this.user.upsert({
+        where: { login: user.login },
+        update: {
+          passwordHash: await hash(user.password, 12),
+          role: user.role,
+          enabled: true,
+        },
+        create: {
+          login: user.login,
+          passwordHash: await hash(user.password, 12),
+          role: user.role,
+          enabled: true,
+        },
+      });
+    }
+
+    const client = TEST_USERS.find((item) => item.role === Role.CLIENT)!;
+    const receiver = await this.receiver.upsert({
+      where: { clientCode: TEST_CLIENT_CODE },
+      update: {
+        firstName: 'Test',
+        lastName: 'Client',
+      },
+      create: {
+        clientCode: TEST_CLIENT_CODE,
+        firstName: 'Test',
+        lastName: 'Client',
+      },
+    });
+    const clientUser = await this.user.upsert({
+      where: { login: client.login },
+      update: {
+        passwordHash: await hash(client.password, 12),
+        role: Role.CLIENT,
+        enabled: true,
+      },
+      create: {
+        login: client.login,
+        passwordHash: await hash(client.password, 12),
+        role: Role.CLIENT,
+        enabled: true,
+      },
+    });
+
+    await this.clientAccount.upsert({
+      where: { email: client.login },
+      update: {
+        userId: clientUser.id,
+        receiverId: receiver.id,
+        phone: '+34 600 000 000',
+        address: 'Test warehouse client',
+      },
+      create: {
+        email: client.login,
+        userId: clientUser.id,
+        receiverId: receiver.id,
+        phone: '+34 600 000 000',
+        address: 'Test warehouse client',
+      },
     });
   }
 
@@ -52,3 +103,11 @@ export class PrismaService
     await this.$disconnect();
   }
 }
+
+const TEST_PASSWORD = 'change-me';
+const TEST_CLIENT_CODE = 'KGTEST';
+const TEST_USERS = [
+  { login: 'admin', password: TEST_PASSWORD, role: Role.ADMIN },
+  { login: 'worker', password: TEST_PASSWORD, role: Role.WORKER },
+  { login: 'client@test.com', password: TEST_PASSWORD, role: Role.CLIENT },
+];

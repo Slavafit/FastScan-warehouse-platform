@@ -29,8 +29,6 @@ services:
       JWT_SECRET: ${JWT_SECRET:-development-only-secret-change-before-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-only-refresh-secret-change-before-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
-      FASTSCAN_ADMIN_LOGIN: ${FASTSCAN_ADMIN_LOGIN:-admin}
-      FASTSCAN_ADMIN_PASSWORD: ${FASTSCAN_ADMIN_PASSWORD:-admin}
     ports:
       - "8080:8080"
     healthcheck:

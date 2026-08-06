@@ -4,7 +4,7 @@
 |---|---:|---|---|
 | Platform | `0.4.0` | Development / Разработка | `CHANGELOG.md` |
 | FastScan API | `0.4.0` | NestJS MVP | `api/package.json` |
-| FastScan Mobile | `4.6 (code 35)` | Working app / Рабочее приложение | `mobile/app/build.gradle` |
+| FastScan Mobile | `4.7 (code 36)` | Working app / Рабочее приложение | `mobile/app/build.gradle` |
 | FastScan Web | `0.1.0` | Initial frontend / Первый интерфейс | `web/package.json` |
 
 ## Правила версий / Versioning rules

@@ -42,7 +42,7 @@ npm run start:dev
 postgresql://fastscan:fastscan@localhost:5432/fastscan
 ```
 
-При первом подключении API автоматически создаёт настройку префикса `KG` и администратора из `FASTSCAN_ADMIN_LOGIN` / `FASTSCAN_ADMIN_PASSWORD`.
+При первом подключении API автоматически создаёт настройку префикса `KG` и тестовые учетные записи `admin`, `worker` и `client@test.com` с паролем `change-me`.
 
 ## Проверка
 

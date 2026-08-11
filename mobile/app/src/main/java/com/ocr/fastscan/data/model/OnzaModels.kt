@@ -20,6 +20,10 @@ data class AuthResponse(
     @SerializedName("role")
     val role: String?
 )
+
+data class ApiHealthResponse(
+    @SerializedName("status") val status: String?
+)
 // Data from GET by tracking code; arrives as an array and includes client data
 data class OrderDetails(
     @SerializedName("guid") val guid: String?,

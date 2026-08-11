@@ -12,6 +12,15 @@
     <string name="new_test_api_applied">Test API enabled, tokens cleared</string>
     <string name="login_title">Login</string>
     <string name="password_title">Password</string>
+    <string name="password_saved">Password saved and hidden</string>
+    <string name="password_not_set">Password is not set</string>
+    <string name="auth_status_title">Authorization</string>
+    <string name="auth_status_signed_in">Signed in: %1$s</string>
+    <string name="auth_status_signed_out">Not signed in</string>
+    <string name="api_status_title">API status</string>
+    <string name="api_status_checking">Checking connection…</string>
+    <string name="api_status_online">API is available</string>
+    <string name="api_status_offline">API is unavailable — tap to retry</string>
     <string name="vol_weight_title">Vol Weight</string>
     <string name="vol_weight_summary">By default: 6000</string>
     <string name="licence_title">📃 Licence</string>

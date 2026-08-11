@@ -34,6 +34,11 @@
             app:title="@string/use_new_test_api_title"
             app:summary="@string/use_new_test_api_summary" />
 
+        <Preference
+            app:key="api_status"
+            app:title="@string/api_status_title"
+            app:summary="@string/api_status_checking" />
+
         <EditTextPreference
             app:key="login"
             app:title="@string/login_title"
@@ -42,7 +47,12 @@
         <EditTextPreference
             app:key="password"
             app:title="@string/password_title"
-            app:useSimpleSummaryProvider="true" />
+            android:inputType="textPassword" />
+
+        <Preference
+            app:key="auth_status"
+            app:title="@string/auth_status_title"
+            app:summary="@string/auth_status_signed_out" />
 
         <Preference
             app:key="clear_token"

@@ -6,6 +6,9 @@ import retrofit2.http.*
 
 interface OnzaApiService {
 
+    @GET("/health/ready")
+    suspend fun getApiHealth(): Response<ApiHealthResponse>
+
     @POST("/api/mobile/auth/login")
     suspend fun login(@Body credentials: Map<String, String>): Response<AuthResponse>
 

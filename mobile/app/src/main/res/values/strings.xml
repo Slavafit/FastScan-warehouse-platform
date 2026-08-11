@@ -44,6 +44,15 @@
     <string name="new_test_api_applied">Тестовый API включён, токены очищены</string>
     <string name="login_title">Логин</string>
     <string name="password_title">Пароль</string>
+    <string name="password_saved">Пароль сохранён и скрыт</string>
+    <string name="password_not_set">Пароль не указан</string>
+    <string name="auth_status_title">Авторизация</string>
+    <string name="auth_status_signed_in">Выполнен вход: %1$s</string>
+    <string name="auth_status_signed_out">Вход не выполнен</string>
+    <string name="api_status_title">Состояние API</string>
+    <string name="api_status_checking">Проверка подключения…</string>
+    <string name="api_status_online">API доступен</string>
+    <string name="api_status_offline">API недоступен — нажмите, чтобы повторить</string>
 
     <string name="vol_weight_title">Коэффициент объемного веса</string>
     <string name="vol_weight_summary">По умолчанию: 6000</string>

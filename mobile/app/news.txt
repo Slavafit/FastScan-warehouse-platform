@@ -1,3 +1,8 @@
+4.8 (code 37)
+- Added authorization status to Android settings while keeping sign-in automatic.
+- Added a live API readiness indicator with a green or red status dot and tap-to-retry.
+- Password summaries are now masked instead of displaying the saved password.
+
 4.7 (code 36)
 - Fixed returning from settings after entering required emulator settings so the main fragments are created again.
 

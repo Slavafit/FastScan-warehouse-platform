@@ -13,6 +13,15 @@
     <string name="new_test_api_applied">API de prueba activada, tokens borrados</string>
     <string name="login_title">Login</string>
     <string name="password_title">Contraseña</string>
+    <string name="password_saved">Contraseña guardada y oculta</string>
+    <string name="password_not_set">Contraseña no especificada</string>
+    <string name="auth_status_title">Autorización</string>
+    <string name="auth_status_signed_in">Sesión iniciada: %1$s</string>
+    <string name="auth_status_signed_out">Sesión no iniciada</string>
+    <string name="api_status_title">Estado de la API</string>
+    <string name="api_status_checking">Comprobando conexión…</string>
+    <string name="api_status_online">API disponible</string>
+    <string name="api_status_offline">API no disponible — toca para reintentar</string>
     <string name="vol_weight_title">Peso volumétrico</string>
     <string name="vol_weight_summary">Por defecto: 6000</string>
     <string name="server_weight_address">Dirección de peso del servidor</string>

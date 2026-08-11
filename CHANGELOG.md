@@ -8,6 +8,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Added / Добавлено
 
+- Android settings now shows automatic sign-in status and a live API readiness indicator with a colored status dot.
 - Справочник состава заказа, описание товара и объявленная стоимость; эти данные вместе с контактами клиента сохраняются в манифесте.
 - Роль `WORKER` расширена: сотрудник может выполнять складские операции, исправлять данные клиентов и создавать манифесты.
 - Манифест завершённой партии: неизменяемый снимок всех заказов из её коробок с клиентскими контактами, общим количеством и весом.

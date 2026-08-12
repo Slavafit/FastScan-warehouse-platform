@@ -95,9 +95,13 @@ export class MobileController {
   @Get('orders')
   @ApiQuery({ name: 'tracking_number', required: false, type: String })
   @ApiQuery({ name: 'box_tracking_code', required: false, type: String })
+  @ApiQuery({ name: 'unpacked', required: false, type: Boolean })
+  @ApiQuery({ name: 'days', required: false, type: Number })
   async orders(
     @Query('tracking_number') trackingNumber?: string,
     @Query('box_tracking_code') boxTrackingCode?: string,
+    @Query('unpacked') unpacked?: string,
+    @Query('days') days?: string,
   ) {
     if (boxTrackingCode) {
       const box = await this.findBox(boxTrackingCode);
@@ -106,6 +110,18 @@ export class MobileController {
         where: { boxId: box.id },
         include: { receiver: true, composition: true, box: true },
         orderBy: { createdAt: 'asc' },
+      });
+      return orders.map((order) => this.orderResponse(order));
+    }
+    if (unpacked === 'true') {
+      const dayCount = Math.max(0, Number(days) || 0);
+      const createdAt = dayCount
+        ? { gte: new Date(Date.now() - dayCount * 24 * 60 * 60 * 1000) }
+        : undefined;
+      const orders = await this.prisma.shipmentOrder.findMany({
+        where: { boxId: null, ...(createdAt ? { createdAt } : {}) },
+        include: { receiver: true, composition: true, box: true },
+        orderBy: { createdAt: 'desc' },
       });
       return orders.map((order) => this.orderResponse(order));
     }
@@ -541,6 +557,8 @@ export class MobileController {
     length: number | null;
     width: number | null;
     height: number | null;
+    createdAt: Date;
+    updatedAt: Date;
     boxId: string | null;
     box?: { trackingCode: string } | null;
     composition: { name: string } | null;
@@ -566,6 +584,8 @@ export class MobileController {
       height: order.height,
       box_guid: order.boxId,
       box_tracking_code: order.box?.trackingCode ?? null,
+      created_at: order.createdAt.toISOString(),
+      updated_at: order.updatedAt.toISOString(),
     };
   }
 

@@ -50,8 +50,6 @@ class ScanFragment : BaseFragment() {
     private val senderManager by lazy {
         SenderManager(
             apiService = apiService,
-            firebaseManager = firebaseManager,
-            context = requireContext()
         )
     }
     private var currentLength: Int = 0

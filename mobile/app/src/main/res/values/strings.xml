@@ -182,7 +182,6 @@
     <string name="sent_for_printing">Этикетка отправлена на печать</string>
     <string name="error_printing">Ошибка печати: %1$s</string>
     <string name="no_GUID">У заказа нет GUID</string>
-    <string name="error_firebase">Не удалось сохранить в Firebase: %1$s</string>
     <string name="part_finished">Партия завершена</string>
     <string name="delete_box">Удаление коробки временно недоступно</string>
     <string name="error_load_boxes_short">Ошибка загрузки списка коробок</string>

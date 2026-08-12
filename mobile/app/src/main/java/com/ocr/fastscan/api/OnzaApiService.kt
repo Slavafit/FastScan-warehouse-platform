@@ -47,6 +47,12 @@ interface OnzaApiService {
     @GET("/api/mobile/orders")
     suspend fun searchOrder(@Query("tracking_number") tcode: String): Response<List<OrderSearchResponse>>
 
+    @GET("/api/mobile/orders")
+    suspend fun getUnpackedOrders(
+        @Query("unpacked") unpacked: Boolean = true,
+        @Query("days") days: Int = 0
+    ): Response<List<OrderSearchResponse>>
+
     @POST("/api/mobile/boxes/orders")
     suspend fun addOrderToBox(@Body request: BoxOrderRequest): Response<List<BoxOrderResponse>>
 

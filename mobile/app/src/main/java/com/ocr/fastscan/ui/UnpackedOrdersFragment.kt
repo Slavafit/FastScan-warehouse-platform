@@ -14,12 +14,9 @@ import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.UnpackedOrder
 import com.ocr.fastscan.databinding.FragmentUnpackedOrdersBinding
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -72,39 +69,18 @@ class UnpackedOrdersFragment : BaseFragment() {
         loadJob?.cancel()
         loadJob = viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val cutoffDate = if (days > 0) {
-                    Calendar.getInstance().apply {
-                        add(Calendar.DAY_OF_YEAR, -days)
-                    }.time
-                } else {
-                    null
+                val response = apiService.getUnpackedOrders(days = days)
+                if (!response.isSuccessful) {
+                    throw IllegalStateException("API ${response.code()}")
                 }
-
-                val shipments = withContext(Dispatchers.IO) {
-                    if (cutoffDate != null) firebaseManager.getShipmentsAfter(cutoffDate)
-                    else firebaseManager.getAllShipments()
-                }
-
-                val boxEntries = withContext(Dispatchers.IO) {
-                    if (cutoffDate != null) firebaseManager.getBoxEntriesAfter(cutoffDate)
-                    else firebaseManager.getAllBoxEntries()
-                }
-
-                val processedOrders = withContext(Dispatchers.Default) {
-                    val packedTrackings = boxEntries.map { it.orderTracking }.toSet()
-
-                    shipments
-                        .filter { it.trackingNumber !in packedTrackings }
-                        .map { shipment ->
-                            UnpackedOrder(
-                                trackingNumber = shipment.trackingNumber,
-                                clientName = shipment.clientName ?: "-",
-                                clientCode = shipment.clientCode ?: "-",
-                                grossWeight = shipment.weight ?: 0.0,
-                                registeredAt = shipment.createdAt
-                            )
-                        }
-                        .sortedByDescending { it.registeredAt.toDate() }
+                val processedOrders = response.body().orEmpty().map { order ->
+                    UnpackedOrder(
+                        trackingNumber = order.trackingNumber ?: order.trackingCode.orEmpty(),
+                        clientName = order.client ?: "-",
+                        clientCode = order.clientCode ?: "-",
+                        grossWeight = order.grossWeight ?: 0.0,
+                        registeredAt = parseApiDate(order.createdAt)
+                    )
                 }
 
                 allUnpackedOrders = processedOrders
@@ -125,14 +101,11 @@ class UnpackedOrdersFragment : BaseFragment() {
 
     private fun filterList(query: String) {
         filterJob?.cancel()
-        filterJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Default) {
+        filterJob = viewLifecycleOwner.lifecycleScope.launch {
             val filteredList = filterOrders(query)
-
-            withContext(Dispatchers.Main) {
-                _binding?.let { activeBinding ->
-                    unpackedAdapter.submitList(filteredList)
-                    activeBinding.tvEmptyState.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
-                }
+            _binding?.let { activeBinding ->
+                unpackedAdapter.submitList(filteredList)
+                activeBinding.tvEmptyState.visibility = if (filteredList.isEmpty()) View.VISIBLE else View.GONE
             }
         }
     }
@@ -185,6 +158,17 @@ class UnpackedOrdersFragment : BaseFragment() {
         }
         sb.append("\n").append(getString(R.string.report_end))
         return sb.toString()
+    }
+
+    private fun parseApiDate(value: String?): Date {
+        if (value.isNullOrBlank()) return Date(0)
+        val formats = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSX",
+            "yyyy-MM-dd'T'HH:mm:ssX"
+        )
+        return formats.firstNotNullOfOrNull { pattern ->
+            runCatching { SimpleDateFormat(pattern, Locale.US).parse(value) }.getOrNull()
+        } ?: Date(0)
     }
 
     override fun onDestroyView() {

@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.firebase.Timestamp
 import com.ocr.fastscan.data.model.*
 import com.ocr.fastscan.databinding.FragmentBoxDetailBinding
 import kotlinx.coroutines.launch
@@ -349,17 +348,6 @@ class BoxDetailFragment : BaseFragment() {
                     soundManager.playSuccess()
                     loadOrdersInBox()
 
-                    val entry = BoxEntry(
-                        orderTracking = tcode,
-                        clientCode = order.clientCode,
-                        client = order.client,
-                        boxTracking = boxTracking,
-                        date = Timestamp.now(),
-                        orderWeight = order.grossWeight ?: 0.0
-                    )
-                    firebaseManager.saveBoxEntry(entry, {}, { e ->
-                        Log.e("AddOrder", "Firebase error", e)
-                    })
                 } else {
                     Toast.makeText(context, getString(R.string.server_error, addResponse.code()), Toast.LENGTH_LONG).show()
                     soundManager.playError()

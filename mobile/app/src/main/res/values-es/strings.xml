@@ -155,7 +155,6 @@
     <string name="sent_for_printing">La etiqueta se ha enviado a imprimir.</string>
     <string name="error_printing">Impresión de error: %1$s</string>
     <string name="no_GUID">El pedido no tiene GUID</string>
-    <string name="error_firebase">No se pudo guardar en Firebase: %1$s</string>
     <string name="part_finished">La parte terminada</string>
     <string name="delete_box">Eliminar la caja no está disponible temporalmente.</string>
     <string name="error_load_boxes_short">Error al cargar la lista de cajas</string>

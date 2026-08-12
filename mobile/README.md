@@ -64,7 +64,6 @@ FastScan Pro — Android-приложение для ускорения приё
 - Google ML Kit Barcode Scanning и Text Recognition
 - Retrofit, OkHttp, Gson
 - Kotlin Coroutines
-- Firebase Cloud Firestore
 - ZXing
 - ZPL и печать по TCP-порту `9100`
 
@@ -74,7 +73,6 @@ FastScan Pro — Android-приложение для ускорения приё
 - Android Studio с JDK 17
 - Android SDK 35
 - Доступ к рабочему REST API
-- Настроенный Firebase-проект
 - Камера устройства
 - Для дополнительных функций:
   - локальный сервер весов;
@@ -84,7 +82,6 @@ FastScan Pro — Android-приложение для ускорения приё
 
 1. Клонируйте репозиторий.
 2. Откройте проект в Android Studio.
-3. Добавьте корректный файл `app/google-services.json` для своего Firebase-проекта.
 4. Выполните синхронизацию Gradle.
 5. Соберите debug-версию:
 
@@ -110,7 +107,7 @@ app/build/outputs/apk/debug/app-debug.apk
 - язык и тему приложения;
 - email для проверки лицензии.
 
-Не добавляйте реальные пароли, токены и рабочие конфигурации Firebase в публичный репозиторий.
+Не добавляйте реальные пароли, токены и рабочие конфигурации API в публичный репозиторий.
 
 ### Структура проекта
 
@@ -119,7 +116,7 @@ app/src/main/java/com/ocr/fastscan/
 ├── api/       # Retrofit API и сетевой модуль
 ├── data/      # Модели, отправка данных и кэш клиентов
 ├── ui/        # Экраны, адаптеры коробок, партий и заказов
-└── utils/     # Печать, лицензия, настройки, Firebase, звук и вспомогательная логика
+└── utils/     # Печать, лицензия, настройки, звук и вспомогательная логика
 ```
 
 ---
@@ -180,7 +177,6 @@ The application communicates directly with a backend REST API and is intended fo
 - Google ML Kit Barcode Scanning and Text Recognition
 - Retrofit, OkHttp, Gson
 - Kotlin Coroutines
-- Firebase Cloud Firestore
 - ZXing
 - ZPL printing over TCP port `9100`
 
@@ -190,7 +186,6 @@ The application communicates directly with a backend REST API and is intended fo
 - Android Studio with JDK 17
 - Android SDK 35
 - Access to the backend REST API
-- A configured Firebase project
 - A device camera
 - Optional integrations:
   - local scale server;
@@ -200,7 +195,6 @@ The application communicates directly with a backend REST API and is intended fo
 
 1. Clone the repository.
 2. Open the project in Android Studio.
-3. Add a valid `app/google-services.json` for your Firebase project.
 4. Sync the project with Gradle.
 5. Build the debug application:
 
@@ -226,7 +220,7 @@ The settings screen provides configuration for:
 - application language and theme;
 - email used for license validation.
 
-Do not commit real passwords, tokens, or production Firebase configuration to a public repository.
+Do not commit real passwords, tokens, or production API configuration to a public repository.
 
 ### Project structure
 
@@ -235,5 +229,5 @@ app/src/main/java/com/ocr/fastscan/
 ├── api/       # Retrofit API and network setup
 ├── data/      # Models, data submission, and customer cache
 ├── ui/        # Screens and adapters for orders, boxes, and batches
-└── utils/     # Printing, licensing, settings, Firebase, sound, and helpers
+└── utils/     # Printing, licensing, settings, sound, and helpers
 ```

@@ -15,13 +15,11 @@ object AppDependencies {
     lateinit var tokenManager: TokenManager
     lateinit var soundManager: SoundManager
     lateinit var printHelper: PrintHelper
-    lateinit var firebaseManager: FirebaseManager
 
     fun init(context: Context) {
         apiService = NetworkModule.createService(context)
         tokenManager = TokenManager(context)
         soundManager = SoundManager(context)
-        firebaseManager = FirebaseManager()
     }
 
     suspend fun performAutoLogin(context: Context): Boolean {

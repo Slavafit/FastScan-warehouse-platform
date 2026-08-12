@@ -1,10 +1,7 @@
 package com.ocr.fastscan.data.model
 
 import com.google.gson.annotations.SerializedName
-import com.google.firebase.Timestamp
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 
 // For authentication
 data class AuthResponse(
@@ -48,17 +45,6 @@ data class ReceiverResponse(
 data class SaveResponse(
     val success: Boolean
 )
-data class FirestoreShipment(
-    val trackingNumber: String = "",
-    val clientCode: String = "",
-    val clientName: String = "",
-    val weight: Double = 0.0,
-    val withBox: String = "null",
-    val createdAt: Timestamp = Timestamp.now(),
-    // Field for convenient registry filtering, for example "2026-02-09"
-    val dateString: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-)
-
 // For the final POST request
 data class SaveOrderRequest(
     @SerializedName("client_code") val clientCode: String,
@@ -134,7 +120,9 @@ data class OrderSearchResponse(
     @SerializedName("status_name") val statusName: String?,
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("client_code") val clientCode: String?,
-    @SerializedName("client") val client: String?
+    @SerializedName("client") val client: String?,
+    @SerializedName("box_tracking_code") val boxTrackingCode: String?,
+    @SerializedName("created_at") val createdAt: String?
 )
 
 // Request to add an order to a box via POST /api/mobile/boxes/orders
@@ -171,16 +159,6 @@ data class OrderInBox(
     @SerializedName("tracking_number") val trackingNumber: String?,
     @SerializedName("gross_weight") val grossWeight: Double?,  // keep this field
     @SerializedName("weight") val weight: Double? = null  // keep weight if it exists, but gross_weight is more important
-)
-
-// Model for Firebase box entries
-data class BoxEntry(
-    val orderTracking: String = "",  // order tracking code
-    val boxTracking: String = "",  // box tracking code
-    val clientCode: String? = null,
-    val client: String? = null,
-    val date: Timestamp = Timestamp.now(),
-    val orderWeight: Double = 0.0
 )
 
 //fragment 3. Cajas
@@ -262,11 +240,6 @@ data class SendPartialRequest(
     val partial: String  // batch guid
 )
 
-//Search by tracking code
-data class SearchResult(
-    val shipment: FirestoreShipment? = null,
-    val boxEntry: BoxEntry? = null
-)
 //Weight server response model
 data class WeightResponse(
     val weight: Double,
@@ -279,5 +252,5 @@ data class UnpackedOrder(
     val clientName: String,
     val clientCode: String,
     val grossWeight: Double,
-    val registeredAt: Timestamp
+    val registeredAt: Date
 )

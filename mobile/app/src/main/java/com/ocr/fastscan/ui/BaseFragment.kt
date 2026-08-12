@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.ocr.fastscan.api.OnzaApiService
 import com.ocr.fastscan.utils.AppDependencies
-import com.ocr.fastscan.utils.FirebaseManager
 import com.ocr.fastscan.utils.SoundManager
 import com.ocr.fastscan.utils.TokenManager
 import kotlinx.coroutines.CoroutineScope
@@ -21,9 +20,6 @@ abstract class BaseFragment : Fragment() {
 
     protected val apiService: OnzaApiService
         get() = AppDependencies.apiService
-
-    protected val firebaseManager: FirebaseManager
-        get() = AppDependencies.firebaseManager
 
     protected val soundManager: SoundManager
         get() = AppDependencies.soundManager

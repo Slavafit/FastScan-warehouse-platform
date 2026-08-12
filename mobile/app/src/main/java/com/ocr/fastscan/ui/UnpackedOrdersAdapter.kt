@@ -39,7 +39,7 @@ class UnpackedOrdersAdapter : ListAdapter<UnpackedOrder, UnpackedOrdersAdapter.V
             binding.tvClientCode.text = order.clientCode
             binding.tvWeight.text = context.getString(R.string.weight_format, order.grossWeight)
             binding.tvDate.text = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
-                .format(order.registeredAt.toDate())
+                .format(order.registeredAt)
 
             binding.root.setOnLongClickListener {
                 copyToClipboard(order.trackingNumber)

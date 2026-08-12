@@ -78,10 +78,7 @@ describe('Modern mobile API contract', () => {
         }),
       },
     } as unknown as PrismaService;
-    const controller = new MobileController(
-      prisma,
-      {} as NotificationService,
-    );
+    const controller = new MobileController(prisma, {} as NotificationService);
 
     await expect(controller.receivers('kg123456')).resolves.toEqual([
       {
@@ -116,13 +113,12 @@ describe('Modern mobile API contract', () => {
           height: 30,
           boxId: 'box-1',
           box: { trackingCode: 'BOX-1' },
+          createdAt: new Date('2026-08-06T10:00:00.000Z'),
+          updatedAt: new Date('2026-08-06T11:00:00.000Z'),
         }),
       },
     } as unknown as PrismaService;
-    const controller = new MobileController(
-      prisma,
-      {} as NotificationService,
-    );
+    const controller = new MobileController(prisma, {} as NotificationService);
 
     await expect(controller.orderByTracking('TRACK-1')).resolves.toEqual({
       guid: 'order-1',
@@ -145,6 +141,50 @@ describe('Modern mobile API contract', () => {
       height: 30,
       box_guid: 'box-1',
       box_tracking_code: 'BOX-1',
+      created_at: '2026-08-06T10:00:00.000Z',
+      updated_at: '2026-08-06T11:00:00.000Z',
+    });
+  });
+
+  it('returns unpacked orders from PostgreSQL', async () => {
+    const createdAt = new Date('2026-08-06T10:00:00.000Z');
+    const prisma = {
+      shipmentOrder: {
+        findMany: jest.fn().mockResolvedValue([
+          {
+            id: 'order-1',
+            trackingNumber: 'TRACK-1',
+            clientName: 'Anna Client',
+            clientCode: 'KG123456',
+            statusName: 'AT_WAREHOUSE',
+            withBox: 0,
+            grossWeight: { toString: () => '2.500' },
+            compositionId: null,
+            composition: null,
+            productDescription: null,
+            declaredValue: null,
+            currency: 'EUR',
+            receiverId: 'receiver-1',
+            length: 10,
+            width: 20,
+            height: 30,
+            boxId: null,
+            box: null,
+            createdAt,
+            updatedAt: createdAt,
+          },
+        ]),
+      },
+    } as unknown as PrismaService;
+    const controller = new MobileController(prisma, {} as NotificationService);
+
+    const result = await controller.orders(undefined, undefined, 'true', '7');
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      tracking_number: 'TRACK-1',
+      box_guid: null,
+      created_at: '2026-08-06T10:00:00.000Z',
     });
   });
 
@@ -187,10 +227,7 @@ describe('Modern mobile API contract', () => {
         ]),
       },
     } as unknown as PrismaService;
-    const controller = new MobileController(
-      prisma,
-      {} as NotificationService,
-    );
+    const controller = new MobileController(prisma, {} as NotificationService);
 
     await expect(controller.boxes('', '', '0')).resolves.toEqual([
       {

@@ -1,3 +1,8 @@
+4.9 (code 38)
+- Removed Firebase from Android; PostgreSQL through the REST API is now the only warehouse data source.
+- Moved unpacked orders and global order search to `/api/mobile/orders`.
+- Removed duplicate Firestore writes when registering or packing orders.
+
 4.8 (code 37)
 - Added authorization status to Android settings while keeping sign-in automatic.
 - Added a live API readiness indicator with a green or red status dot and tap-to-retry.

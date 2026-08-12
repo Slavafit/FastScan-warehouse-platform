@@ -149,7 +149,6 @@
     <string name="sent_for_printing">The label has been sent for printing.</string>
     <string name="error_printing">Error printing: %1$s</string>
     <string name="no_GUID">The order does not have GUID</string>
-    <string name="error_firebase">Failed to save to Firebase: %1$s</string>
     <string name="part_finished">Part finished</string>
     <string name="delete_box">Box removal is temporarily unavailable.</string>
     <string name="error_load_boxes_short">Error loading box list</string>

@@ -11,13 +11,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.ocr.fastscan.R
-import com.ocr.fastscan.data.model.SearchResult
 import kotlinx.coroutines.launch
 
 
 class SearchOrder(private val fragment: Fragment) {
 
-    private val firebaseManager by lazy { AppDependencies.firebaseManager }
+    private val apiService by lazy { AppDependencies.apiService }
     private val context = fragment.requireContext()
     
     fun showSearchDialog() {
@@ -40,16 +39,19 @@ class SearchOrder(private val fragment: Fragment) {
         fragment.lifecycleScope.launch {
             try {
                 Toast.makeText(context, context.getString(R.string.finding, track), Toast.LENGTH_SHORT).show()
-                val result = firebaseManager.findOrderEverywhere(track)
-                displayResults(track, result)
+                val response = apiService.searchOrder(track)
+                if (!response.isSuccessful) {
+                    throw IllegalStateException("API ${response.code()}")
+                }
+                displayResults(track, response.body().orEmpty().firstOrNull())
             } catch (e: Exception) {
                 Toast.makeText(context, context.getString(R.string.error, e.message), Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun displayResults(track: String, result: SearchResult) {
-        if (result.shipment == null && result.boxEntry == null) {
+    private fun displayResults(track: String, order: com.ocr.fastscan.data.model.OrderSearchResponse?) {
+        if (order == null) {
             showSimpleDialog(
             context.getString(R.string.empty),
             context.getString(R.string.no_founded, track ))
@@ -57,46 +59,16 @@ class SearchOrder(private val fragment: Fragment) {
         }
 
         val sb = StringBuilder()
-        if (result.shipment != null) {
-            sb.append(context.getString(R.string.registration_title)).append("\n")
-            sb.append(
-                context.getString(
-                    R.string.client
-                )
-            ).append(": ${result.shipment.clientName} (${result.shipment.clientCode})\n")
-            val weight = result.shipment.weight ?: 0.0
-            sb.append(
-                context.getString(R.string.weight_format, weight)
-            ).append("\n")
+        sb.append(context.getString(R.string.registration_title)).append("\n")
+        sb.append(context.getString(R.string.client))
+            .append(": ${order.client ?: "-"} (${order.clientCode ?: "-"})\n")
+        sb.append(context.getString(R.string.weight_format, order.grossWeight ?: 0.0)).append("\n")
+        order.createdAt?.let { sb.append(context.getString(R.string.reg_date, readableDate(it))).append("\n") }
+        sb.append("\n")
 
-            val sdf = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
-            val formattedDateTime = sdf.format(result.shipment.createdAt.toDate())
-            sb.append(
-                context.getString(R.string.reg_date, formattedDateTime)
-            ).append("\n\n")
-        } else {
-            sb.append(context.getString(R.string.no_registration)).append("\n\n")
-        }
-
-        if (result.boxEntry != null) {
+        if (!order.boxTrackingCode.isNullOrBlank()) {
             sb.append(context.getString(R.string.in_box_title)).append("\n")
-            sb.append(
-                context.getString(R.string.box_number, result.boxEntry.boxTracking)
-            ).append("\n")
-
-            if (result.boxEntry.orderWeight > 0.0) {
-                sb.append(
-                    context.getString(R.string.actual_weight, result.boxEntry.orderWeight)
-                ).append("\n")
-            }
-
-            result.boxEntry.date?.let { timestamp ->
-                val formattedDate = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
-                    .format(timestamp.toDate())
-                sb.append(
-                    context.getString(R.string.packed_date, formattedDate)
-                ).append("\n")
-            }
+            sb.append(context.getString(R.string.box_number, order.boxTrackingCode)).append("\n")
         } else {
             sb.append(context.getString(R.string.not_packed_yet))
         }
@@ -105,6 +77,11 @@ class SearchOrder(private val fragment: Fragment) {
             sb.toString()
            )
     }
+
+    private fun readableDate(value: String): String = value
+        .replace('T', ' ')
+        .substringBefore('.')
+        .removeSuffix("Z")
 
     private fun showSimpleDialog(title: String, msg: String) {
         AlertDialog.Builder(context).setTitle(title).setMessage(msg).setPositiveButton("OK", null).show()

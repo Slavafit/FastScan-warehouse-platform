@@ -8,6 +8,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Added / Добавлено
 
+- Android unpacked-order reporting and global order search now use PostgreSQL through `/api/mobile/orders`.
 - Android settings now shows automatic sign-in status and a live API readiness indicator with a colored status dot.
 - Справочник состава заказа, описание товара и объявленная стоимость; эти данные вместе с контактами клиента сохраняются в манифесте.
 - Роль `WORKER` расширена: сотрудник может выполнять складские операции, исправлять данные клиентов и создавать манифесты.
@@ -35,6 +36,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Changed / Изменено
 
+- Firebase was removed from Android; order registration and packing no longer perform duplicate Firestore writes.
 - Боковое меню Web адаптировано для экранов небольшой высоты: список разделов прокручивается, а кнопка выхода остаётся доступной внизу панели.
 - `GET /health` теперь показывает версию API, среду запуска, uptime, состояние PostgreSQL и время ответа базы без раскрытия конфиденциальной конфигурации.
 - Docker Compose автоматически проверяет готовность API через `/health/ready` и отображает контейнер как `healthy` только при доступной PostgreSQL.

@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import androidx.preference.PreferenceManager
+import com.ocr.fastscan.BuildConfig
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,8 +29,8 @@ class LicenseChecker(private val userId: String) {
         }
 
         val deviceId = getDeviceId(context)
-        val appId = context.packageName
-        val appName = getAppName(context)
+        val appId = BuildConfig.LICENSE_APPLICATION_ID
+        val appName = BuildConfig.LICENSE_APPLICATION_NAME
         Log.d(
             "LicenseCheck",
             "Checking license: email=${email.maskEmail()}, device=${deviceId.maskDeviceId()}, app_id=$appId, app_name=$appName"
@@ -177,11 +178,6 @@ class LicenseChecker(private val userId: String) {
             .apply()
 
         return androidId
-    }
-
-    private fun getAppName(context: Context): String {
-        val applicationInfo = context.applicationInfo
-        return context.packageManager.getApplicationLabel(applicationInfo).toString()
     }
 
     private fun String.maskEmail(): String {

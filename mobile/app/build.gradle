@@ -13,10 +13,25 @@ android {
         targetSdk 34
         versionCode 38
         versionName "4.9"
+        manifestPlaceholders = [appLabel: "FastScan Pro"]
+        buildConfigField "String", "LICENSE_APPLICATION_ID", '"com.ocr.fastscan"'
+        buildConfigField "String", "LICENSE_APPLICATION_NAME", '"FastScan Pro"'
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
+            manifestPlaceholders.appLabel = "FastScan Dev"
+        }
+        release {
+            manifestPlaceholders.appLabel = "FastScan Pro"
+        }
     }
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
     compileOptions {
         // Set Java 17 for the Java compiler

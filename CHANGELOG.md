@@ -36,6 +36,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Changed / Изменено
 
+- Android Debug now uses `com.ocr.fastscan.dev` and the `FastScan Dev` label, allowing it to be installed alongside the production application.
 - Firebase was removed from Android; order registration and packing no longer perform duplicate Firestore writes.
 - Боковое меню Web адаптировано для экранов небольшой высоты: список разделов прокручивается, а кнопка выхода остаётся доступной внизу панели.
 - `GET /health` теперь показывает версию API, среду запуска, uptime, состояние PostgreSQL и время ответа базы без раскрытия конфиденциальной конфигурации.

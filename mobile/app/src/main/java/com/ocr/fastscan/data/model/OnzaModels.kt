@@ -166,7 +166,7 @@ data class OrderInBox(
 data class Partial(
     val guid: String,
     val codeid: String,
-    @SerializedName(value = "partial", alternate = ["guid"]) val partial: String,
+    @SerializedName("partial") val partial: String,
     @SerializedName(value = "partial_code", alternate = ["batch_code"]) val partial_code: String,
     @SerializedName(value = "partial_name", alternate = ["batch_name"]) val partial_name: String,
     val warehouse_name: String,

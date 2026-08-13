@@ -8,6 +8,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Added / Добавлено
 
+- Добавлена единая оранжевая иконка FastScan с коробкой и рамкой сканера для Web и Android; Debug-вариант использует голубой акцент.
 - Android unpacked-order reporting and global order search now use PostgreSQL through `/api/mobile/orders`.
 - Android settings now shows automatic sign-in status and a live API readiness indicator with a colored status dot.
 - Справочник состава заказа, описание товара и объявленная стоимость; эти данные вместе с контактами клиента сохраняются в манифесте.

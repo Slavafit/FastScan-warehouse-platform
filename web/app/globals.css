@@ -22,10 +22,8 @@ button { cursor: pointer; }
 .eyebrow { margin: 0 0 8px; color: var(--lime); font-size: 11px; font-weight: 800; letter-spacing: .16em; }
 .eyebrow.dark { color: #467067; }
 .muted { color: var(--muted); }
-.brand-mark { width: 64px; height: 64px; display: grid; place-items: center; border: 1px solid #38616c; background: #102c36; transform: rotate(45deg); }
-.brand-mark span { color: var(--lime); font-size: 34px; font-weight: 900; transform: rotate(-45deg); }
-.brand-mark.small { width: 38px; height: 38px; }
-.brand-mark.small span { font-size: 20px; }
+.brand-mark { width: 64px; height: 64px; display: block; border-radius: 16px; background: url("/favicon.png") center / contain no-repeat; }
+.brand-mark.small { width: 38px; height: 38px; border-radius: 10px; }
 .signal-dot { width: 9px; height: 9px; display: inline-block; border-radius: 50%; background: var(--lime); box-shadow: 0 0 0 4px rgba(184,237,99,.13); }
 
 .login-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(360px, .9fr) minmax(480px, 1.25fr); }

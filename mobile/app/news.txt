@@ -1,4 +1,5 @@
 4.9 (code 38)
+- Added the new FastScan parcel-and-scanner brand icon; Debug uses a cyan accent.
 - Debug builds are installed separately as FastScan Dev and no longer replace the production app.
 - Removed Firebase from Android; PostgreSQL through the REST API is now the only warehouse data source.
 - Moved unpacked orders and global order search to `/api/mobile/orders`.

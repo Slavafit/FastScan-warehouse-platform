@@ -336,7 +336,7 @@ export default function FastScanWeb() {
     return (
       <main className="login-shell">
         <section className="brand-panel">
-          <div className="brand-mark"><span>F</span></div>
+          <div className="brand-mark" role="img" aria-label="FastScan" />
           <p className="eyebrow">WAREHOUSE OPERATIONS</p>
           <h1>FastScan</h1>
           <p className="brand-copy">
@@ -378,7 +378,7 @@ export default function FastScanWeb() {
     <main className="app-shell">
       <aside className={menuOpen ? "sidebar open" : "sidebar"}>
         <div className="sidebar-brand">
-          <div className="brand-mark small"><span>F</span></div>
+          <div className="brand-mark small" aria-hidden="true" />
           <div><strong>FastScan</strong><small>Warehouse Platform</small></div>
         </div>
         <nav>

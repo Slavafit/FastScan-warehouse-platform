@@ -10,8 +10,9 @@ export const metadata: Metadata = {
   description:
     "Warehouse operations, client accounts, analytics, and notifications in one FastScan workspace.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
   openGraph: {
     title: "FastScan Warehouse Platform",

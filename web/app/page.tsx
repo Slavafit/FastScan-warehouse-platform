@@ -23,6 +23,8 @@ type ClientProfile = {
   address: string | null;
   email_notifications: boolean;
   push_notifications: boolean;
+  package_shoes: number;
+  bag_package: number;
 };
 
 type PlatformSettings = {
@@ -177,6 +179,7 @@ type ClientOrderDraft = {
   description: string;
   declared_value: string;
   currency: string;
+  with_box: boolean;
 };
 
 type DictionaryType =
@@ -272,6 +275,8 @@ export default function FastScanWeb() {
     address: "",
     email_notifications: true,
     push_notifications: true,
+    package_shoes: 0,
+    bag_package: 0,
   });
   const [notice, setNotice] = useState("");
 
@@ -438,6 +443,8 @@ export default function FastScanWeb() {
                         address: profile.address,
                         email_notifications: profile.email_notifications,
                         push_notifications: profile.push_notifications,
+                        package_shoes: profile.package_shoes,
+                        bag_package: profile.bag_package,
                       }),
                     }, session);
                     setProfile(updated);
@@ -694,6 +701,7 @@ function ClientOrders({ session }: { session: Session }) {
     description: "",
     declared_value: "",
     currency: "EUR",
+    with_box: false,
   });
   const [queryDraft, setQueryDraft] = useState("");
   const [query, setQuery] = useState("");
@@ -751,6 +759,7 @@ function ClientOrders({ session }: { session: Session }) {
           description: draft.description.trim() || undefined,
           declared_value: draft.declared_value.trim() ? Number(draft.declared_value) : undefined,
           currency: draft.currency.trim().toUpperCase() || "EUR",
+          with_box: draft.with_box,
         }),
       }, session);
       setDraft({
@@ -759,6 +768,7 @@ function ClientOrders({ session }: { session: Session }) {
         description: "",
         declared_value: "",
         currency: "EUR",
+        with_box: false,
       });
       setMessage("Отправление зарегистрировано");
       await load();
@@ -791,6 +801,7 @@ function ClientOrders({ session }: { session: Session }) {
         <label><span>Стоимость</span><input type="number" min="0" step="0.01" value={draft.declared_value} onChange={(event) => setDraft({ ...draft, declared_value: event.target.value })} /></label>
         <label><span>Валюта</span><input maxLength={3} value={draft.currency} onChange={(event) => setDraft({ ...draft, currency: event.target.value.toUpperCase() })} /></label>
         <label className="wide"><span>Описание товара</span><input value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
+        <label className="check wide"><input type="checkbox" checked={draft.with_box} onChange={(event) => setDraft({ ...draft, with_box: event.target.checked })} /> Сохранить оригинальную упаковку этого заказа</label>
         <button className="primary-button" disabled={!draft.tracking_number.trim()}>Зарегистрировать</button>
       </form>
       <div className="order-tools">
@@ -800,8 +811,8 @@ function ClientOrders({ session }: { session: Session }) {
         </div>
       </div>
       {message && <p className="form-error">{message}</p>}
-      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th><th>Коробка</th><th>Обновлен</th></tr></thead>
-        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={`status ${order.with_box ? "good" : ""}`}>{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th><th>Сохранить упаковку</th><th>Коробка</th><th>Обновлен</th></tr></thead>
+        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className="status">{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.with_box ? <span className="status good">Да</span> : "Нет"}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
       </table></div>
       {loading && <p className="empty-state">Загружаем заказы...</p>}
       {!loading && !visibleOrders.length && <p className="empty-state">{query.trim() ? "По этому треку заказ не найден." : "Заказы пока не найдены."}</p>}
@@ -1217,6 +1228,9 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
       <p className="field-note">Код клиента назначается системой и доступен только для просмотра.</p>
       <label className="check"><input type="checkbox" checked={profile.email_notifications} onChange={(event) => setProfile({ ...profile, email_notifications: event.target.checked })} /> Email-оповещения</label>
       <label className="check"><input type="checkbox" checked={profile.push_notifications} onChange={(event) => setProfile({ ...profile, push_notifications: event.target.checked })} /> Push-оповещения</label>
+      <p className="field-note">Постоянные инструкции для всех будущих заказов:</p>
+      <label className="check"><input type="checkbox" checked={profile.package_shoes === 1} onChange={(event) => setProfile({ ...profile, package_shoes: event.target.checked ? 1 : 0 })} /> Сохранять обувные коробки</label>
+      <label className="check"><input type="checkbox" checked={profile.bag_package === 1} onChange={(event) => setProfile({ ...profile, bag_package: event.target.checked ? 1 : 0 })} /> Сохранять упаковку сумок</label>
     </> : <>
       <div className="form-columns">
         <label><span>Склад</span><input value={platform.warehouse} maxLength={120} onChange={(event) => setPlatform({ ...platform, warehouse: event.target.value })} /></label>

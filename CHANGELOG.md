@@ -38,6 +38,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Changed / Изменено
 
+- Clients can request original packaging preservation per order and maintain persistent shoe-box and bag-packaging preferences in their profile; these flags remain visible to Android warehouse staff.
 - Box lookup now distinguishes UUIDs from ordinary tracking codes, and the Android launcher icon uses a smaller safe-area mark on a white background.
 - Fixed Android batch-list parsing after creation: `guid` and `partial` are now mapped as separate response fields.
 - Android Debug now uses `com.ocr.fastscan.dev` and the `FastScan Dev` label, allowing it to be installed alongside the production application.

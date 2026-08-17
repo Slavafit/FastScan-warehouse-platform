@@ -43,6 +43,12 @@ export class ClientController {
           update: {
             firstName: dto.first_name.trim(),
             lastName: dto.last_name.trim(),
+            ...(dto.package_shoes !== undefined
+              ? { packageShoes: dto.package_shoes }
+              : {}),
+            ...(dto.bag_package !== undefined
+              ? { bagPackage: dto.bag_package }
+              : {}),
           },
         },
       },
@@ -104,6 +110,9 @@ export class ClientController {
     const order = await this.prisma.shipmentOrder.upsert({
       where: { trackingNumber },
       update: {
+        ...(dto.with_box !== undefined
+          ? { withBox: dto.with_box ? 1 : 0 }
+          : {}),
         compositionId: dto.composition_guid || null,
         productDescription: this.optionalText(dto.description),
         declaredValue: dto.declared_value,
@@ -116,6 +125,7 @@ export class ClientController {
         clientCode: account.receiver.clientCode,
         receiverId: account.receiverId,
         statusName: 'CLIENT_REGISTERED',
+        withBox: dto.with_box ? 1 : 0,
         compositionId: dto.composition_guid || null,
         productDescription: this.optionalText(dto.description),
         declaredValue: dto.declared_value,

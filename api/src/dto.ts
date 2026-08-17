@@ -4,6 +4,7 @@ import {
   IsEmail,
   IsEnum,
   IsInt,
+  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -99,6 +100,8 @@ export class ProfileDto {
   @IsOptional() @IsString() @MaxLength(500) address?: string;
   @IsBoolean() email_notifications!: boolean;
   @IsBoolean() push_notifications!: boolean;
+  @IsOptional() @IsInt() @IsIn([0, 1]) package_shoes?: number;
+  @IsOptional() @IsInt() @IsIn([0, 1]) bag_package?: number;
 }
 export class ClientOrderCreateDto {
   @IsString() @IsNotEmpty() tracking_number!: string;
@@ -106,6 +109,7 @@ export class ClientOrderCreateDto {
   @IsOptional() @IsString() @MaxLength(500) description?: string;
   @IsOptional() @IsNumber() @Min(0) declared_value?: number;
   @IsOptional() @IsString() @Length(3, 3) currency?: string;
+  @IsOptional() @IsBoolean() with_box?: boolean;
 }
 export class NotificationDto {
   @IsOptional() @IsString() client_code?: string;

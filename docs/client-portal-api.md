@@ -37,7 +37,7 @@ API личного кабинета использует отдельную ро
 | PATCH | `/api/client/notifications/{guid}/read` | Mark one as read |
 | PATCH | `/api/client/notifications/read-all` | Mark all as read |
 
-Профиль содержит имя, фамилию, телефон, адрес и настройки оповещений. `client_code` и email возвращаются для отображения, но метод `PUT /api/client/profile` не принимает и не изменяет клиентский код.
+Профиль содержит имя, фамилию, телефон, адрес, настройки оповещений и постоянные инструкции по сохранению обувных коробок и упаковки сумок. `client_code` и email возвращаются для отображения, но метод `PUT /api/client/profile` не принимает и не изменяет клиентский код.
 
 ```json
 {
@@ -46,7 +46,9 @@ API личного кабинета использует отдельную ро
   "phone": "+34 600 000 000",
   "address": "Málaga, Spain",
   "email_notifications": true,
-  "push_notifications": true
+  "push_notifications": true,
+  "package_shoes": 1,
+  "bag_package": 1
 }
 ```
 
@@ -56,6 +58,12 @@ Client-created orders use status `CLIENT_REGISTERED` until a warehouse worker
 receives the shipment in Android. Worker receiving updates the status to
 `AT_WAREHOUSE`, preserving the client, composition, description, declared value,
 and currency.
+
+При самостоятельной регистрации заказа клиент может передать `with_box: true`,
+если для этого отправления нужно сохранить оригинальную упаковку. Android
+получает этот признак вместе с заказом. Постоянные признаки `package_shoes` и
+`bag_package` возвращаются при поиске клиента и применяются сотрудником склада
+ко всем его будущим заказам.
 
 Composition, description, declared value, and currency are managed by the client
 or manager in Web and are used later in manifests. Android receiving does not

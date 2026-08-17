@@ -17,6 +17,9 @@ test("contains the FastScan warehouse and client entry points", async () => {
   assert.match(page, /clientNav/);
   assert.match(page, /login\(/);
   assert.doesNotMatch(page, /device license|лицензи/i);
+  assert.match(page, /Сохранить оригинальную упаковку этого заказа/);
+  assert.match(page, /Сохранять обувные коробки/);
+  assert.match(page, /Сохранять упаковку сумок/);
 });
 
 test("uses a configurable API URL", async () => {

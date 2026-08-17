@@ -1,5 +1,7 @@
 # FastScan Warehouse Platform
 
+План дальнейшей разработки сохранён в [docs/ROADMAP.md](docs/ROADMAP.md).
+
 Платформа для складской приёмки, сканирования и упаковки заказов. Монорепозиторий объединяет рабочее Android-приложение, собственный REST API и веб-кабинеты администратора, сотрудника и клиента.
 
 Warehouse receiving, scanning, and packing platform. The monorepo combines the production Android application, a self-hosted REST API, and web workspaces for administrators, employees, and clients.

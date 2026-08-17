@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { isUUID } from 'class-validator';
@@ -679,7 +680,9 @@ export class MobileController {
       )
         return code;
     }
-    throw new Error('Could not generate a unique client code');
+    throw new ServiceUnavailableException(
+      'Не удалось создать уникальный номер клиента. Повторите попытку',
+    );
   }
 
   private number(value: Prisma.Decimal | null | undefined) {

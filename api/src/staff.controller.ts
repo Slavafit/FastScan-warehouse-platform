@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Req,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { hash } from 'bcryptjs';
@@ -53,7 +54,9 @@ export class StaffController {
     }
     if (email) {
       if (!dto.password) {
-        throw new BadRequestException('Password is required for client account');
+        throw new BadRequestException(
+          'Password is required for client account',
+        );
       }
       const existing = await this.prisma.user.findUnique({
         where: { login: email },
@@ -169,7 +172,8 @@ export class StaffController {
       include: { account: true },
     });
     if (!receiver) throw new NotFoundException('Client not found');
-    if (!receiver.account) throw new BadRequestException('Client has no account');
+    if (!receiver.account)
+      throw new BadRequestException('Client has no account');
     await this.prisma.user.update({
       where: { id: receiver.account.userId },
       data: { enabled: dto.enabled },
@@ -187,7 +191,8 @@ export class StaffController {
       include: { account: true },
     });
     if (!receiver) throw new NotFoundException('Client not found');
-    if (!receiver.account) throw new BadRequestException('Client has no account');
+    if (!receiver.account)
+      throw new BadRequestException('Client has no account');
     await this.prisma.user.update({
       where: { id: receiver.account.userId },
       data: { passwordHash: await hash(dto.password, 12) },
@@ -442,11 +447,17 @@ export class StaffController {
     const prefix = config?.codePrefix ?? 'KG';
     for (let attempt = 0; attempt < 100; attempt += 1) {
       const code = `${prefix}${randomInt(100_000, 1_000_000)}`;
-      if (!(await this.prisma.receiver.findUnique({ where: { clientCode: code } }))) {
+      if (
+        !(await this.prisma.receiver.findUnique({
+          where: { clientCode: code },
+        }))
+      ) {
         return code;
       }
     }
-    throw new Error('Could not generate a unique client code');
+    throw new ServiceUnavailableException(
+      'Не удалось создать уникальный номер клиента. Повторите попытку',
+    );
   }
 
   private manifestResponse(

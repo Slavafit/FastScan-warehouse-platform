@@ -1,5 +1,33 @@
 # FastScan Mobile API contract
 
+## Единый формат ошибок
+
+Все маршруты API возвращают ошибки в одном формате. Поле `message` сохранено
+для совместимости с Android и Web, а `code` предназначено для стабильной
+обработки приложениями.
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "code": "VALIDATION_ERROR",
+  "message": "Проверьте данные запроса",
+  "details": {
+    "violations": ["tracking_number should not be empty"]
+  },
+  "path": "/api/client/orders",
+  "method": "POST",
+  "timestamp": "2026-08-17T08:00:00.000Z",
+  "request_id": "b07f..."
+}
+```
+
+Заголовок `X-Request-Id` совпадает с `request_id`. Его нужно указывать при
+обращении в поддержку. Внутренние исключения и SQL не передаются клиенту.
+Типовые коды: `VALIDATION_ERROR`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`,
+`CONFLICT`, `DUPLICATE_RECORD`, `INVALID_IDENTIFIER`, `DATABASE_UNAVAILABLE`
+и `INTERNAL_SERVER_ERROR`.
+
 Этот документ фиксирует legacy-контракт рабочего Android-приложения. Новый NestJS API сохраняет пути и JSON-имена во время миграции.
 
 This document records the legacy contract consumed by Android. The NestJS API preserves its paths and JSON names during migration.

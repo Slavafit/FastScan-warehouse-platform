@@ -58,8 +58,9 @@ export class WarehouseController {
 
   @Get('order-search')
   async orderSearch(@Query('tcode') tcode: string) {
+    if (!tcode?.trim()) return [];
     const order = await this.prisma.shipmentOrder.findUnique({
-      where: { trackingNumber: tcode },
+      where: { trackingNumber: tcode.trim() },
       include: { composition: true },
     });
     return order

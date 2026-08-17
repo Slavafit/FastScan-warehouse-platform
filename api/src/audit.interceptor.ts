@@ -54,6 +54,34 @@ export class AuditInterceptor implements NestInterceptor {
             })
             .catch(() => undefined);
         },
+        error: (error: unknown) => {
+          const errorCode =
+            typeof error === 'object' &&
+            error !== null &&
+            'code' in error &&
+            typeof error.code === 'string'
+              ? error.code
+              : error instanceof Error
+                ? error.name
+                : 'UNKNOWN_ERROR';
+          void this.prisma.operationLog
+            .create({
+              data: {
+                userId: request.user?.sub,
+                action: request.method,
+                route: request.originalUrl,
+                entityType: this.entityType(request.originalUrl),
+                details: {
+                  duration_ms: Date.now() - startedAt,
+                  success: false,
+                  error_code: errorCode,
+                },
+                ipAddress: request.ip,
+                userAgent: String(request.headers['user-agent'] ?? ''),
+              },
+            })
+            .catch(() => undefined);
+        },
       }),
     );
   }

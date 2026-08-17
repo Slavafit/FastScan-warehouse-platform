@@ -94,7 +94,59 @@ describe('FastScan API (e2e)', () => {
   });
 
   it('rejects protected routes without a token', () => {
-    return request(app.getHttpServer()).get('/api/order/box').expect(401);
+    return request(app.getHttpServer())
+      .get('/api/order/box')
+      .expect(401)
+      .expect(({ body, headers }) => {
+        const error = body as { request_id: string };
+        expect(error).toMatchObject({
+          statusCode: 401,
+          error: 'Unauthorized',
+          code: 'UNAUTHORIZED',
+          message: 'Требуется авторизация',
+          path: '/api/order/box',
+          method: 'GET',
+        });
+        expect(error.request_id).toBeTruthy();
+        expect(headers['x-request-id']).toBe(error.request_id);
+      });
+  });
+
+  it('returns clear validation errors and registration conflicts', async () => {
+    await request(app.getHttpServer())
+      .post('/api/mobile/auth/login')
+      .send({})
+      .expect(400)
+      .expect(({ body }) => {
+        const error = body as { details: { violations: string[] } };
+        expect(error).toMatchObject({
+          statusCode: 400,
+          code: 'VALIDATION_ERROR',
+          message: 'Проверьте данные запроса',
+        });
+        expect(error.details.violations).toEqual(
+          expect.arrayContaining([
+            'login should not be empty',
+            'password should not be empty',
+          ]),
+        );
+      });
+
+    await request(app.getHttpServer())
+      .post('/api/client/auth/register')
+      .send({
+        client_code: 'KGTEST',
+        email: 'another-client@example.com',
+        password: 'change-me',
+      })
+      .expect(409)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          statusCode: 409,
+          code: 'CONFLICT',
+          message: 'Client account already exists',
+        });
+      });
   });
 
   it('seeds admin, worker and client test accounts', async () => {

@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { Module, ValidationPipe } from '@nestjs/common';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AdminController } from './admin.controller.js';
+import { ApiExceptionFilter } from './api-exception.filter.js';
 import { AuditInterceptor } from './audit.interceptor.js';
 import { AuthController } from './auth.controller.js';
 import { JwtAuthGuard, JwtStrategy, RolesGuard, TokenService } from './auth.js';
@@ -44,6 +45,16 @@ import { WarehouseController } from './warehouse.controller.js';
     JwtStrategy,
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_FILTER, useClass: ApiExceptionFilter },
+    {
+      provide: APP_PIPE,
+      useFactory: () =>
+        new ValidationPipe({
+          whitelist: true,
+          transform: true,
+          forbidNonWhitelisted: false,
+        }),
+    },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
   ],
 })

@@ -4,6 +4,7 @@ import {
   ConflictException,
   Controller,
   Get,
+  NotFoundException,
   Param,
   Post,
   Put,
@@ -84,7 +85,7 @@ export class AdminController {
   ) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user || user.role === Role.CLIENT) {
-      throw new BadRequestException('Staff user not found');
+      throw new NotFoundException('Staff user not found');
     }
     if (user.role === Role.ADMIN && !dto.enabled) {
       throw new BadRequestException('Admin accounts cannot be blocked here');
@@ -233,7 +234,11 @@ export class AdminController {
     const prefix = dto.prefix.trim().toUpperCase();
     const warehouse = dto.warehouse.trim();
     const country = dto.country.trim();
-    if (!/^[A-Z0-9-]{1,12}$/.test(prefix)) throw new Error('Invalid prefix');
+    if (!/^[A-Z0-9-]{1,12}$/.test(prefix)) {
+      throw new BadRequestException(
+        'Prefix must contain only A-Z, 0-9 or hyphen',
+      );
+    }
     await this.prisma.clientCodeConfig.upsert({
       where: { id: 1 },
       update: { codePrefix: prefix, warehouseName: warehouse, country },

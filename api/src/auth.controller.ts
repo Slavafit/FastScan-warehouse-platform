@@ -1,4 +1,10 @@
-import { Body, Controller, Post, UnauthorizedException } from '@nestjs/common';
+import {
+  Body,
+  ConflictException,
+  Controller,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
 import { ClientRegistrationDto, LoginDto, RefreshDto } from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
@@ -49,7 +55,7 @@ export class AuthController {
       existing ||
       (await this.prisma.user.findUnique({ where: { login: email } }))
     ) {
-      throw new UnauthorizedException('Client account already exists');
+      throw new ConflictException('Client account already exists');
     }
     const user = await this.prisma.user.create({
       data: {

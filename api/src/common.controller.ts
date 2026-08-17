@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Query,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { randomInt } from 'node:crypto';
@@ -36,6 +37,7 @@ export class CommonController {
 
   @Get('reciever')
   async receiver(@Query('client_code') clientCode: string) {
+    if (!clientCode?.trim()) return [];
     const receiver = await this.prisma.receiver.findUnique({
       where: { clientCode: clientCode?.trim().toUpperCase() },
     });
@@ -119,6 +121,8 @@ export class CommonController {
       )
         return code;
     }
-    throw new Error('Could not generate a unique client code');
+    throw new ServiceUnavailableException(
+      'Не удалось создать уникальный номер клиента. Повторите попытку',
+    );
   }
 }

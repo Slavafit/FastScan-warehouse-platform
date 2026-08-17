@@ -271,4 +271,25 @@ describe('Modern mobile API contract', () => {
       },
     ]);
   });
+
+  it('searches an ordinary box tracking code without querying the UUID field', async () => {
+    const findFirst = jest.fn().mockResolvedValue({ id: 'box-1' });
+    const findMany = jest.fn().mockResolvedValue([]);
+    const prisma = {
+      warehouseBox: { findFirst },
+      shipmentOrder: { findMany },
+    } as unknown as PrismaService;
+    const controller = new MobileController(prisma, {} as NotificationService);
+
+    await expect(
+      controller.orders(undefined, ' NBX081310500429 '),
+    ).resolves.toEqual([]);
+
+    expect(findFirst).toHaveBeenCalledWith({
+      where: { trackingCode: 'NBX081310500429' },
+    });
+    expect(findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { boxId: 'box-1' } }),
+    );
+  });
 });

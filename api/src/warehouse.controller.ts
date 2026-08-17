@@ -8,6 +8,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { isUUID } from 'class-validator';
 import {
   BoxDto,
   BoxOrderDto,
@@ -410,8 +411,11 @@ export class WarehouseController {
   }
 
   private findBox(value: string) {
+    const normalized = value.trim();
     return this.prisma.warehouseBox.findFirst({
-      where: { OR: [{ id: value }, { trackingCode: value }] },
+      where: isUUID(normalized)
+        ? { OR: [{ id: normalized }, { trackingCode: normalized }] }
+        : { trackingCode: normalized },
     });
   }
 

@@ -344,6 +344,17 @@ describe('FastScan API (e2e)', () => {
         });
 
       await request(app.getHttpServer())
+        .get('/api/mobile/orders')
+        .query({ box_tracking_code: boxTracking })
+        .set('Authorization', workerAuth)
+        .expect(200)
+        .expect(({ body }) => {
+          const orders = body as Array<{ guid: string }>;
+          expect(orders).toHaveLength(1);
+          expect(orders[0]?.guid).toBe(mobileOrderId);
+        });
+
+      await request(app.getHttpServer())
         .post(`/api/mobile/batches/${batchId}/boxes`)
         .set('Authorization', workerAuth)
         .send({ box_guid: boxId })

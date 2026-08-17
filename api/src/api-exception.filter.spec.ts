@@ -3,7 +3,10 @@ import {
   ForbiddenException,
   HttpStatus,
 } from '@nestjs/common';
-import { describeApiException } from './api-exception.filter.js';
+import {
+  describeApiException,
+  validationExceptionFactory,
+} from './api-exception.filter.js';
 
 describe('Global API error descriptions', () => {
   it('returns field violations for validation errors', () => {
@@ -37,6 +40,32 @@ describe('Global API error descriptions', () => {
       statusCode: HttpStatus.FORBIDDEN,
       code: 'FORBIDDEN',
       message: 'Недостаточно прав для выполнения операции',
+    });
+  });
+
+  it('returns localized messages grouped by request field', () => {
+    const exception = validationExceptionFactory([
+      {
+        property: 'tracking_number',
+        constraints: {
+          isNotEmpty: 'tracking_number should not be empty',
+          isString: 'tracking_number must be a string',
+        },
+        children: [],
+      },
+    ]);
+    expect(describeApiException(exception)).toMatchObject({
+      statusCode: 400,
+      code: 'VALIDATION_ERROR',
+      message: 'Проверьте данные запроса',
+      details: {
+        fields: [
+          {
+            field: 'tracking_number',
+            messages: ['Поле обязательно', 'Ожидается текстовое значение'],
+          },
+        ],
+      },
     });
   });
 

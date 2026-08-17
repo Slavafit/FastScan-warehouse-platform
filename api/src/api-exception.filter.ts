@@ -1,10 +1,12 @@
 import {
   ArgumentsHost,
+  BadRequestException,
   Catch,
   ExceptionFilter,
   HttpException,
   HttpStatus,
   Logger,
+  ValidationError,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { randomUUID } from 'node:crypto';
@@ -53,6 +55,21 @@ const DEFAULT_MESSAGES: Record<number, string> = {
     'Внутренняя ошибка сервера. Сообщите код запроса администратору',
   [HttpStatus.SERVICE_UNAVAILABLE]:
     'Сервис временно недоступен. Повторите попытку позже',
+};
+
+const VALIDATION_MESSAGES: Record<string, string> = {
+  isNotEmpty: 'Поле обязательно',
+  isString: 'Ожидается текстовое значение',
+  isEmail: 'Укажите корректный email',
+  isInt: 'Ожидается целое число',
+  isNumber: 'Ожидается число',
+  isBoolean: 'Ожидается значение true или false',
+  isEnum: 'Выберите допустимое значение',
+  isIn: 'Передано недопустимое значение',
+  min: 'Значение меньше допустимого',
+  minLength: 'Значение слишком короткое',
+  maxLength: 'Значение слишком длинное',
+  isLength: 'Некорректная длина значения',
 };
 
 @Catch()
@@ -110,6 +127,14 @@ export function describeApiException(exception: unknown): ApiErrorDescription {
   };
 }
 
+export function validationExceptionFactory(errors: ValidationError[]) {
+  return new BadRequestException({
+    code: 'VALIDATION_ERROR',
+    message: DEFAULT_MESSAGES[HttpStatus.BAD_REQUEST],
+    details: { fields: flattenValidationErrors(errors) },
+  });
+}
+
 function describeHttpException(exception: HttpException): ApiErrorDescription {
   const statusCode = exception.getStatus();
   const response = exception.getResponse();
@@ -137,6 +162,7 @@ function describeHttpException(exception: HttpException): ApiErrorDescription {
     body && rawMessage === undefined
       ? withoutKeys(body, ['statusCode', 'error', 'code'])
       : undefined;
+  const suppliedDetails = isRecord(body?.details) ? body.details : undefined;
 
   return {
     statusCode,
@@ -150,11 +176,13 @@ function describeHttpException(exception: HttpException): ApiErrorDescription {
       : generatedMessage
         ? (DEFAULT_MESSAGES[statusCode] ?? 'Не удалось выполнить запрос')
         : explicitMessage,
-    ...(violations?.length
-      ? { details: { violations } }
-      : extraResponse && Object.keys(extraResponse).length
-        ? { details: { response: extraResponse } }
-        : {}),
+    ...(suppliedDetails
+      ? { details: suppliedDetails }
+      : violations?.length
+        ? { details: { violations } }
+        : extraResponse && Object.keys(extraResponse).length
+          ? { details: { response: extraResponse } }
+          : {}),
   };
 }
 
@@ -241,4 +269,21 @@ function withoutKeys(
   return Object.fromEntries(
     Object.entries(value).filter(([key]) => !keys.includes(key)),
   );
+}
+
+function flattenValidationErrors(
+  errors: ValidationError[],
+  parent = '',
+): Array<{ field: string; messages: string[] }> {
+  return errors.flatMap((error) => {
+    const field = parent ? `${parent}.${error.property}` : error.property;
+    const messages = Object.keys(error.constraints ?? {}).map(
+      (constraint) =>
+        VALIDATION_MESSAGES[constraint] ?? 'Передано некорректное значение',
+    );
+    return [
+      ...(messages.length ? [{ field, messages }] : []),
+      ...flattenValidationErrors(error.children ?? [], field),
+    ];
+  });
 }

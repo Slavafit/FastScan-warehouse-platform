@@ -118,18 +118,21 @@ describe('FastScan API (e2e)', () => {
       .send({})
       .expect(400)
       .expect(({ body }) => {
-        const error = body as { details: { violations: string[] } };
+        const error = body as {
+          details: {
+            fields: Array<{ field: string; messages: string[] }>;
+          };
+        };
         expect(error).toMatchObject({
           statusCode: 400,
           code: 'VALIDATION_ERROR',
           message: 'Проверьте данные запроса',
         });
-        expect(error.details.violations).toEqual(
-          expect.arrayContaining([
-            'login should not be empty',
-            'password should not be empty',
-          ]),
+        const fields = new Map(
+          error.details.fields.map((item) => [item.field, item.messages]),
         );
+        expect(fields.get('login')).toContain('Поле обязательно');
+        expect(fields.get('password')).toContain('Поле обязательно');
       });
 
     await request(app.getHttpServer())

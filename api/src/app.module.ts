@@ -4,7 +4,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AdminController } from './admin.controller.js';
-import { ApiExceptionFilter } from './api-exception.filter.js';
+import {
+  ApiExceptionFilter,
+  validationExceptionFactory,
+} from './api-exception.filter.js';
 import { AuditInterceptor } from './audit.interceptor.js';
 import { AuthController } from './auth.controller.js';
 import { JwtAuthGuard, JwtStrategy, RolesGuard, TokenService } from './auth.js';
@@ -53,6 +56,7 @@ import { WarehouseController } from './warehouse.controller.js';
           whitelist: true,
           transform: true,
           forbidNonWhitelisted: false,
+          exceptionFactory: validationExceptionFactory,
         }),
     },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },

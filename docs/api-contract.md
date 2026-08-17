@@ -13,7 +13,12 @@
   "code": "VALIDATION_ERROR",
   "message": "Проверьте данные запроса",
   "details": {
-    "violations": ["tracking_number should not be empty"]
+    "fields": [
+      {
+        "field": "tracking_number",
+        "messages": ["Поле обязательно"]
+      }
+    ]
   },
   "path": "/api/client/orders",
   "method": "POST",

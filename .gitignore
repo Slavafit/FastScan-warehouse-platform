@@ -4,10 +4,35 @@
 **/.gradle/
 **/.gradle-user/
 **/build/
+.kotlin/
+**/.kotlin/
+
+# Node / web/backend local dependencies and build output
+/api/
+/web/
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.next/
+**/.next/
+.wrangler/
+**/.wrangler/
 
 # Local Android configuration
 local.properties
 **/local.properties
+
+# Android generated packages
+*.apk
+*.aab
+*.ap_
+output-metadata.json
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
 
 # Android Studio
 .idea/

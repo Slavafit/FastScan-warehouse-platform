@@ -59,6 +59,7 @@ class ScanFragment : BaseFragment() {
     private var currentHeight: Int = 0
     private var currentOrderDimensions: OrderDimensions? = null
     private var isFetchingWeight = false
+    private var shouldAutoPrintGeneratedLabel = false
 
     private val receiverCacheRepository by lazy {
         ReceiverCacheRepository(requireContext(), apiService)
@@ -137,7 +138,7 @@ class ScanFragment : BaseFragment() {
                 currentOrderDimensions = result
                 binding.etWeight.setText("%.2f".format(result.grossWeight))
                 
-                // Отображаем размеры в UI
+                // Show dimensions in the UI.
                 currentLength = result.length
                 currentWidth  = result.width
                 currentHeight = result.height
@@ -148,7 +149,7 @@ class ScanFragment : BaseFragment() {
             }
         }
 
-        // Добавляем возможность удаления размеров долгим нажатием
+        // Allow removing dimensions with a long press.
         binding.btnVolumeCalc.setOnLongClickListener {
             clearDimensions()
             Toast.makeText(requireContext(), R.string.dimensions_cleared, Toast.LENGTH_SHORT).show()
@@ -159,15 +160,12 @@ class ScanFragment : BaseFragment() {
             val generated = "ONZA${System.currentTimeMillis().toString().takeLast(8)}"
             binding.etTracking.setText(generated)
             binding.btnPrint.visibility = View.VISIBLE
+            shouldAutoPrintGeneratedLabel = true
         }
 
         binding.btnPrint.setOnClickListener {
-            printHelper.printLabel(
-                binding.etTracking.text.toString(),
-                binding.etClientCode.text.toString(),
-                binding.tvClientName.text.toString(),
-                binding.etWeight.text.toString()
-            )
+            printCurrentOrderLabel()
+            shouldAutoPrintGeneratedLabel = false
         }
 
         binding.btnSubmit.setOnClickListener { submitFinalOrder() }
@@ -233,6 +231,7 @@ class ScanFragment : BaseFragment() {
         soundManager.playScanBeep()
         when (mode) {
             "barcode" -> {
+                shouldAutoPrintGeneratedLabel = false
                 binding.etTracking.setText(value)
                 fetchOrderInfo(value)
             }
@@ -370,8 +369,9 @@ class ScanFragment : BaseFragment() {
                 binding.progressBar.visibility = View.GONE
                 soundManager.playSent()
                 Toast.makeText(requireContext(), getString(R.string.order_saved), Toast.LENGTH_SHORT).show()
+                printGeneratedLabelIfNeeded(req)
                 ScanUtils.clearFieldsAll(binding, requireContext())
-                clearDimensions() // Сбрасываем размеры после отправки
+                clearDimensions()
                 currentReceiverGuid = null
                 binding.btnSubmit.isEnabled = true
             },
@@ -382,6 +382,27 @@ class ScanFragment : BaseFragment() {
                 binding.btnSubmit.isEnabled = true
             }
         )
+    }
+
+    private fun printCurrentOrderLabel() {
+        printHelper.printLabel(
+            binding.etTracking.text.toString(),
+            binding.etClientCode.text.toString(),
+            binding.tvClientName.text.toString(),
+            binding.etWeight.text.toString()
+        )
+    }
+
+    private fun printGeneratedLabelIfNeeded(req: SaveOrderRequest) {
+        if (!shouldAutoPrintGeneratedLabel || !req.trackingNumber.startsWith("ONZA")) return
+
+        printHelper.printLabel(
+            req.trackingNumber,
+            req.clientCode,
+            req.clientName,
+            req.grossWeight?.toString().orEmpty()
+        )
+        shouldAutoPrintGeneratedLabel = false
     }
 
     private fun showSearchClientDialog() {

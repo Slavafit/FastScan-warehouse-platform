@@ -1,3 +1,9 @@
+4.5 (code 34)
+- Renamed the generated ONZA action in the scan screen to a neutral track generation label.
+
+4.4 (code 33)
+- Automatically prints a generated ONZA order label after the order is saved, unless it was printed manually first.
+
 4.3 (code 32)
 - Added an up-to-date bilingual Russian and English README with features, setup, build instructions, and a GitHub project description.
 

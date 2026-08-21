@@ -100,7 +100,7 @@
     <string name="hint_scan_track">Señale el código de barras de la pista.</string>
     <string name="parties">Partes</string>
     <string name="scan_or_input">Escanear o ingresar...</string>
-    <string name="generate_track">✨ GENERAR ONZA</string>
+    <string name="generate_track">✨ Generar tracking</string>
     <string name="find_order">Buscar información del pedido</string>
     <string name="sending">🚀 Enviando...</string>
 

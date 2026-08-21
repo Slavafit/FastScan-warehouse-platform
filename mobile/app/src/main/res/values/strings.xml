@@ -110,7 +110,7 @@
     <string name="save_sizes">Сохранить размеры</string>
     <string name="print_label">🖨️ Печать лейбла</string>
     <string name="scan_or_input">Скан или ввод…</string>
-    <string name="generate_track">✨ ГЕНЕРИРОВАТЬ ONZA</string>
+    <string name="generate_track">✨ Генерация трека</string>
 
     <!-- кнопки -->
     <string name="refresh">Обновить</string>

@@ -12,8 +12,8 @@ android {
         applicationId "com.ocr.fastscan"
         minSdk 24
         targetSdk 34
-        versionCode 32
-        versionName "4.3"
+        versionCode 34
+        versionName "4.5"
     }
 
     buildFeatures {

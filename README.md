@@ -12,6 +12,7 @@ Warehouse receiving, scanning, and packing platform. The monorepo combines the p
 FastScan-warehouse-platform/
 ├── mobile/   # Android scanner application
 ├── api/      # Node.js + NestJS + Prisma REST API
+├── bot/      # Telegram bot for client access and warehouse workflows
 ├── web/      # React + TypeScript web application
 └── docs/     # API contracts and architecture notes
 ```
@@ -26,6 +27,7 @@ FastScan-warehouse-platform/
 - Автоматический случайный шестизначный номер клиента; префикс задаёт администратор.
 - Swagger/OpenAPI documentation and Docker Compose local environment.
 - Лицензирование остаётся отдельной существующей системой только для Mobile.
+- Исходный код `@LmsMalagaBot` перенесён в `bot/`; его обработчики последовательно переключаются на FastScan API.
 
 ## Быстрый запуск / Quick start
 

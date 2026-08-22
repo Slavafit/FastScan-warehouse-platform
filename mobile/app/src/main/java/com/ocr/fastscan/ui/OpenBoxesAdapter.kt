@@ -38,7 +38,11 @@ class OpenBoxesAdapter(
             binding.tvDimensions.text = context.getString(
                 R.string.sizes, box.width, box.height, box.length)
             binding.tvGrossWeight.text = context.getString(R.string.weight_format, box.gross_weight)
-            binding.tvVWeight.text = context.getString(R.string.volume_weight, box.v_weight)
+            binding.tvVWeight.text = context.getString(
+                R.string.volume_and_chargeable_weight,
+                box.v_weight,
+                box.chargeable_weight
+            )
             val belongsToCurrent = box.partial == currentPartialGuid
             val belongsToAnother = box.partial.isNotBlank() && !belongsToCurrent
             binding.cbSelected.setOnCheckedChangeListener(null)

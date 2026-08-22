@@ -26,6 +26,7 @@ import { NotificationType, Prisma, Role } from './generated/prisma/client.js';
 import { Roles } from './auth.js';
 import { NotificationService } from './notification.service.js';
 import { PrismaService } from './prisma.service.js';
+import { calculateWeightBreakdown } from './weight.util.js';
 
 @ApiBearerAuth()
 @Roles(Role.ADMIN, Role.WORKER)
@@ -91,7 +92,9 @@ export class MobileController {
       where: { trackingNumber: trackingNumber.trim() },
       include: { receiver: true, composition: true, box: true },
     });
-    return order ? this.orderResponse(order) : null;
+    return order
+      ? this.orderResponse(order, await this.volumetricDivisor())
+      : null;
   }
 
   @Get('orders')
@@ -105,6 +108,7 @@ export class MobileController {
     @Query('unpacked') unpacked?: string,
     @Query('days') days?: string,
   ) {
+    const divisor = await this.volumetricDivisor();
     if (boxTrackingCode) {
       const box = await this.findBox(boxTrackingCode);
       if (!box) return [];
@@ -113,7 +117,7 @@ export class MobileController {
         include: { receiver: true, composition: true, box: true },
         orderBy: { createdAt: 'asc' },
       });
-      return orders.map((order) => this.orderResponse(order));
+      return orders.map((order) => this.orderResponse(order, divisor));
     }
     if (unpacked === 'true') {
       const dayCount = Math.max(0, Number(days) || 0);
@@ -125,14 +129,14 @@ export class MobileController {
         include: { receiver: true, composition: true, box: true },
         orderBy: { createdAt: 'desc' },
       });
-      return orders.map((order) => this.orderResponse(order));
+      return orders.map((order) => this.orderResponse(order, divisor));
     }
     if (!trackingNumber) return [];
     const order = await this.prisma.shipmentOrder.findUnique({
       where: { trackingNumber: trackingNumber.trim() },
       include: { receiver: true, composition: true, box: true },
     });
-    return order ? [this.orderResponse(order)] : [];
+    return order ? [this.orderResponse(order, divisor)] : [];
   }
 
   @Post('orders')
@@ -210,6 +214,7 @@ export class MobileController {
     @Query('tracking_code') trackingCode = '',
     @Query('status') status?: string,
   ) {
+    const divisor = await this.volumetricDivisor();
     const where: Prisma.WarehouseBoxWhereInput = guid
       ? { id: guid }
       : trackingCode
@@ -222,7 +227,7 @@ export class MobileController {
       include: { partial: true, _count: { select: { orders: true } } },
       orderBy: { createdAt: 'desc' },
     });
-    return boxes.map((box) => this.boxResponse(box));
+    return boxes.map((box) => this.boxResponse(box, divisor));
   }
 
   @Post('boxes')
@@ -296,7 +301,8 @@ export class MobileController {
       include: { receiver: true, composition: true, box: true },
       orderBy: { createdAt: 'asc' },
     });
-    return orders.map((order) => this.orderResponse(order));
+    const divisor = await this.volumetricDivisor();
+    return orders.map((order) => this.orderResponse(order, divisor));
   }
 
   @Post('boxes/:guid/orders')
@@ -350,7 +356,8 @@ export class MobileController {
       include: { boxes: true },
       orderBy: { createdAt: 'desc' },
     });
-    return batches.map((batch) => this.batchResponse(batch));
+    const divisor = await this.volumetricDivisor();
+    return batches.map((batch) => this.batchResponse(batch, divisor));
   }
 
   @Post('batches')
@@ -422,7 +429,8 @@ export class MobileController {
       include: { partial: true, _count: { select: { orders: true } } },
       orderBy: { createdAt: 'asc' },
     });
-    return boxes.map((box) => this.boxResponse(box));
+    const divisor = await this.volumetricDivisor();
+    return boxes.map((box) => this.boxResponse(box, divisor));
   }
 
   @Post('batches/:guid/boxes')
@@ -520,12 +528,13 @@ export class MobileController {
   }
 
   private async platformSettings() {
-    const config = await this.prisma.clientCodeConfig.findUnique({
+    const config = await this.prisma.clientCodeConfig?.findUnique({
       where: { id: 1 },
     });
     return {
       warehouseName: config?.warehouseName ?? 'BMG',
       country: config?.country ?? 'Espana',
+      volumetricDivisor: config?.volumetricDivisor ?? 6000,
     };
   }
 
@@ -567,7 +576,14 @@ export class MobileController {
     boxId: string | null;
     box?: { trackingCode: string } | null;
     composition: { name: string } | null;
-  }) {
+  }, divisor = 6000) {
+    const weights = calculateWeightBreakdown(
+      this.number(order.grossWeight),
+      order.length,
+      order.width,
+      order.height,
+      divisor,
+    );
     return {
       guid: order.id,
       tracking_number: order.trackingNumber,
@@ -576,7 +592,7 @@ export class MobileController {
       client_code: order.clientCode,
       status_name: order.statusName,
       with_box: order.withBox,
-      gross_weight: this.number(order.grossWeight),
+      ...weights,
       composition_guid: order.compositionId,
       composition: order.composition?.name ?? null,
       description: order.productDescription,
@@ -609,7 +625,14 @@ export class MobileController {
     createdAt: Date;
     partial: { warehouseName: string; partialName: string } | null;
     _count?: { orders: number };
-  }) {
+  }, divisor = 6000) {
+    const weights = calculateWeightBreakdown(
+      this.number(box.grossWeight),
+      box.length,
+      box.width,
+      box.height,
+      divisor,
+    );
     return {
       guid: box.id,
       codeid: box.codeId,
@@ -624,9 +647,10 @@ export class MobileController {
       width: box.width,
       height: box.height,
       length: box.length,
-      volume_weight: this.number(box.volumeWeight) ?? 0,
-      v_weight: this.number(box.volumeWeight) ?? 0,
-      gross_weight: this.number(box.grossWeight) ?? 0,
+      volume_weight: weights.volume_weight ?? 0,
+      v_weight: weights.volume_weight ?? 0,
+      gross_weight: weights.gross_weight ?? 0,
+      chargeable_weight: weights.chargeable_weight ?? 0,
       created_at: box.createdAt.toISOString(),
       date_created: box.createdAt.toISOString(),
       orders_count: box._count?.orders ?? 0,
@@ -643,8 +667,22 @@ export class MobileController {
     status: number;
     grossWeight: Prisma.Decimal | null;
     createdAt: Date;
-    boxes: { grossWeight: Prisma.Decimal | null }[];
-  }) {
+    boxes: {
+      grossWeight: Prisma.Decimal | null;
+      length: number;
+      width: number;
+      height: number;
+    }[];
+  }, divisor = 6000) {
+    const boxWeights = batch.boxes.map((box) =>
+      calculateWeightBreakdown(
+        this.number(box.grossWeight),
+        box.length,
+        box.width,
+        box.height,
+        divisor,
+      ),
+    );
     return {
       guid: batch.id,
       codeid: batch.codeId,
@@ -663,6 +701,14 @@ export class MobileController {
           (sum, box) => sum + (this.number(box.grossWeight) ?? 0),
           0,
         ),
+      volume_weight: boxWeights.reduce(
+        (sum, weight) => sum + (weight.volume_weight ?? 0),
+        0,
+      ),
+      chargeable_weight: boxWeights.reduce(
+        (sum, weight) => sum + (weight.chargeable_weight ?? 0),
+        0,
+      ),
       created_at: batch.createdAt.toISOString(),
       date_created: batch.createdAt.toISOString(),
     };
@@ -685,6 +731,10 @@ export class MobileController {
     throw new ServiceUnavailableException(
       'Не удалось создать уникальный номер клиента. Повторите попытку',
     );
+  }
+
+  private async volumetricDivisor() {
+    return (await this.platformSettings()).volumetricDivisor;
   }
 
   private number(value: Prisma.Decimal | null | undefined) {

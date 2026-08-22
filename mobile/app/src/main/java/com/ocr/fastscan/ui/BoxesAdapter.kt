@@ -55,7 +55,11 @@ class BoxesAdapter(
         ) {
             binding.tvTrackingCode.text = box.trackingCode
             binding.tvGrossWeight.text = getString(R.string.weight_format, box.grossWeight ?: 0.0)
-            binding.tvVWeight.text = getString(R.string.volume_weight, box.vWeight ?: 0.0)
+            binding.tvVWeight.text = getString(
+                R.string.volume_and_chargeable_weight,
+                box.vWeight ?: 0.0,
+                box.chargeableWeight ?: maxOf(box.grossWeight ?: 0.0, box.vWeight ?: 0.0)
+            )
             binding.tvSizes.text = getString(R.string.sizes, box.length ?: 0, box.width ?: 0, box.height ?: 0)
             binding.tvOrderCount.text = getString(R.string.orders_count, box.orderCount ?: 0)
             binding.tvDate.text = box.dateCreated

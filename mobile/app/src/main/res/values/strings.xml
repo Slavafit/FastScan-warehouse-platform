@@ -216,6 +216,7 @@
     <string name="search_client">Поиск по имени</string>
     <string name="dimensions">📏 Размеры (Д х Ш х В), см</string>
     <string name="volume_weight">Объёмный вес: %.2f кг</string>
+    <string name="volume_and_chargeable_weight">Объёмный: %1$.2f кг · Расчётный: %2$.2f кг</string>
     <string name="sizes">Размеры: %1$d × %2$d × %3$d см</string>
     <string name="orders_count">Заказов: %d шт.</string>
     <string name="date_created">Создано: %s</string>

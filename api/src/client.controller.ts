@@ -17,6 +17,7 @@ import { ClientOrderCreateDto, ProfileDto } from './dto.js';
 import { AuthUser, Roles } from './auth.js';
 import { Prisma, Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
+import { calculateWeightBreakdown } from './weight.util.js';
 
 @ApiBearerAuth()
 @Roles(Role.CLIENT)
@@ -65,11 +66,18 @@ export class ClientController {
       include: { box: true, composition: true },
       orderBy: { createdAt: 'desc' },
     });
+    const divisor = await this.volumetricDivisor();
     return orders.map((order) => ({
       guid: order.id,
       tracking_number: order.trackingNumber,
       status_name: order.statusName,
-      gross_weight: this.number(order.grossWeight),
+      ...calculateWeightBreakdown(
+        this.number(order.grossWeight),
+        order.length,
+        order.width,
+        order.height,
+        divisor,
+      ),
       with_box: order.withBox !== 0,
       box_tracking_code: order.box?.trackingCode ?? null,
       composition_guid: order.compositionId,
@@ -133,11 +141,18 @@ export class ClientController {
       },
       include: { box: true, composition: true },
     });
+    const weights = calculateWeightBreakdown(
+      this.number(order.grossWeight),
+      order.length,
+      order.width,
+      order.height,
+      await this.volumetricDivisor(),
+    );
     return {
       guid: order.id,
       tracking_number: order.trackingNumber,
       status_name: order.statusName,
-      gross_weight: this.number(order.grossWeight),
+      ...weights,
       with_box: order.withBox !== 0,
       box_tracking_code: order.box?.trackingCode ?? null,
       composition_guid: order.compositionId,
@@ -171,7 +186,14 @@ export class ClientController {
     const [orders, unread] = await Promise.all([
       this.prisma.shipmentOrder.findMany({
         where: { receiverId: account.receiverId },
-        select: { grossWeight: true, boxId: true, statusName: true },
+        select: {
+          grossWeight: true,
+          length: true,
+          width: true,
+          height: true,
+          boxId: true,
+          statusName: true,
+        },
       }),
       this.prisma.clientNotification.count({
         where: { clientAccountId: account.id, readAt: null },
@@ -181,12 +203,26 @@ export class ClientController {
     for (const order of orders)
       statuses[order.statusName] = (statuses[order.statusName] ?? 0) + 1;
     const packed = orders.filter((order) => order.boxId).length;
+    const divisor = await this.volumetricDivisor();
+    const weights = orders.map((order) =>
+      calculateWeightBreakdown(
+        this.number(order.grossWeight),
+        order.length,
+        order.width,
+        order.height,
+        divisor,
+      ),
+    );
     return {
       total_orders: orders.length,
       packed_orders: packed,
       unpacked_orders: orders.length - packed,
       total_weight: orders.reduce(
         (sum, order) => sum + (this.number(order.grossWeight) ?? 0),
+        0,
+      ),
+      total_chargeable_weight: weights.reduce(
+        (sum, weight) => sum + (weight.chargeable_weight ?? 0),
         0,
       ),
       boxes_count: new Set(orders.map((order) => order.boxId).filter(Boolean))
@@ -285,6 +321,13 @@ export class ClientController {
   private optionalText(value?: string) {
     const normalized = value?.trim();
     return normalized ? normalized : null;
+  }
+
+  private async volumetricDivisor() {
+    const config = await this.prisma.clientCodeConfig?.findUnique({
+      where: { id: 1 },
+    });
+    return config?.volumetricDivisor ?? 6000;
   }
 
   private number(value: Prisma.Decimal | null) {

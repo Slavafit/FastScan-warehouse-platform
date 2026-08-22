@@ -159,6 +159,7 @@ describe('Mobile API contract', () => {
         length: 50,
         v_weight: 10,
         gross_weight: 8.5,
+        chargeable_weight: 10,
         date_created: '2026-08-06T10:00:00.000Z',
         orderCount: 3,
       },
@@ -272,7 +273,10 @@ describe('Mobile API contract', () => {
             createdAt: date,
             status: 0,
             grossWeight: null,
-            boxes: [{ grossWeight: { toString: () => '8.500' } }],
+            boxes: [{
+              grossWeight: { toString: () => '8.500' },
+              volumeWeight: { toString: () => '10.000' },
+            }],
           },
         ]),
       },
@@ -312,6 +316,8 @@ describe('Mobile API contract', () => {
         boxCount: 1,
         status: 0,
         gross_weight: 8.5,
+        volume_weight: 10,
+        chargeable_weight: 10,
       },
     ]);
 
@@ -327,6 +333,7 @@ describe('Mobile API contract', () => {
         length: 50,
         v_weight: 10,
         gross_weight: 8.5,
+        chargeable_weight: 10,
         date_created: '2026-08-06T10:00:00.000Z',
         warehouse_name: 'BMG',
       },

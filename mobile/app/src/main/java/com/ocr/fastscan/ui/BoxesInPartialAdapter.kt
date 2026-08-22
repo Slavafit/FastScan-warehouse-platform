@@ -33,7 +33,11 @@ class BoxesInPartialAdapter(
             binding.tvTrackingCode.text = getString(R.string.box, box.tracking_code)
             binding.tvDimensions.text = getString(R.string.sizes, box.length, box.width, box.height)
             binding.tvGrossWeight.text = getString(R.string.weight_format, box.gross_weight)
-            binding.tvVWeight.text = getString(R.string.volume_weight, box.v_weight)
+            binding.tvVWeight.text = getString(
+                R.string.volume_and_chargeable_weight,
+                box.v_weight,
+                box.chargeable_weight
+            )
 
             binding.root.setOnClickListener { onOpen(box) }
             binding.btnRemoveBox.setOnClickListener { onRemove(box) }

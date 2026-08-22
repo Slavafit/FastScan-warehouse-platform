@@ -189,6 +189,7 @@ model ClientCodeConfig {
   codePrefix    String   @default("KG") @map("code_prefix") @db.VarChar(12)
   warehouseName String   @default("BMG") @map("warehouse_name") @db.VarChar(120)
   country       String   @default("España") @db.VarChar(120)
+  volumetricDivisor Int  @default(6000) @map("volumetric_divisor")
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   @@map("client_code_config")
@@ -206,6 +207,8 @@ model Manifest {
   boxCount        Int            @map("box_count")
   orderCount      Int            @map("order_count")
   grossWeight     Decimal        @default(0) @map("gross_weight") @db.Decimal(12, 3)
+  volumeWeight    Decimal        @default(0) @map("volume_weight") @db.Decimal(12, 3)
+  chargeableWeight Decimal       @default(0) @map("chargeable_weight") @db.Decimal(12, 3)
   createdAt       DateTime       @default(now()) @map("created_at") @db.Timestamptz
   partialBatch    PartialBatch   @relation(fields: [partialBatchId], references: [id], onDelete: Restrict)
   createdBy       User           @relation("ManifestCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
@@ -232,6 +235,8 @@ model ManifestItem {
   declaredValue      Decimal? @map("declared_value") @db.Decimal(12, 2)
   currency           String?  @db.VarChar(3)
   grossWeight        Decimal? @map("gross_weight") @db.Decimal(12, 3)
+  volumeWeight       Decimal? @map("volume_weight") @db.Decimal(12, 3)
+  chargeableWeight   Decimal? @map("chargeable_weight") @db.Decimal(12, 3)
   boxTrackingCode    String   @map("box_tracking_code") @db.VarChar(160)
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
   manifest           Manifest @relation(fields: [manifestId], references: [id], onDelete: Cascade)

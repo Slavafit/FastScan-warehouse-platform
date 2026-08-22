@@ -31,6 +31,7 @@ type PlatformSettings = {
   prefix: string;
   warehouse: string;
   country: string;
+  volumetric_divisor: number;
 };
 
 type StaffUser = {
@@ -75,6 +76,8 @@ type BatchSummary = {
   warehouse_name: string;
   boxCount: number;
   gross_weight: number;
+  volume_weight: number;
+  chargeable_weight: number;
   status: number;
 };
 
@@ -91,6 +94,7 @@ type BoxSummary = {
   length: number;
   v_weight: number;
   gross_weight: number;
+  chargeable_weight: number;
   date_created: string;
   orderCount: number;
 };
@@ -102,6 +106,8 @@ type BoxOrder = {
   client_code: string | null;
   with_box: string;
   gross_weight: number | null;
+  volume_weight: number | null;
+  chargeable_weight: number | null;
   user_guid: string | null;
   length: number | null;
   width: number | null;
@@ -128,6 +134,8 @@ type ManifestOrder = {
   declared_value: number;
   currency: string | null;
   gross_weight: number;
+  volume_weight: number | null;
+  chargeable_weight: number | null;
   box_tracking_code: string;
 };
 
@@ -142,6 +150,8 @@ type ManifestRecord = {
   box_count: number;
   order_count: number;
   gross_weight: number;
+  volume_weight: number;
+  chargeable_weight: number;
   created_by: { login: string; role: Role };
   created_at: string;
   orders: ManifestOrder[];
@@ -152,6 +162,8 @@ type ClientOrder = {
   tracking_number: string;
   status_name: string;
   gross_weight: number | null;
+  volume_weight: number | null;
+  chargeable_weight: number | null;
   with_box: boolean;
   box_tracking_code: string | null;
   composition_guid: string | null;
@@ -265,7 +277,7 @@ export default function FastScanWeb() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [platform, setPlatform] = useState<PlatformSettings>({ prefix: "KG", warehouse: "BMG", country: "España" });
+  const [platform, setPlatform] = useState<PlatformSettings>({ prefix: "KG", warehouse: "BMG", country: "España", volumetric_divisor: 6000 });
   const [profile, setProfile] = useState<ClientProfile>({
     client_code: "",
     email: "",
@@ -679,7 +691,7 @@ function StaffClients({ session }: { session: Session }) {
       <p className="field-note">Код клиента нельзя изменить: он связан с заказами и кабинетом.</p>
       <button className="primary-button" onClick={saveClient}>Сохранить изменения</button>
       {editing.has_account && <div className="inline-form"><label><span>Новый пароль</span><input type="password" value={resetPassword} minLength={8} onChange={(event) => setResetPassword(event.target.value)} /></label><button className="action-button" disabled={resetPassword.length < 8} onClick={saveResetPassword}>Сбросить пароль</button></div>}
-      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Стоимость</th><th>Вес</th><th>Коробка</th></tr></thead><tbody>{clientOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={order.with_box ? "status good" : "status"}>{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Стоимость</th><th>Фактический вес</th><th>Объёмный вес</th><th>Расчётный вес</th><th>Коробка</th></tr></thead><tbody>{clientOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className={order.with_box ? "status good" : "status"}>{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{formatWeight(order.volume_weight)}</td><td><strong>{formatWeight(order.chargeable_weight)}</strong></td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td></tr>)}</tbody></table></div>
       {!clientOrders.length && <p className="empty-state">История заказов пока пустая.</p>}
       {message && <p className="save-notice">{message}</p>}
     </section>}
@@ -812,7 +824,7 @@ function ClientOrders({ session }: { session: Session }) {
       </div>
       {message && <p className="form-error">{message}</p>}
       <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Статус</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th><th>Сохранить упаковку</th><th>Коробка</th><th>Обновлен</th></tr></thead>
-        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className="status">{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td><td>{order.with_box ? <span className="status good">Да</span> : "Нет"}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
+        <tbody>{visibleOrders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><span className="status">{formatStatus(order.status_name)}</span></td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)} / {formatWeight(order.volume_weight)} / <strong>{formatWeight(order.chargeable_weight)}</strong></td><td>{order.with_box ? <span className="status good">Да</span> : "Нет"}</td><td>{order.box_tracking_code ? <code>{order.box_tracking_code}</code> : "—"}</td><td>{formatDate(order.updated_at)}</td></tr>)}</tbody>
       </table></div>
       {loading && <p className="empty-state">Загружаем заказы...</p>}
       {!loading && !visibleOrders.length && <p className="empty-state">{query.trim() ? "По этому треку заказ не найден." : "Заказы пока не найдены."}</p>}
@@ -873,6 +885,8 @@ function manifestRowsHtml(manifest: ManifestRecord) {
     <td>${escapeHtml(order.composition)}</td>
     <td>${escapeHtml(order.description)}</td>
     <td>${order.gross_weight.toFixed(3)}</td>
+    <td>${order.volume_weight?.toFixed(3) ?? ""}</td>
+    <td>${order.chargeable_weight?.toFixed(3) ?? ""}</td>
     <td>${order.declared_value.toFixed(2)}</td>
     <td>${escapeHtml(order.currency || "EUR")}</td>
     <td>${escapeHtml(order.client_email)}</td>
@@ -896,11 +910,11 @@ function downloadManifestExcel(manifest: ManifestRecord) {
     .join("; ");
   const html = `<!doctype html><html><head><meta charset="utf-8" /></head><body>
     <table>
-      <tr><th colspan="14">Manifest ${escapeHtml(manifest.manifest_code)}</th></tr>
+      <tr><th colspan="16">Manifest ${escapeHtml(manifest.manifest_code)}</th></tr>
       <tr><td>Number</td><td>${escapeHtml(manifest.manifest_code)}</td><td>Date</td><td>${escapeHtml(formatDate(manifest.created_at))}</td></tr>
       <tr><td>Warehouse</td><td>${escapeHtml(manifest.warehouse_name)}</td><td>Country</td><td>${escapeHtml(manifest.country)}</td></tr>
-      <tr><td>Boxes</td><td>${manifest.box_count}</td><td>Orders</td><td>${manifest.order_count}</td><td>Weight</td><td>${manifest.gross_weight.toFixed(3)}</td><td>Value totals</td><td>${totals}</td></tr>
-      <tr><th>#</th><th>Order tracking</th><th>Box tracking</th><th>Client code</th><th>First name</th><th>Last name</th><th>Address</th><th>Composition</th><th>Description</th><th>Weight kg</th><th>Declared value</th><th>Currency</th><th>Email</th><th>Phone</th></tr>
+      <tr><td>Boxes</td><td>${manifest.box_count}</td><td>Orders</td><td>${manifest.order_count}</td><td>Actual weight</td><td>${manifest.gross_weight.toFixed(3)}</td><td>Chargeable weight</td><td>${manifest.chargeable_weight.toFixed(3)}</td><td>Value totals</td><td>${totals}</td></tr>
+      <tr><th>#</th><th>Order tracking</th><th>Box tracking</th><th>Client code</th><th>First name</th><th>Last name</th><th>Address</th><th>Composition</th><th>Description</th><th>Actual kg</th><th>Volume kg</th><th>Chargeable kg</th><th>Declared value</th><th>Currency</th><th>Email</th><th>Phone</th></tr>
       ${manifestRowsHtml(manifest)}
     </table>
   </body></html>`;
@@ -933,10 +947,12 @@ function printManifest(manifest: ManifestRecord) {
       <div><small>Total declared value</small><strong>${totals}</strong></div>
       <div><small>Boxes</small><strong>${manifest.box_count}</strong></div>
       <div><small>Orders</small><strong>${manifest.order_count}</strong></div>
-      <div><small>Gross weight</small><strong>${manifest.gross_weight.toFixed(3)} kg</strong></div>
+      <div><small>Actual weight</small><strong>${manifest.gross_weight.toFixed(3)} kg</strong></div>
+      <div><small>Volume weight</small><strong>${manifest.volume_weight.toFixed(3)} kg</strong></div>
+      <div><small>Chargeable weight</small><strong>${manifest.chargeable_weight.toFixed(3)} kg</strong></div>
       <div><small>Created by</small><strong>${escapeHtml(manifest.created_by.login)}</strong></div>
     </section>
-    <table><thead><tr><th>#</th><th>Order tracking</th><th>Box tracking</th><th>Client code</th><th>First name</th><th>Last name</th><th>Address</th><th>Composition</th><th>Description</th><th>Weight kg</th><th>Value</th><th>Currency</th><th>Email</th><th>Phone</th></tr></thead><tbody>${manifestRowsHtml(manifest)}</tbody></table>
+    <table><thead><tr><th>#</th><th>Order tracking</th><th>Box tracking</th><th>Client code</th><th>First name</th><th>Last name</th><th>Address</th><th>Composition</th><th>Description</th><th>Actual kg</th><th>Volume kg</th><th>Chargeable kg</th><th>Value</th><th>Currency</th><th>Email</th><th>Phone</th></tr></thead><tbody>${manifestRowsHtml(manifest)}</tbody></table>
     <script>window.addEventListener("load", () => window.print());</script>
   </body></html>`;
   const popup = window.open("", "_blank");
@@ -1009,12 +1025,12 @@ function Boxes({ session, demo }: { session: Session | null; demo: boolean }) {
         <div className="status-pills"><span>{boxes.length} всего</span><span>{boxes.filter((box) => !box.partial).length} без партии</span></div>
       </div>
       {message && <p className="form-error">{message}</p>}
-      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Склад</th><th>Заказы</th><th>Вес</th><th>Размеры</th><th>Партия</th><th></th></tr></thead><tbody>{visibleBoxes.map((box) => <tr key={box.guid}><td><strong>{box.tracking_code}</strong></td><td>{box.warehouse_name || box.warehouse}</td><td>{box.orderCount}</td><td>{formatWeight(box.gross_weight)}</td><td>{box.length}×{box.width}×{box.height}</td><td>{box.partial ? <span className="status good">В партии</span> : <span className="status">Открыта</span>}</td><td><button className="table-action" onClick={() => openBox(box)}>Открыть</button></td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Склад</th><th>Заказы</th><th>Фактический</th><th>Объёмный</th><th>Расчётный</th><th>Размеры</th><th>Партия</th><th></th></tr></thead><tbody>{visibleBoxes.map((box) => <tr key={box.guid}><td><strong>{box.tracking_code}</strong></td><td>{box.warehouse_name || box.warehouse}</td><td>{box.orderCount}</td><td>{formatWeight(box.gross_weight)}</td><td>{formatWeight(box.v_weight)}</td><td><strong>{formatWeight(box.chargeable_weight)}</strong></td><td>{box.length}×{box.width}×{box.height}</td><td>{box.partial ? <span className="status good">В партии</span> : <span className="status">Открыта</span>}</td><td><button className="table-action" onClick={() => openBox(box)}>Открыть</button></td></tr>)}</tbody></table></div>
       {!visibleBoxes.length && <p className="empty-state">Коробки не найдены.</p>}
     </section>
     {active && <section className="panel editor-card">
       <div className="panel-title"><div><p className="eyebrow dark">СОСТАВ</p><h3>{active.tracking_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
-      <div className="summary-strip"><div><small>Склад</small><strong>{active.warehouse_name || active.warehouse}</strong></div><div><small>Заказы</small><strong>{orders.length}</strong></div><div><small>Вес</small><strong>{formatWeight(active.gross_weight)}</strong></div><div><small>Размеры</small><strong>{active.length}×{active.width}×{active.height}</strong></div><div><small>Объемный вес</small><strong>{formatWeight(active.v_weight)}</strong></div></div>
+      <div className="summary-strip"><div><small>Склад</small><strong>{active.warehouse_name || active.warehouse}</strong></div><div><small>Заказы</small><strong>{orders.length}</strong></div><div><small>Фактический вес</small><strong>{formatWeight(active.gross_weight)}</strong></div><div><small>Объёмный вес</small><strong>{formatWeight(active.v_weight)}</strong></div><div><small>Расчётный вес</small><strong>{formatWeight(active.chargeable_weight)}</strong></div><div><small>Размеры</small><strong>{active.length}×{active.width}×{active.height}</strong></div></div>
       <div className="table-scroll"><table><thead><tr><th>Трек</th><th>Клиент</th><th>Состав</th><th>Описание</th><th>Стоимость</th><th>Вес</th></tr></thead><tbody>{orders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td>{order.client_code ? <code>{order.client_code}</code> : "—"} {order.client || ""}</td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatMoney(order.declared_value, order.currency)}</td><td>{formatWeight(order.gross_weight)}</td></tr>)}</tbody></table></div>
       {!orders.length && <p className="empty-state">В коробке пока нет заказов.</p>}
     </section>}
@@ -1090,12 +1106,12 @@ function Batches({ session, demo }: { session: Session | null; demo: boolean }) 
         <div className="status-pills"><span>{batches.length} всего</span><span>{batches.filter((batch) => batch.status === 0).length} открыто</span><span>{batches.filter((batch) => batch.status === 1).length} завершено</span></div>
       </div>
       {message && <p className="save-notice">{message}</p>}
-      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Название</th><th>Склад</th><th>Коробки</th><th>Вес</th><th>Статус</th><th></th></tr></thead><tbody>{visibleBatches.map((batch) => <tr key={batch.guid}><td><code>{batch.partial_code}</code></td><td><strong>{batch.partial_name}</strong></td><td>{batch.warehouse_name}</td><td>{batch.boxCount}</td><td>{formatWeight(batch.gross_weight)}</td><td>{batch.status === 1 ? <span className="status good">Завершена</span> : <span className="status">Открыта</span>}</td><td><button className="table-action" onClick={() => openBatch(batch)}>Открыть</button></td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table><thead><tr><th>Код</th><th>Название</th><th>Склад</th><th>Коробки</th><th>Фактический вес</th><th>Расчётный вес</th><th>Статус</th><th></th></tr></thead><tbody>{visibleBatches.map((batch) => <tr key={batch.guid}><td><code>{batch.partial_code}</code></td><td><strong>{batch.partial_name}</strong></td><td>{batch.warehouse_name}</td><td>{batch.boxCount}</td><td>{formatWeight(batch.gross_weight)}</td><td><strong>{formatWeight(batch.chargeable_weight)}</strong></td><td>{batch.status === 1 ? <span className="status good">Завершена</span> : <span className="status">Открыта</span>}</td><td><button className="table-action" onClick={() => openBatch(batch)}>Открыть</button></td></tr>)}</tbody></table></div>
       {!visibleBatches.length && <p className="empty-state">Партии не найдены.</p>}
     </section>
     {active && <section className="panel editor-card">
       <div className="panel-title"><div><p className="eyebrow dark">ДЕТАЛИ ПАРТИИ</p><h3>{active.partial_code}</h3></div><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div>
-      <div className="summary-strip"><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{boxes.length}</strong></div><div><small>Вес</small><strong>{formatWeight(active.gross_weight)}</strong></div><div><small>Статус</small><strong>{active.status === 1 ? "Завершена" : "Открыта"}</strong></div><div><small>Дата</small><strong>{formatDate(active.date_created)}</strong></div></div>
+      <div className="summary-strip"><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{boxes.length}</strong></div><div><small>Фактический вес</small><strong>{formatWeight(active.gross_weight)}</strong></div><div><small>Объёмный вес</small><strong>{formatWeight(active.volume_weight)}</strong></div><div><small>Расчётный вес</small><strong>{formatWeight(active.chargeable_weight)}</strong></div><div><small>Статус</small><strong>{active.status === 1 ? "Завершена" : "Открыта"}</strong></div><div><small>Дата</small><strong>{formatDate(active.date_created)}</strong></div></div>
       {active.status === 0 && <button className="primary-button narrow" onClick={() => completeBatch(active)}>Завершить партию</button>}
       <div className="table-scroll"><table><thead><tr><th>Трек коробки</th><th>Размеры</th><th>Вес</th><th>Склад</th></tr></thead><tbody>{boxes.map((box) => <tr key={box.guid}><td><strong>{box.tracking_code}</strong></td><td>{box.length}×{box.width}×{box.height}</td><td>{formatWeight(box.gross_weight)}</td><td>{box.warehouse_name || active.warehouse_name}</td></tr>)}</tbody></table></div>
       {!boxes.length && <p className="empty-state">В партии пока нет коробок.</p>}
@@ -1185,9 +1201,9 @@ function Manifests({ session }: { session: Session | null }) {
     </section>
     {active && <section className="panel manifest-detail">
       <div className="panel-title"><div><p className="eyebrow dark">МАНИФЕСТ</p><h3>{active.manifest_code}</h3></div><div className="button-row"><button className="action-button" onClick={() => printManifest(active)}>Печать / PDF</button><button className="action-button" onClick={() => downloadManifestExcel(active)}>Excel</button><button className="action-button" onClick={() => setActive(null)}>Закрыть</button></div></div>
-      <div className="summary-strip"><div><small>Партия</small><strong>{active.partial_code}</strong></div><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{active.box_count}</strong></div><div><small>Заказы</small><strong>{active.order_count}</strong></div><div><small>Общий вес</small><strong>{active.gross_weight.toFixed(3)} кг</strong></div></div>
+      <div className="summary-strip"><div><small>Партия</small><strong>{active.partial_code}</strong></div><div><small>Склад</small><strong>{active.warehouse_name}</strong></div><div><small>Коробки</small><strong>{active.box_count}</strong></div><div><small>Заказы</small><strong>{active.order_count}</strong></div><div><small>Фактический вес</small><strong>{active.gross_weight.toFixed(3)} кг</strong></div><div><small>Объёмный вес</small><strong>{active.volume_weight.toFixed(3)} кг</strong></div><div><small>Расчётный вес</small><strong>{active.chargeable_weight.toFixed(3)} кг</strong></div></div>
       <div className="summary-strip currency-summary">{manifestCurrencyTotals(active).map(([currency, total]) => <div key={currency}><small>Стоимость {currency}</small><strong>{total.toFixed(2)} {currency}</strong></div>)}{!manifestCurrencyTotals(active).length && <div><small>Стоимость</small><strong>Нет данных</strong></div>}</div>
-      <div className="table-scroll"><table><thead><tr><th>Трек заказа</th><th>Трек коробки</th><th>Имя</th><th>Фамилия</th><th>Адрес</th><th>Состав</th><th>Описание товара</th><th>Вес</th><th>Стоимость</th><th>Email</th><th>Телефон</th></tr></thead><tbody>{active.orders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><code>{order.box_tracking_code}</code></td><td>{order.client_first_name || "—"}</td><td>{order.client_last_name || "—"}</td><td>{order.client_address || "—"}</td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{order.gross_weight.toFixed(3)} кг</td><td>{order.declared_value.toFixed(2)} {order.currency || "EUR"}</td><td>{order.client_email || "—"}</td><td>{order.client_phone || "—"}</td></tr>)}</tbody></table></div>
+      <div className="table-scroll"><table><thead><tr><th>Трек заказа</th><th>Трек коробки</th><th>Имя</th><th>Фамилия</th><th>Адрес</th><th>Состав</th><th>Описание товара</th><th>Фактический</th><th>Объёмный</th><th>Расчётный</th><th>Стоимость</th><th>Email</th><th>Телефон</th></tr></thead><tbody>{active.orders.map((order) => <tr key={order.guid}><td><strong>{order.tracking_number}</strong></td><td><code>{order.box_tracking_code}</code></td><td>{order.client_first_name || "—"}</td><td>{order.client_last_name || "—"}</td><td>{order.client_address || "—"}</td><td>{order.composition || "—"}</td><td>{order.description || "—"}</td><td>{formatWeight(order.gross_weight)}</td><td>{formatWeight(order.volume_weight)}</td><td><strong>{formatWeight(order.chargeable_weight)}</strong></td><td>{order.declared_value.toFixed(2)} {order.currency || "EUR"}</td><td>{order.client_email || "—"}</td><td>{order.client_phone || "—"}</td></tr>)}</tbody></table></div>
     </section>}
   </>;
 }
@@ -1236,6 +1252,7 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
         <label><span>Склад</span><input value={platform.warehouse} maxLength={120} onChange={(event) => setPlatform({ ...platform, warehouse: event.target.value })} /></label>
         <label><span>Страна</span><input value={platform.country} maxLength={120} onChange={(event) => setPlatform({ ...platform, country: event.target.value })} /></label>
         <label><span>Префикс клиента</span><input value={platform.prefix} maxLength={12} onChange={(event) => setPlatform({ ...platform, prefix: event.target.value.toUpperCase() })} /></label>
+        <label><span>Делитель объёмного веса</span><input type="number" min="1000" step="1" value={platform.volumetric_divisor} onChange={(event) => setPlatform({ ...platform, volumetric_divisor: Number(event.target.value) || 6000 })} /></label>
       </div>
       <div className="code-preview"><small>Формат клиентского номера</small><strong>{platform.prefix || "KG"}######</strong><span>Пример: {platform.prefix || "KG"}482731</span></div>
     </>}

@@ -195,6 +195,10 @@ export class WarehouseController {
       length: box.length,
       v_weight: this.number(box.volumeWeight) ?? 0,
       gross_weight: this.number(box.grossWeight) ?? 0,
+      chargeable_weight: Math.max(
+        this.number(box.grossWeight) ?? 0,
+        this.number(box.volumeWeight) ?? 0,
+      ),
       date_created: box.createdAt.toISOString(),
       orderCount: box._count.orders,
     }));
@@ -328,6 +332,18 @@ export class WarehouseController {
           (sum, box) => sum + (this.number(box.grossWeight) ?? 0),
           0,
         ),
+      volume_weight: batch.boxes.reduce(
+        (sum, box) => sum + (this.number(box.volumeWeight) ?? 0),
+        0,
+      ),
+      chargeable_weight: batch.boxes.reduce(
+        (sum, box) =>
+          sum + Math.max(
+            this.number(box.grossWeight) ?? 0,
+            this.number(box.volumeWeight) ?? 0,
+          ),
+        0,
+      ),
     }));
   }
 
@@ -386,6 +402,10 @@ export class WarehouseController {
       length: box.length,
       v_weight: this.number(box.volumeWeight) ?? 0,
       gross_weight: this.number(box.grossWeight) ?? 0,
+      chargeable_weight: Math.max(
+        this.number(box.grossWeight) ?? 0,
+        this.number(box.volumeWeight) ?? 0,
+      ),
       date_created: box.createdAt.toISOString(),
       warehouse_name: box.partial?.warehouseName ?? box.warehouse,
     }));

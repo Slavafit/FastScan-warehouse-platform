@@ -1,4 +1,5 @@
 4.9 (code 38)
+- Added API support for actual, volumetric, and chargeable weights while box labels continue to print the actual weight only.
 - Reworked batch box management into a searchable multi-select list: checked boxes belong to the current batch and boxes assigned elsewhere are locked.
 - Added a visible remove action for boxes in a batch, with confirmation; the box remains available after being detached.
 - Box labels now load the box's current batch name immediately before printing.

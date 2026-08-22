@@ -182,6 +182,7 @@
     <string name="search_client">Buscar por nombre</string>
     <string name="dimensions">📏 Dimensiones (L x W x H), cm</string>
     <string name="volume_weight">Peso volumétrico: %.2f kg</string>
+    <string name="volume_and_chargeable_weight">Volumétrico: %1$.2f kg · Facturable: %2$.2f kg</string>
     <string name="sizes">Dimensiones: %1$d × %2$d × %3$d cm</string>
     <string name="orders_count">Órdenes: %d un.</string>
     <string name="date_created">Creado: %s</string>

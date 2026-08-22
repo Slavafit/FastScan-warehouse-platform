@@ -24,6 +24,7 @@ import {
 } from './dto.js';
 import { Prisma, Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
+import { calculateWeightBreakdown } from './weight.util.js';
 
 @ApiTags('Staff')
 @ApiBearerAuth()
@@ -211,11 +212,18 @@ export class StaffController {
       include: { box: true, composition: true },
       orderBy: { createdAt: 'desc' },
     });
+    const divisor = await this.volumetricDivisor();
     return orders.map((order) => ({
       guid: order.id,
       tracking_number: order.trackingNumber,
       status_name: order.statusName,
-      gross_weight: this.number(order.grossWeight),
+      ...calculateWeightBreakdown(
+        this.number(order.grossWeight),
+        order.length,
+        order.width,
+        order.height,
+        divisor,
+      ),
       with_box: order.withBox !== 0,
       box_tracking_code: order.box?.trackingCode ?? null,
       composition_guid: order.compositionId,
@@ -334,6 +342,24 @@ export class StaffController {
       (sum, { order }) => sum + this.number(order.grossWeight),
       0,
     );
+    const divisor = settings?.volumetricDivisor ?? 6000;
+    const orderWeights = orders.map(({ order }) =>
+      calculateWeightBreakdown(
+        this.number(order.grossWeight),
+        order.length,
+        order.width,
+        order.height,
+        divisor,
+      ),
+    );
+    const volumeWeight = orderWeights.reduce(
+      (sum, weight) => sum + (weight.volume_weight ?? 0),
+      0,
+    );
+    const chargeableWeight = orderWeights.reduce(
+      (sum, weight) => sum + (weight.chargeable_weight ?? 0),
+      0,
+    );
     const manifest = await this.prisma.manifest.create({
       data: {
         manifestCode: `MF-${batch.partialCode}`,
@@ -346,8 +372,10 @@ export class StaffController {
         boxCount: batch.boxes.length,
         orderCount: orders.length,
         grossWeight,
+        volumeWeight,
+        chargeableWeight,
         items: {
-          create: orders.map(({ box, order }) => ({
+          create: orders.map(({ box, order }, index) => ({
             sourceOrderId: order.id,
             trackingNumber: order.trackingNumber,
             clientCode: order.clientCode ?? order.receiver?.clientCode,
@@ -366,6 +394,8 @@ export class StaffController {
             declaredValue: order.declaredValue,
             currency: order.currency,
             grossWeight: order.grossWeight,
+            volumeWeight: orderWeights[index].volume_weight,
+            chargeableWeight: orderWeights[index].chargeable_weight,
             boxTrackingCode: box.trackingCode,
           })),
         },
@@ -474,6 +504,8 @@ export class StaffController {
       box_count: manifest.boxCount,
       order_count: manifest.orderCount,
       gross_weight: this.number(manifest.grossWeight),
+      volume_weight: this.number(manifest.volumeWeight),
+      chargeable_weight: this.number(manifest.chargeableWeight),
       created_by: manifest.createdBy,
       created_at: manifest.createdAt.toISOString(),
       orders: manifest.items.map((item) => ({
@@ -491,6 +523,8 @@ export class StaffController {
         declared_value: this.number(item.declaredValue),
         currency: item.currency,
         gross_weight: this.number(item.grossWeight),
+        volume_weight: this.number(item.volumeWeight),
+        chargeable_weight: this.number(item.chargeableWeight),
         box_tracking_code: item.boxTrackingCode,
       })),
     };
@@ -499,6 +533,13 @@ export class StaffController {
   private optionalText(value?: string) {
     const normalized = value?.trim();
     return normalized || null;
+  }
+
+  private async volumetricDivisor() {
+    const config = await this.prisma.clientCodeConfig?.findUnique({
+      where: { id: 1 },
+    });
+    return config?.volumetricDivisor ?? 6000;
   }
 
   private number(value: Prisma.Decimal | null) {

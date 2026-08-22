@@ -237,7 +237,7 @@ class BoxDetailFragment : BaseFragment() {
     private fun setupSizeListeners() {
         val watcher = object : TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) {
-                _binding?.tvVWeight?.text = getString(R.string.volume_weight, calculateVWeight())
+                updateWeightSummary(calculateVWeight())
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -261,6 +261,17 @@ class BoxDetailFragment : BaseFragment() {
             ?: context?.getBoxTareWeight()
             ?: DEFAULT_BOX_TARE_WEIGHT
         activeBinding.etGrossWeight.setText(formatWeight(ordersGrossWeight + boxTareWeight))
+        updateWeightSummary(calculateVWeight())
+    }
+
+    private fun updateWeightSummary(volumeWeight: Double) {
+        val activeBinding = _binding ?: return
+        val actualWeight = parseWeight(activeBinding.etGrossWeight.text.toString()) ?: 0.0
+        activeBinding.tvVWeight.text = getString(
+            R.string.volume_and_chargeable_weight,
+            volumeWeight,
+            maxOf(actualWeight, volumeWeight)
+        )
     }
 
     private fun removeOrderFromBox(orderGuid: String) {
@@ -431,7 +442,7 @@ class BoxDetailFragment : BaseFragment() {
                         _binding?.etBoxTareWeight?.setText(formatWeight(requireContext().getBoxTareWeight()))
                     }
                     updateGrossWeightFromOrdersAndBox()
-                    _binding?.tvVWeight?.text = getString(R.string.volume_weight, box.vWeight ?: calculateVWeight())
+                    updateWeightSummary(box.vWeight ?: calculateVWeight())
                 } else {
                     Toast.makeText(context, R.string.error_load_detal, Toast.LENGTH_SHORT).show()
                 }

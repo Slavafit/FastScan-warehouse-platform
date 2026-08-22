@@ -92,6 +92,7 @@ export class PlatformSettingsDto {
   @IsString() @Length(1, 12) prefix!: string;
   @IsString() @IsNotEmpty() @MaxLength(120) warehouse!: string;
   @IsString() @IsNotEmpty() @MaxLength(120) country!: string;
+  @IsInt() @Min(1000) volumetric_divisor = 6000;
 }
 export class ProfileDto {
   @IsString() @IsNotEmpty() first_name!: string;

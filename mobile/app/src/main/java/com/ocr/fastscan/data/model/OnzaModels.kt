@@ -29,6 +29,7 @@ data class OrderDetails(
     @SerializedName("client_code") val clientCode: String?,
     @SerializedName("with_box") val withBox: String?, // Returns "1" or null
     @SerializedName("gross_weight") val grossWeight: Double?,
+    @SerializedName("chargeable_weight") val chargeableWeight: Double?,
     @SerializedName("user_guid") val userGuid: String?,
     @SerializedName("length") val length: Int?,
     @SerializedName("width") val width: Int?,
@@ -87,6 +88,7 @@ data class BoxItem(
     @SerializedName("length") val length: Int?,
     @SerializedName(value = "v_weight", alternate = ["volume_weight"]) val vWeight: Double?,
     @SerializedName("gross_weight") val grossWeight: Double?,
+    @SerializedName("chargeable_weight") val chargeableWeight: Double?,
     @SerializedName(value = "date_created", alternate = ["created_at"]) val dateCreated: String?,
     @SerializedName(value = "orderCount", alternate = ["orders_count"]) val orderCount: Int?
 )
@@ -189,6 +191,7 @@ data class BoxInPartial(
     val length: Int,
     @SerializedName(value = "v_weight", alternate = ["volume_weight"]) val v_weight: Double,
     val gross_weight: Double,
+    val chargeable_weight: Double = maxOf(gross_weight, v_weight),
     @SerializedName(value = "date_created", alternate = ["created_at"]) val date_created: String,
     val warehouse_name: String,
     @SerializedName(value = "partial_name", alternate = ["batch_name"])

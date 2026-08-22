@@ -114,6 +114,7 @@ export class AdminController {
       prefix,
       warehouse: config?.warehouseName ?? 'BMG',
       country: config?.country ?? 'España',
+      volumetric_divisor: config?.volumetricDivisor ?? 6000,
       code_format: `${prefix}######`,
     };
   }
@@ -234,6 +235,7 @@ export class AdminController {
     const prefix = dto.prefix.trim().toUpperCase();
     const warehouse = dto.warehouse.trim();
     const country = dto.country.trim();
+    const volumetricDivisor = dto.volumetric_divisor;
     if (!/^[A-Z0-9-]{1,12}$/.test(prefix)) {
       throw new BadRequestException(
         'Prefix must contain only A-Z, 0-9 or hyphen',
@@ -241,18 +243,25 @@ export class AdminController {
     }
     await this.prisma.clientCodeConfig.upsert({
       where: { id: 1 },
-      update: { codePrefix: prefix, warehouseName: warehouse, country },
+      update: {
+        codePrefix: prefix,
+        warehouseName: warehouse,
+        country,
+        volumetricDivisor,
+      },
       create: {
         id: 1,
         codePrefix: prefix,
         warehouseName: warehouse,
         country,
+        volumetricDivisor,
       },
     });
     return {
       prefix,
       warehouse,
       country,
+      volumetric_divisor: volumetricDivisor,
       code_format: `${prefix}######`,
     };
   }

@@ -46,6 +46,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Changed / Изменено
 
+- Кнопка клиентского входа через Telegram выровнена по ширине формы и визуально приведена к остальным основным действиям Web.
 - Клиентская форма Web теперь открывает Telegram-бота сразу в режиме FastScan и принимает одноразовый токен из ссылки; складской вход по логину и паролю не изменён.
 - FastScan API публикует адрес `@LmsMalagaBot` для Web даже до завершения переноса обработчиков, поэтому действие Telegram-входа больше не скрывается из-за пустого username.
 - Docker Compose читает Telegram token для API непосредственно из локального `bot/.env`; secret не дублируется и не попадает в Git.

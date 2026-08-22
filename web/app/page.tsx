@@ -297,15 +297,16 @@ export default function FastScanWeb() {
     bag_package: 0,
   });
   const [notice, setNotice] = useState("");
-  const [resetToken, setResetToken] = useState(() =>
-    typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("reset_token") || "",
-  );
+  const [resetToken, setResetToken] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resetNotice, setResetNotice] = useState("");
   const [telegramInfo, setTelegramInfo] = useState<{ enabled: boolean; bot_username: string | null; bot_url: string | null }>({ enabled: false, bot_username: null, bot_url: null });
 
   useEffect(() => {
+    queueMicrotask(() =>
+      setResetToken(new URLSearchParams(window.location.search).get("reset_token") || ""),
+    );
     apiRequest<typeof telegramInfo>("/api/integrations/telegram/info")
       .then(setTelegramInfo)
       .catch(() => undefined);

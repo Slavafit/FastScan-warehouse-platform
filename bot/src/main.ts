@@ -1,6 +1,6 @@
 // apps/bot/src/main.ts
 import 'dotenv/config';
-import { Telegraf }  from 'telegraf';
+import { Markup, Telegraf }  from 'telegraf';
 import { message }   from 'telegraf/filters';
 import { authViaTelegram, registerClient, api, getApiErrorMessage } from './api';
 import { getSession, setSession, clearSession } from './session';
@@ -139,6 +139,12 @@ function isSkip(text: string): boolean {
   return ['skip', 'пропустить', 'нет', '-'].includes(text.trim().toLowerCase());
 }
 
+function registrationSkipButton(field: 'email' | 'phone' | 'address' | 'region') {
+  return Markup.inlineKeyboard([
+    Markup.button.callback('Пропустить', `registration:skip:${field}`),
+  ]);
+}
+
 async function startRegistration(ctx: any, telegramId: string, name: string, username: string | null) {
   setSession(ctx.from.id, {
     step: 'registration:await_name',
@@ -172,10 +178,10 @@ async function handleRegistrationLastName(ctx: any, text: string) {
     return;
   }
   setSession(ctx.from.id, {
-    step: 'registration:await_email',
+    step: 'registration:await_phone',
     registration: { ...session.registration, lastName: text.trim() },
   });
-  await ctx.reply('Введите email или напишите "пропустить".');
+  await ctx.reply('Введите телефон.', registrationSkipButton('phone'));
 }
 
 async function handleRegistrationEmail(ctx: any, text: string) {
@@ -183,7 +189,7 @@ async function handleRegistrationEmail(ctx: any, text: string) {
   if (!session.registration) return;
 
   if (!isSkip(text) && !EMAIL_REGEX.test(text)) {
-    await ctx.reply('Похоже, email введён некорректно. Введите email ещё раз или напишите "пропустить".');
+    await ctx.reply('Похоже, email введён некорректно. Введите email ещё раз.', registrationSkipButton('email'));
     return;
   }
 
@@ -195,7 +201,7 @@ async function handleRegistrationEmail(ctx: any, text: string) {
     },
   });
 
-  await ctx.reply('Введите телефон или напишите "пропустить".');
+  await ctx.reply('Введите телефон.', registrationSkipButton('phone'));
 }
 
 async function handleRegistrationPhone(ctx: any, text: string) {
@@ -212,8 +218,9 @@ async function handleRegistrationPhone(ctx: any, text: string) {
   });
 
   await ctx.reply(
-    `Введите страну доставки английскими буквами или напишите "пропустить", чтобы добавить адрес позже.\n` +
+    `Введите страну доставки английскими буквами. Адрес можно добавить позже.\n` +
     ENGLISH_ADDRESS_HINT,
+    registrationSkipButton('address'),
   );
 }
 
@@ -227,7 +234,7 @@ async function handleRegistrationAddressCountry(ctx: any, text: string) {
     return;
   }
   if (!isEnglishAddress(text)) {
-    await ctx.reply(`❌ Страна указана некорректно.\n${ENGLISH_ADDRESS_HINT}`);
+    await ctx.reply(`❌ Страна указана некорректно.\n${ENGLISH_ADDRESS_HINT}`, registrationSkipButton('address'));
     return;
   }
 
@@ -306,7 +313,7 @@ async function handleRegistrationAddressStreet(ctx: any, text: string) {
     },
   });
 
-  await ctx.reply('Введите регион/область или напишите "пропустить".');
+  await ctx.reply('Введите регион/область.', registrationSkipButton('region'));
 }
 
 async function handleRegistrationAddressRegion(ctx: any, text: string) {
@@ -314,7 +321,7 @@ async function handleRegistrationAddressRegion(ctx: any, text: string) {
   const registration = session.registration;
   if (!registration) return;
   if (!isSkip(text) && !isEnglishAddress(text)) {
-    await ctx.reply(`❌ Регион указан некорректно.\n${ENGLISH_ADDRESS_HINT}`);
+    await ctx.reply(`❌ Регион указан некорректно.\n${ENGLISH_ADDRESS_HINT}`, registrationSkipButton('region'));
     return;
   }
 
@@ -570,12 +577,34 @@ bot.on('callback_query', async ctx => {
   const telegramId = ctx.from.id;
   const session    = getSession(telegramId);
 
-  await ctx.answerCbQuery();
-
   if (data === 'session:restart') {
+    await ctx.answerCbQuery();
     await authorizeAndShowMenu(ctx);
     return;
   }
+
+  if (data.startsWith('registration:skip:')) {
+    const field = data.slice('registration:skip:'.length);
+    const expectedStep = {
+      email: 'registration:await_email',
+      phone: 'registration:await_phone',
+      address: 'registration:await_address_country',
+      region: 'registration:await_address_region',
+    }[field];
+    if (!expectedStep || session.step !== expectedStep) {
+      await ctx.answerCbQuery('Этот шаг уже завершён');
+      return;
+    }
+    await ctx.answerCbQuery();
+    await ctx.editMessageReplyMarkup(undefined).catch(() => null);
+    if (field === 'email') await handleRegistrationEmail(ctx, 'skip');
+    if (field === 'phone') await handleRegistrationPhone(ctx, 'skip');
+    if (field === 'address') await handleRegistrationAddressCountry(ctx, 'skip');
+    if (field === 'region') await handleRegistrationAddressRegion(ctx, 'skip');
+    return;
+  }
+
+  await ctx.answerCbQuery();
 
   // Отмена
   if (data === 'cancel') {

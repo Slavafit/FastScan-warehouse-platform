@@ -607,7 +607,7 @@ export class MobileController {
     volumeWeight: Prisma.Decimal;
     grossWeight: Prisma.Decimal | null;
     createdAt: Date;
-    partial: { warehouseName: string } | null;
+    partial: { warehouseName: string; partialName: string } | null;
     _count?: { orders: number };
   }) {
     return {
@@ -615,6 +615,8 @@ export class MobileController {
       codeid: box.codeId,
       batch_guid: box.partialId,
       partial: box.partialId ?? '',
+      batch_name: box.partial?.partialName ?? null,
+      partial_name: box.partial?.partialName ?? null,
       tracking_code: box.trackingCode,
       warehouse: box.warehouse,
       warehouse_name: box.partial?.warehouseName ?? box.warehouse,

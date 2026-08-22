@@ -183,7 +183,15 @@
     <string name="error_printing">Ошибка печати: %1$s</string>
     <string name="no_GUID">У заказа нет GUID</string>
     <string name="part_finished">Партия завершена</string>
-    <string name="delete_box">Удаление коробки временно недоступно</string>
+    <string name="delete_box">Удалить коробку</string>
+    <string name="remove_box_from_party">Удалить коробку из партии</string>
+    <string name="remove_box_from_party_title">Удалить коробку?</string>
+    <string name="remove_box_from_party_message">Коробка %1$s будет удалена из партии, но останется в системе.</string>
+    <string name="remove">Удалить</string>
+    <string name="box_removed_from_party">Коробка удалена из партии</string>
+    <string name="error_removing_box_from_party">Не удалось удалить коробку из партии</string>
+    <string name="error_refreshing_batch_name">Не удалось получить актуальное название партии. Этикетка не напечатана.</string>
+    <string name="box_not_in_party">Коробка не добавлена в партию. Этикетка не напечатана.</string>
     <string name="error_load_boxes_short">Ошибка загрузки списка коробок</string>
     <string name="error_adding_box">Ошибка добавления коробки в партию</string>
     <string name="dimensions_cleared">Размеры удалены</string>

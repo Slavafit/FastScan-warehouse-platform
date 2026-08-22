@@ -150,7 +150,15 @@
     <string name="error_printing">Error printing: %1$s</string>
     <string name="no_GUID">The order does not have GUID</string>
     <string name="part_finished">Part finished</string>
-    <string name="delete_box">Box removal is temporarily unavailable.</string>
+    <string name="delete_box">Delete box</string>
+    <string name="remove_box_from_party">Remove box from batch</string>
+    <string name="remove_box_from_party_title">Remove box?</string>
+    <string name="remove_box_from_party_message">Box %1$s will be removed from the batch but will remain in the system.</string>
+    <string name="remove">Remove</string>
+    <string name="box_removed_from_party">Box removed from batch</string>
+    <string name="error_removing_box_from_party">Could not remove the box from the batch</string>
+    <string name="error_refreshing_batch_name">Could not load the current batch name. The label was not printed.</string>
+    <string name="box_not_in_party">The box is not assigned to a batch. The label was not printed.</string>
     <string name="error_load_boxes_short">Error loading box list</string>
     <string name="error_adding_box">Error adding box to batch</string>
     <string name="dimensions_cleared">Dimensions cleared</string>

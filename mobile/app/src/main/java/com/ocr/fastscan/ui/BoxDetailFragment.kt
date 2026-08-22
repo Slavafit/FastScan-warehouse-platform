@@ -124,7 +124,7 @@ class BoxDetailFragment : BaseFragment() {
         }
 
         binding.btnPrint.setOnClickListener {
-            printLabel()
+            refreshBatchNameAndPrint()
         }
 
         binding.btnRefresh.setOnClickListener {
@@ -319,6 +319,60 @@ class BoxDetailFragment : BaseFragment() {
         }
     }
 
+    private fun refreshBatchNameAndPrint() {
+        launchOnViewLifecycle {
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
+            activeBinding.btnPrint.isEnabled = false
+            try {
+                val boxResponse = apiService.getBoxes(tCode = boxTracking)
+                if (!boxResponse.isSuccessful) {
+                    showToast(R.string.error_refreshing_batch_name)
+                    soundManager.playError()
+                    return@launchOnViewLifecycle
+                }
+                val box = boxResponse.body()?.firstOrNull {
+                    it.guid == boxGuid || it.trackingCode == boxTracking
+                }
+                if (box == null) {
+                    showToast(R.string.error_load_detal)
+                    soundManager.playError()
+                    return@launchOnViewLifecycle
+                }
+
+                var currentName = box.batchName?.trim().orEmpty()
+                if (currentName.isBlank() && !box.batchGuid.isNullOrBlank()) {
+                    val batchesResponse = apiService.getPartials()
+                    if (!batchesResponse.isSuccessful) {
+                        showToast(R.string.error_refreshing_batch_name)
+                        soundManager.playError()
+                        return@launchOnViewLifecycle
+                    }
+                    currentName = batchesResponse.body()
+                        ?.firstOrNull { it.guid == box.batchGuid }
+                        ?.partial_name
+                        ?.trim()
+                        .orEmpty()
+                }
+
+                if (currentName.isBlank()) {
+                    showToast(R.string.box_not_in_party)
+                    soundManager.playError()
+                    return@launchOnViewLifecycle
+                }
+                partialName = currentName
+                if (_binding != null && isAdded) printLabel()
+            } catch (e: Exception) {
+                Log.e("BoxDetail", "Refresh batch name before print error", e)
+                if (isAdded) showToast(R.string.error_refreshing_batch_name)
+                soundManager.playError()
+            } finally {
+                _binding?.progressBar?.visibility = View.GONE
+                _binding?.btnPrint?.isEnabled = true
+            }
+        }
+    }
+
     private fun addOrderByTrack(tcode: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
@@ -368,6 +422,7 @@ class BoxDetailFragment : BaseFragment() {
 
                 if (response.isSuccessful && response.body()?.isNotEmpty() == true) {
                     val box = response.body()!![0]
+                    box.batchName?.trim()?.takeIf { it.isNotBlank() }?.let { partialName = it }
                     _binding?.tvBoxNumber?.text = getString(R.string.box, boxTracking)
                     _binding?.etLength?.setText(box.length?.toString() ?: "70")
                     _binding?.etWidth?.setText(box.width?.toString() ?: "45")
@@ -391,18 +446,21 @@ class BoxDetailFragment : BaseFragment() {
     private fun loadPartialName() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                // Load only open batches (typePartial = 0)
-                val response = apiService.getPartials(0)
+                val boxResponse = apiService.getBoxes(tCode = boxTracking)
                 if (_binding == null || !isAdded) return@launch
-
-                if (response.isSuccessful) {
-                    val parties = response.body() ?: emptyList()
-                    if (parties.isNotEmpty()) {
-                        // Sort by date descending to pick the newest one
-                        val latestParty = parties.sortedByDescending { it.date_created }.first()
-                        partialName = latestParty.partial_name.trim()
-                        Log.d("BoxDetail", "Загружено актуальное имя партии: $partialName")
-                    }
+                val box = boxResponse.body()?.firstOrNull {
+                    it.guid == boxGuid || it.trackingCode == boxTracking
+                } ?: return@launch
+                box.batchName?.trim()?.takeIf { it.isNotBlank() }?.let {
+                    partialName = it
+                    return@launch
+                }
+                val batchGuid = box.batchGuid?.takeIf { it.isNotBlank() } ?: return@launch
+                val response = apiService.getPartials()
+                if (_binding == null || !isAdded || !response.isSuccessful) return@launch
+                response.body()?.firstOrNull { it.guid == batchGuid }?.let {
+                    partialName = it.partial_name.trim()
+                    Log.d("BoxDetail", "Загружено актуальное имя партии: $partialName")
                 }
             } catch (e: Exception) {
                 Log.e("BoxDetail", "Load partial error", e)

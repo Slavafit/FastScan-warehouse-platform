@@ -1,4 +1,6 @@
 4.9 (code 38)
+- Added a visible remove action for boxes in a batch, with confirmation; the box remains available after being detached.
+- Box labels now load the box's current batch name immediately before printing.
 - Fixed box lookup by ordinary tracking code and reduced the launcher mark on a white background.
 - Fixed loading batches after creation by removing a conflicting `guid` JSON alias.
 - Added the new FastScan parcel-and-scanner brand icon; Debug uses a cyan accent.

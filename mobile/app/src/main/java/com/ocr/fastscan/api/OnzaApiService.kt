@@ -88,5 +88,7 @@ interface OnzaApiService {
     suspend fun addBoxToPartial(@Body request: AddBoxRequest): Response<AddBoxResponse>
 
     @HTTP(method = "DELETE", path = "/api/mobile/batches/boxes", hasBody = true)
-    suspend fun removeBoxFromPartial(@Body request: PartialCreateRequest): Response<Any>
+    suspend fun removeBoxFromPartial(
+        @Body request: RemoveBoxFromPartialRequest
+    ): Response<RemoveBoxFromPartialResponse>
 }

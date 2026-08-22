@@ -38,6 +38,8 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Changed / Изменено
 
+- В карточках коробок партии добавлена явная кнопка удаления с подтверждением; коробка отвязывается от партии, но остаётся в системе.
+- Перед печатью этикетки Android запрашивает актуальную партию коробки; API возвращает текущее название партии вместе с данными коробки.
 - All API failures now use a safe, consistent response with stable error codes, validation details, request IDs, and clear mappings for authentication, authorization, conflicts, invalid identifiers, and database availability; failed write operations are also recorded in the audit log.
 - Clients can request original packaging preservation per order and maintain persistent shoe-box and bag-packaging preferences in their profile; these flags remain visible to Android warehouse staff.
 - Box lookup now distinguishes UUIDs from ordinary tracking codes, and the Android launcher icon uses a smaller safe-area mark on a white background.

@@ -10,7 +10,8 @@ import com.ocr.fastscan.databinding.ItemBoxInPartialBinding
 import com.ocr.fastscan.R
 
 class BoxesInPartialAdapter(
-    private val onLongClick: (BoxInPartial) -> Unit
+    private val onOpen: (BoxInPartial) -> Unit,
+    private val onRemove: (BoxInPartial) -> Unit
 ) : ListAdapter<BoxInPartial, BoxesInPartialAdapter.ViewHolder>(BoxInPartialDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,8 +35,10 @@ class BoxesInPartialAdapter(
             binding.tvGrossWeight.text = getString(R.string.weight_format, box.gross_weight)
             binding.tvVWeight.text = getString(R.string.volume_weight, box.v_weight)
 
+            binding.root.setOnClickListener { onOpen(box) }
+            binding.btnRemoveBox.setOnClickListener { onRemove(box) }
             binding.root.setOnLongClickListener {
-                onLongClick(box)
+                onRemove(box)
                 true
             }
         }

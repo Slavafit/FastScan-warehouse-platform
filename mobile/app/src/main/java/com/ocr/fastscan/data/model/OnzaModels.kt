@@ -80,6 +80,8 @@ data class BoxItem(
     @SerializedName("tracking_code") val trackingCode: String?,
     @SerializedName("warehouse") val warehouse: String?,
     @SerializedName("warehouse_guid") val warehouseGuid: String?,
+    @SerializedName(value = "batch_guid", alternate = ["partial"]) val batchGuid: String?,
+    @SerializedName(value = "batch_name", alternate = ["partial_name"]) val batchName: String?,
     @SerializedName("width") val width: Int?,
     @SerializedName("height") val height: Int?,
     @SerializedName("length") val length: Int?,
@@ -218,6 +220,13 @@ data class AddBoxResponse(
     val success: Boolean,
     val message: String,
     val result: List<UpdatedCodeResult>?
+)
+
+data class RemoveBoxFromPartialRequest(val guid: String)
+
+data class RemoveBoxFromPartialResponse(
+    val success: Boolean,
+    val message: String
 )
 
 data class UpdatedCodeResult(

@@ -156,7 +156,15 @@
     <string name="error_printing">Impresión de error: %1$s</string>
     <string name="no_GUID">El pedido no tiene GUID</string>
     <string name="part_finished">La parte terminada</string>
-    <string name="delete_box">Eliminar la caja no está disponible temporalmente.</string>
+    <string name="delete_box">Eliminar caja</string>
+    <string name="remove_box_from_party">Quitar caja del lote</string>
+    <string name="remove_box_from_party_title">¿Quitar la caja?</string>
+    <string name="remove_box_from_party_message">La caja %1$s se quitará del lote, pero permanecerá en el sistema.</string>
+    <string name="remove">Quitar</string>
+    <string name="box_removed_from_party">Caja eliminada del lote</string>
+    <string name="error_removing_box_from_party">No se pudo quitar la caja del lote</string>
+    <string name="error_refreshing_batch_name">No se pudo obtener el nombre actual del lote. La etiqueta no se imprimió.</string>
+    <string name="box_not_in_party">La caja no está asignada a un lote. La etiqueta no se imprimió.</string>
     <string name="error_load_boxes_short">Error al cargar la lista de cajas</string>
     <string name="error_adding_box">Error al agregar la caja al lote</string>
     <string name="dimensions_cleared">Dimensiones eliminadas</string>

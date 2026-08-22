@@ -35,19 +35,22 @@ class PartyDetailFragment : BaseFragment() {
     private val displayPartyNumber: String
         get() = PartyNumberFormatter.display(partialName).ifBlank { partialCode }
 
-    private val boxesAdapter = BoxesInPartialAdapter { box ->
-        val detailFragment = BoxDetailFragment.newInstance(
-            boxGuid = box.guid,
-            boxCodeid = box.codeid,
-            boxTracking = box.tracking_code,
-            boxWeight = box.gross_weight.toString(),
-            partialName = partialName
-        )
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, detailFragment)
-            .addToBackStack(null)
-            .commit()
-    }
+    private val boxesAdapter = BoxesInPartialAdapter(
+        onOpen = { box ->
+            val detailFragment = BoxDetailFragment.newInstance(
+                boxGuid = box.guid,
+                boxCodeid = box.codeid,
+                boxTracking = box.tracking_code,
+                boxWeight = box.gross_weight.toString(),
+                partialName = partialName
+            )
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, detailFragment)
+                .addToBackStack(null)
+                .commit()
+        },
+        onRemove = { box -> showRemoveBoxDialog(box) }
+    )
 
     companion object {
         fun newInstance(guid: String, codeid: String, code: String, name: String): PartyDetailFragment {
@@ -262,6 +265,44 @@ class PartyDetailFragment : BaseFragment() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                soundManager.playError()
+            } finally {
+                _binding?.progressBar?.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun showRemoveBoxDialog(box: BoxInPartial) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.remove_box_from_party_title)
+            .setMessage(getString(R.string.remove_box_from_party_message, box.tracking_code))
+            .setPositiveButton(R.string.remove) { _, _ -> removeBoxFromParty(box) }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun removeBoxFromParty(box: BoxInPartial) {
+        launchOnViewLifecycle {
+            val activeBinding = _binding ?: return@launchOnViewLifecycle
+            activeBinding.progressBar.visibility = View.VISIBLE
+            try {
+                val response = apiService.removeBoxFromPartial(
+                    RemoveBoxFromPartialRequest(guid = box.guid)
+                )
+                if (_binding == null || !isAdded) return@launchOnViewLifecycle
+                if (response.isSuccessful && response.body()?.success == true) {
+                    showToast(R.string.box_removed_from_party)
+                    soundManager.playSuccess()
+                    loadBoxDetails()
+                } else {
+                    showToast(R.string.error_removing_box_from_party)
+                    soundManager.playError()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.e("PartyDetail", "Remove box from batch error", e)
+                if (isAdded) showToast(R.string.net_error_short)
                 soundManager.playError()
             } finally {
                 _binding?.progressBar?.visibility = View.GONE

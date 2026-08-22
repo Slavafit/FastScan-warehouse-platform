@@ -31,6 +31,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER:-fastscan}:${POSTGRES_PASSWORD:-fastscan}@postgres:5432/${POSTGRES_DB:-fastscan}
       JWT_SECRET: ${JWT_SECRET:-development-only-secret-change-before-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-only-refresh-secret-change-before-production}
+      BOOTSTRAP_ADMIN_LOGIN: ${BOOTSTRAP_ADMIN_LOGIN:-admin}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-LmsMalagaBot}

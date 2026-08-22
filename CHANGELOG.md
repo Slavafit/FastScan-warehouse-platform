@@ -40,7 +40,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 - Composition, description, declared value, and currency are documented as Web/client-managed manifest data; Android receiving stays focused on scan, client, dimensions, box flag, and gross weight.
 - Android settings now has explicit Back and Save buttons; Save returns to the app after changing required emulator settings.
 - Fixed the settings-to-main return flow so Android recreates `MainActivity` and shows fragments after required settings are saved.
-- API startup now seeds fixed test accounts for `admin`, `worker`, and `client@test.com` without admin credentials in env files.
+- При пустой базе API однократно создаёт первого администратора из `BOOTSTRAP_ADMIN_LOGIN` и `BOOTSTRAP_ADMIN_PASSWORD`; перезапуски больше не сбрасывают пароль и не восстанавливают тестовых сотрудника или клиента.
 - Публичный `GET /health/live` для проверки работающего процесса API независимо от состояния внешних сервисов.
 - Публичный `GET /health/ready` для проверки готовности API и соединения с PostgreSQL; при недоступной базе возвращается HTTP `503`.
 

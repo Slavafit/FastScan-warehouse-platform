@@ -1,4 +1,4 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcryptjs';
@@ -9,6 +9,7 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  private readonly logger = new Logger(PrismaService.name);
   private readonly config: ConfigService;
 
   constructor(config: ConfigService) {
@@ -32,82 +33,43 @@ export class PrismaService
         country: 'España',
       },
     });
-    await this.seedTestUsers();
+    await this.ensureBootstrapAdmin();
   }
 
-  private async seedTestUsers() {
-    for (const user of TEST_USERS.filter((item) => item.role !== Role.CLIENT)) {
-      await this.user.upsert({
-        where: { login: user.login },
-        update: {
-          passwordHash: await hash(user.password, 12),
-          role: user.role,
-          enabled: true,
-        },
-        create: {
-          login: user.login,
-          passwordHash: await hash(user.password, 12),
-          role: user.role,
-          enabled: true,
-        },
-      });
+  private async ensureBootstrapAdmin() {
+    const existingAdmin = await this.user.findFirst({
+      where: { role: Role.ADMIN },
+      select: { id: true },
+    });
+    if (existingAdmin) return;
+
+    const login = this.config
+      .get<string>('BOOTSTRAP_ADMIN_LOGIN', '')
+      .trim()
+      .toLowerCase();
+    const password = this.config.get<string>('BOOTSTRAP_ADMIN_PASSWORD', '');
+    if (!login || password.length < 8) {
+      throw new Error(
+        'No administrator exists. Set BOOTSTRAP_ADMIN_LOGIN and BOOTSTRAP_ADMIN_PASSWORD (minimum 8 characters).',
+      );
     }
-
-    const client = TEST_USERS.find((item) => item.role === Role.CLIENT)!;
-    const receiver = await this.receiver.upsert({
-      where: { clientCode: TEST_CLIENT_CODE },
-      update: {
-        firstName: 'Test',
-        lastName: 'Client',
-      },
-      create: {
-        clientCode: TEST_CLIENT_CODE,
-        firstName: 'Test',
-        lastName: 'Client',
-      },
-    });
-    const clientUser = await this.user.upsert({
-      where: { login: client.login },
-      update: {
-        passwordHash: await hash(client.password, 12),
-        role: Role.CLIENT,
-        enabled: true,
-      },
-      create: {
-        login: client.login,
-        passwordHash: await hash(client.password, 12),
-        role: Role.CLIENT,
+    if (await this.user.findUnique({ where: { login } })) {
+      throw new Error(
+        `Cannot create bootstrap administrator: login "${login}" already exists with another role.`,
+      );
+    }
+    await this.user.create({
+      data: {
+        login,
+        passwordHash: await hash(password, 12),
+        role: Role.ADMIN,
         enabled: true,
       },
     });
-
-    await this.clientAccount.upsert({
-      where: { email: client.login },
-      update: {
-        userId: clientUser.id,
-        receiverId: receiver.id,
-        phone: '+34 600 000 000',
-        address: 'Test warehouse client',
-      },
-      create: {
-        email: client.login,
-        userId: clientUser.id,
-        receiverId: receiver.id,
-        phone: '+34 600 000 000',
-        address: 'Test warehouse client',
-      },
-    });
+    this.logger.log(`Initial administrator "${login}" created`);
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
   }
 }
-
-const TEST_PASSWORD = 'change-me';
-const TEST_CLIENT_CODE = 'KGTEST';
-const TEST_USERS = [
-  { login: 'admin', password: TEST_PASSWORD, role: Role.ADMIN },
-  { login: 'worker', password: TEST_PASSWORD, role: Role.WORKER },
-  { login: 'client@test.com', password: TEST_PASSWORD, role: Role.CLIENT },
-];

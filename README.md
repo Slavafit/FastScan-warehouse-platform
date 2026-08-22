@@ -38,6 +38,8 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
+Перед первым запуском задайте в `.env` значения `BOOTSTRAP_ADMIN_LOGIN` и `BOOTSTRAP_ADMIN_PASSWORD` (не короче 8 символов). Учётная запись создаётся только при отсутствии администратора; последующие перезапуски не изменяют её логин или пароль. Сотрудники создаются администратором в Web, а клиенты регистрируются через Telegram.
+
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui`
 - OpenAPI JSON: `http://localhost:8080/openapi.json`
@@ -54,7 +56,7 @@ npm install
 npm run dev
 ```
 
-Откройте `http://localhost:3000`. Перед рабочим развёртыванием обязательно замените демонстрационные пароли и JWT secrets.
+Откройте `http://localhost:3000`. Перед рабочим развёртыванием обязательно замените начальный пароль администратора, пароль PostgreSQL и JWT secrets.
 
 ## Документация / Documentation
 

@@ -20,6 +20,9 @@ services:
     build:
       context: ./api
     restart: unless-stopped
+    env_file:
+      - path: ./bot/.env
+        required: false
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,7 +33,6 @@ services:
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-only-refresh-secret-change-before-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
       WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-LmsMalagaBot}
       TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
     ports:

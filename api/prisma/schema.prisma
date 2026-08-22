@@ -71,7 +71,7 @@ model ClientAccount {
   id                 String               @id @default(uuid()) @db.Uuid
   userId             String               @unique @map("user_id") @db.Uuid
   receiverId         String               @unique @map("receiver_id") @db.Uuid
-  email              String               @unique @db.VarChar(254)
+  email              String?              @unique @db.VarChar(254)
   phone              String?              @db.VarChar(40)
   address            String?              @db.VarChar(500)
   emailNotifications Boolean              @default(true) @map("email_notifications")
@@ -86,6 +86,7 @@ model ClientAccount {
   receiver           Receiver             @relation(fields: [receiverId], references: [id], onDelete: Cascade)
   notifications      ClientNotification[]
   telegramLinkToken  TelegramLinkToken?
+  telegramLoginTokens TelegramLoginToken[]
 
   @@map("client_account")
 }
@@ -100,6 +101,19 @@ model TelegramLinkToken {
 
   @@index([expiresAt])
   @@map("telegram_link_token")
+}
+
+model TelegramLoginToken {
+  id              String        @id @default(uuid()) @db.Uuid
+  clientAccountId String        @map("client_account_id") @db.Uuid
+  tokenHash       String        @unique @map("token_hash") @db.VarChar(64)
+  expiresAt       DateTime      @map("expires_at") @db.Timestamptz
+  usedAt          DateTime?     @map("used_at") @db.Timestamptz
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  account         ClientAccount @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
+
+  @@index([clientAccountId, expiresAt])
+  @@map("telegram_login_token")
 }
 
 model PasswordResetToken {

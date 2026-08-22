@@ -16,7 +16,7 @@ type View =
 
 type ClientProfile = {
   client_code: string;
-  email: string;
+  email: string | null;
   first_name: string;
   last_name: string;
   phone: string | null;
@@ -288,7 +288,7 @@ export default function FastScanWeb() {
     last_name: "",
     phone: "",
     address: "",
-    email_notifications: true,
+    email_notifications: false,
     push_notifications: true,
     notification_channel: "INTERNAL",
     telegram_linked: false,
@@ -317,6 +317,32 @@ export default function FastScanWeb() {
   }, []);
 
   useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("telegram_token");
+    if (!token) return;
+    setBusy(true);
+    setError("");
+    apiRequest<{ accessToken: string; refreshToken: string; role: Role }>(
+      "/api/client/auth/telegram",
+      { method: "POST", body: JSON.stringify({ token }) },
+    )
+      .then((result) => {
+        const next: Session = {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+          role: result.role,
+        };
+        sessionStorage.setItem("fastscan-session", JSON.stringify(next));
+        setSession(next);
+        setView("overview");
+        window.history.replaceState({}, "", window.location.pathname);
+      })
+      .catch((exception) =>
+        setError(exception instanceof Error ? exception.message : "Не удалось войти через Telegram"),
+      )
+      .finally(() => setBusy(false));
+  }, []);
+
+  useEffect(() => {
     if (!session) return;
     if (session.role === "CLIENT") {
       apiRequest<ClientProfile>("/api/client/profile", {}, session)
@@ -336,6 +362,7 @@ export default function FastScanWeb() {
 
   async function submitLogin(event: FormEvent) {
     event.preventDefault();
+    if (loginMode === "client") return;
     setBusy(true);
     setError("");
     try {
@@ -415,24 +442,27 @@ export default function FastScanWeb() {
           <form className="login-card" onSubmit={submitLogin}>
             <p className="eyebrow dark">БЕЗОПАСНЫЙ ДОСТУП</p>
             <h2>Вход в систему</h2>
-            <p className="muted">Выберите рабочую область и введите данные.</p>
+            <p className="muted">Выберите рабочую область.</p>
             <div className="mode-switch" role="tablist" aria-label="Тип кабинета">
               <button type="button" className={loginMode === "warehouse" ? "active" : ""} onClick={() => setLoginMode("warehouse")}>Склад</button>
               <button type="button" className={loginMode === "client" ? "active" : ""} onClick={() => setLoginMode("client")}>Клиент</button>
             </div>
-            <label>
-              <span>{loginMode === "client" ? "Email" : "Логин"}</span>
-              <input value={loginValue} onChange={(event) => setLoginValue(event.target.value)} autoComplete="username" />
-            </label>
-            <label>
-              <span>Пароль</span>
-              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
-            </label>
+            {loginMode === "warehouse" && <>
+              <label>
+                <span>Логин</span>
+                <input value={loginValue} onChange={(event) => setLoginValue(event.target.value)} autoComplete="username" />
+              </label>
+              <label>
+                <span>Пароль</span>
+                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" />
+              </label>
+            </>}
+            {loginMode === "client" && <p className="muted">Вход и регистрация клиента выполняются через Telegram. Email и пароль не требуются.</p>}
             {error && <p className="form-error">{error}</p>}
-            <button className="primary-button" disabled={busy}>{busy ? "Проверка…" : "Войти →"}</button>
+            {loginMode === "warehouse" && <button className="primary-button" disabled={busy}>{busy ? "Проверка…" : "Войти →"}</button>}
             {loginMode === "client" && (telegramInfo.bot_url
-              ? <a className="demo-button" href={telegramInfo.bot_url} target="_blank" rel="noreferrer">Забыли пароль?</a>
-              : <button className="demo-button" type="button" onClick={() => setError("Telegram-бот не подключён к FastScan API. Проверьте настройки сервера.")}>Забыли пароль?</button>)}
+              ? <a className="primary-button" href={`${telegramInfo.bot_url}?start=fastscan_login`} target="_blank" rel="noreferrer">Войти через Telegram →</a>
+              : <button className="primary-button" type="button" onClick={() => setError("Telegram-бот не подключён к FastScan API. Проверьте настройки сервера.")}>Войти через Telegram →</button>)}
             <button className="demo-button" type="button" onClick={openDemo}>Открыть демо-интерфейс</button>
           </form>
         </section>
@@ -502,7 +532,7 @@ export default function FastScanWeb() {
                         last_name: profile.last_name,
                         phone: profile.phone,
                         address: profile.address,
-                        email_notifications: profile.email_notifications,
+                        email_notifications: false,
                         push_notifications: profile.push_notifications,
                         notification_channel: profile.notification_channel,
                         whatsapp_phone: profile.whatsapp_phone,
@@ -1318,7 +1348,6 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
     {client ? <>
       <div className="form-columns">
         <label><span>Код клиента</span><input className="readonly-field" value={profile.client_code} readOnly aria-readonly="true" /></label>
-        <label><span>Email</span><input className="readonly-field" value={profile.email} readOnly aria-readonly="true" /></label>
         <label><span>Имя</span><input value={profile.first_name} onChange={(event) => setProfile({ ...profile, first_name: event.target.value })} /></label>
         <label><span>Фамилия</span><input value={profile.last_name} onChange={(event) => setProfile({ ...profile, last_name: event.target.value })} /></label>
         <label><span>Телефон</span><input type="tel" value={profile.phone || ""} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
@@ -1326,15 +1355,10 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
         <label><span>WhatsApp</span><input type="tel" value={profile.whatsapp_phone || ""} onChange={(event) => setProfile({ ...profile, whatsapp_phone: event.target.value })} placeholder="Будущий канал уведомлений" /></label>
       </div>
       <p className="field-note">Код клиента назначается системой и доступен только для просмотра.</p>
-      <label><span>Предпочтительный канал уведомлений</span><select value={profile.notification_channel} onChange={(event) => setProfile({ ...profile, notification_channel: event.target.value as ClientProfile["notification_channel"] })}><option value="INTERNAL">Личный кабинет</option><option value="EMAIL">Email</option><option value="TELEGRAM" disabled={!profile.telegram_linked}>Telegram{profile.telegram_linked ? "" : " — сначала привяжите"}</option><option value="WHATSAPP" disabled>WhatsApp — скоро</option></select></label>
+      <label><span>Предпочтительный канал уведомлений</span><select value={profile.notification_channel === "EMAIL" ? "INTERNAL" : profile.notification_channel} onChange={(event) => setProfile({ ...profile, notification_channel: event.target.value as ClientProfile["notification_channel"] })}><option value="INTERNAL">Личный кабинет</option><option value="TELEGRAM">Telegram</option><option value="WHATSAPP" disabled>WhatsApp — скоро</option></select></label>
       <p className="field-note">Уведомления в личном кабинете сохраняются независимо от выбранного дополнительного канала.</p>
-      <div className="inline-form">
-        {!profile.telegram_linked ? <button type="button" className="action-button" onClick={createTelegramLink}>Привязать Telegram</button> : <button type="button" className="action-button" onClick={unlinkTelegram}>Отвязать Telegram</button>}
-        {!profile.telegram_linked && <button type="button" className="action-button" onClick={refreshTelegramStatus}>Проверить привязку</button>}
-      </div>
-      {telegramLink && <div className="code-preview"><small>Код привязки Telegram</small><strong>{telegramLink.code}</strong>{telegramLink.deep_link && <a href={telegramLink.deep_link} target="_blank" rel="noreferrer">Открыть бота</a>}</div>}
+      <div className="code-preview"><small>Telegram</small><strong>{profile.telegram_linked ? "Подключён" : "Не подключён"}</strong></div>
       {channelNotice && <p className="save-notice">{channelNotice}</p>}
-      <label className="check"><input type="checkbox" checked={profile.email_notifications} onChange={(event) => setProfile({ ...profile, email_notifications: event.target.checked })} /> Email-оповещения</label>
       <label className="check"><input type="checkbox" checked={profile.push_notifications} onChange={(event) => setProfile({ ...profile, push_notifications: event.target.checked })} /> Push-оповещения</label>
       <p className="field-note">Постоянные инструкции для всех будущих заказов:</p>
       <label className="check"><input type="checkbox" checked={profile.package_shoes === 1} onChange={(event) => setProfile({ ...profile, package_shoes: event.target.checked ? 1 : 0 })} /> Сохранять обувные коробки</label>

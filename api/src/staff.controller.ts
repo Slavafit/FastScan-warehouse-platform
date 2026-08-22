@@ -434,7 +434,7 @@ export class StaffController {
     packageShoes: number;
     bagPackage: number;
     account: {
-      email: string;
+      email: string | null;
       phone: string | null;
       address: string | null;
       user?: { enabled: boolean };

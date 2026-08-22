@@ -98,6 +98,18 @@ export class PasswordResetConfirmDto {
   @IsString() @IsNotEmpty() token!: string;
   @IsString() @MinLength(8) @MaxLength(100) password!: string;
 }
+
+export class TelegramClientAccessDto {
+  @IsString() @IsNotEmpty() telegram_id!: string;
+  @IsString() @IsNotEmpty() chat_id!: string;
+  @IsOptional() @IsString() @MaxLength(64) username?: string;
+  @IsOptional() @IsString() @MaxLength(120) first_name?: string;
+  @IsOptional() @IsString() @MaxLength(120) last_name?: string;
+}
+
+export class TelegramTokenDto {
+  @IsString() @IsNotEmpty() token!: string;
+}
 export class ProfileDto {
   @IsString() @IsNotEmpty() first_name!: string;
   @IsString() @IsNotEmpty() last_name!: string;

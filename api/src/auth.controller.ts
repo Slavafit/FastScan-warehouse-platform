@@ -11,6 +11,7 @@ import {
   LoginDto,
   PasswordResetConfirmDto,
   RefreshDto,
+  TelegramTokenDto,
 } from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
 import { Public, TokenService } from './auth.js';
@@ -97,6 +98,12 @@ export class AuthController {
   @Post('api/client/auth/refresh')
   async clientRefresh(@Body() dto: RefreshDto) {
     return this.refresh(dto, true);
+  }
+
+  @Post('api/client/auth/telegram')
+  async telegramLogin(@Body() dto: TelegramTokenDto) {
+    const user = await this.telegram.consumeLoginToken(dto.token);
+    return this.tokens.pair(user);
   }
 
   @Post('api/client/auth/reset-password')

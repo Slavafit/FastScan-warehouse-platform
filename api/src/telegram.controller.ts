@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Public } from './auth.js';
 import { TelegramService } from './telegram.service.js';
+import { TelegramClientAccessDto } from './dto.js';
 
 @Public()
 @Controller('api/integrations/telegram')
@@ -29,5 +30,15 @@ export class TelegramController {
       throw new UnauthorizedException();
     await this.telegram.handleMessage(update.message);
     return { success: true };
+  }
+
+  @Post('client-access')
+  async clientAccess(
+    @Headers('x-fastscan-bot-secret') secret: string | undefined,
+    @Body() dto: TelegramClientAccessDto,
+  ) {
+    if (!this.telegram.botApiSecretIsValid(secret))
+      throw new UnauthorizedException('Invalid bot credentials');
+    return this.telegram.createClientAccess(dto);
   }
 }

@@ -2,11 +2,14 @@ import {
   BadRequestException,
   Injectable,
   ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomBytes, randomInt } from 'node:crypto';
 import { hash } from 'bcryptjs';
+import { Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
+import { TelegramClientAccessDto } from './dto.js';
 
 type TelegramMessage = {
   chat?: { id?: number };
@@ -37,6 +40,113 @@ export class TelegramService {
   webhookSecretIsValid(value?: string) {
     const expected = this.config.get<string>('TELEGRAM_WEBHOOK_SECRET');
     return Boolean(expected && value && expected === value);
+  }
+
+  botApiSecretIsValid(value?: string) {
+    const expected =
+      this.config.get<string>('FASTSCAN_BOT_API_SECRET') ||
+      this.config.get<string>('TELEGRAM_BOT_TOKEN');
+    return Boolean(expected && value && expected === value);
+  }
+
+  async createClientAccess(dto: TelegramClientAccessDto) {
+    const telegramUserId = this.telegramId(dto.telegram_id);
+    const telegramChatId = this.telegramId(dto.chat_id);
+    let account = await this.prisma.clientAccount.findUnique({
+      where: { telegramUserId },
+      include: { receiver: true, user: true },
+    });
+    let created = false;
+
+    if (!account) {
+      const firstName = dto.first_name?.trim() || 'Telegram';
+      const lastName = dto.last_name?.trim() || 'Client';
+      const clientCode = await this.createClientCode();
+      const user = await this.prisma.user.create({
+        data: {
+          login: `telegram:${dto.telegram_id}`,
+          passwordHash: randomBytes(48).toString('base64url'),
+          role: Role.CLIENT,
+          client: {
+            create: {
+              email: null,
+              emailNotifications: false,
+              telegramUserId,
+              telegramChatId,
+              preferredNotificationChannel: 'TELEGRAM',
+              receiver: {
+                create: {
+                  clientCode,
+                  firstName,
+                  lastName,
+                },
+              },
+            },
+          },
+        },
+        include: { client: { include: { receiver: true } } },
+      });
+      account = {
+        ...user.client!,
+        receiver: user.client!.receiver,
+        user,
+      };
+      created = true;
+    } else if (account.telegramChatId !== telegramChatId) {
+      account = await this.prisma.clientAccount.update({
+        where: { id: account.id },
+        data: { telegramChatId },
+        include: { receiver: true, user: true },
+      });
+    }
+
+    if (!account.user.enabled)
+      throw new UnauthorizedException('FastScan account is disabled');
+
+    const rawToken = randomBytes(32).toString('base64url');
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    await this.prisma.$transaction([
+      this.prisma.telegramLoginToken.updateMany({
+        where: { clientAccountId: account.id, usedAt: null },
+        data: { usedAt: new Date() },
+      }),
+      this.prisma.telegramLoginToken.create({
+        data: {
+          clientAccountId: account.id,
+          tokenHash: this.digest(rawToken),
+          expiresAt,
+        },
+      }),
+    ]);
+    const webUrl = this.config
+      .get<string>('WEB_APP_URL', 'http://localhost:3000')
+      .replace(/\/$/, '');
+    return {
+      success: true,
+      login_url: `${webUrl}/?telegram_token=${rawToken}`,
+      expires_at: expiresAt.toISOString(),
+      client_code: account.receiver.clientCode,
+      created,
+    };
+  }
+
+  async consumeLoginToken(rawToken: string) {
+    const now = new Date();
+    const token = await this.prisma.telegramLoginToken.findUnique({
+      where: { tokenHash: this.digest(rawToken) },
+      include: { account: { include: { user: true } } },
+    });
+    if (!token || token.usedAt || token.expiresAt <= now)
+      throw new BadRequestException('Telegram login link is invalid or expired');
+    const claimed = await this.prisma.telegramLoginToken.updateMany({
+      where: { id: token.id, usedAt: null, expiresAt: { gt: now } },
+      data: { usedAt: now },
+    });
+    if (claimed.count !== 1)
+      throw new BadRequestException('Telegram login link is invalid or expired');
+    if (!token.account.user.enabled)
+      throw new UnauthorizedException('FastScan account is disabled');
+    return token.account.user;
   }
 
   async createLinkCode(clientAccountId: string) {
@@ -233,6 +343,25 @@ export class TelegramService {
 
   private digest(value: string) {
     return createHash('sha256').update(value).digest('hex');
+  }
+
+  private telegramId(value: string) {
+    if (!/^\d{1,20}$/.test(value))
+      throw new BadRequestException('Invalid Telegram identifier');
+    return BigInt(value);
+  }
+
+  private async createClientCode() {
+    const config = await this.prisma.clientCodeConfig.findUnique({
+      where: { id: 1 },
+    });
+    const prefix = config?.codePrefix ?? 'KG';
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const code = `${prefix}${randomInt(100000, 1000000)}`;
+      if (!(await this.prisma.receiver.findUnique({ where: { clientCode: code } })))
+        return code;
+    }
+    throw new ServiceUnavailableException('Could not generate client code');
   }
 
   private botUsername() {

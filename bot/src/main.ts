@@ -15,6 +15,7 @@ import {
   isEnglishName,
 } from './latin-validation';
 import { logger } from './logger';
+import { handleFastScanAccess } from './fastscan';
 
 import {
   startReceive, handleTrackInput, handleCarrierSelect,
@@ -419,10 +420,11 @@ bot.use(async (ctx, next) => {
   const callbackData = (ctx.callbackQuery as any)?.data ?? '';
   const session = ctx.from ? getSession(ctx.from.id) : null;
   const isStart = /^\/start(?:@\w+)?(?:\s|$)/i.test(text);
+  const isFastScan = /^\/fastscan(?:@\w+)?$/i.test(text);
   const isRestart = callbackData === 'session:restart';
   const isRegistration = Boolean(session?.registration);
 
-  if (isStart || isRestart || isRegistration) {
+  if (isStart || isFastScan || isRestart || isRegistration) {
     return next();
   }
   if (!session || isTokenExpired(session.userToken)) {
@@ -433,7 +435,15 @@ bot.use(async (ctx, next) => {
   return next();
 });
 
-bot.command('start', authorizeAndShowMenu);
+bot.start(async ctx => {
+  const payload = ctx.startPayload?.trim();
+  if (payload === 'fastscan_login' || payload === 'fastscan') {
+    await handleFastScanAccess(ctx);
+    return;
+  }
+  await authorizeAndShowMenu(ctx);
+});
+bot.command('fastscan', handleFastScanAccess);
 
 // ── Команды ───────────────────────────────────────────────────────────────────
 

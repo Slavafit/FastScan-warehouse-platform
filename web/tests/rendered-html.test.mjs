@@ -20,6 +20,8 @@ test("contains the FastScan warehouse and client entry points", async () => {
   assert.match(page, /Сохранить оригинальную упаковку этого заказа/);
   assert.match(page, /Сохранять обувные коробки/);
   assert.match(page, /Сохранять упаковку сумок/);
+  assert.match(page, /Забыли пароль\?/);
+  assert.match(page, /Telegram-бот не подключён к FastScan API/);
 });
 
 test("uses a configurable API URL", async () => {

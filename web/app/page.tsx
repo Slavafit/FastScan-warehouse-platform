@@ -430,7 +430,9 @@ export default function FastScanWeb() {
             </label>
             {error && <p className="form-error">{error}</p>}
             <button className="primary-button" disabled={busy}>{busy ? "Проверка…" : "Войти →"}</button>
-            {loginMode === "client" && telegramInfo.enabled && telegramInfo.bot_url && <a className="demo-button" href={telegramInfo.bot_url} target="_blank" rel="noreferrer">Восстановить пароль через Telegram</a>}
+            {loginMode === "client" && (telegramInfo.bot_url
+              ? <a className="demo-button" href={telegramInfo.bot_url} target="_blank" rel="noreferrer">Забыли пароль?</a>
+              : <button className="demo-button" type="button" onClick={() => setError("Telegram-бот не подключён к FastScan API. Проверьте настройки сервера.")}>Забыли пароль?</button>)}
             <button className="demo-button" type="button" onClick={openDemo}>Открыть демо-интерфейс</button>
           </form>
         </section>

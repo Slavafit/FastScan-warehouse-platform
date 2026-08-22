@@ -190,7 +190,9 @@ data class BoxInPartial(
     @SerializedName(value = "v_weight", alternate = ["volume_weight"]) val v_weight: Double,
     val gross_weight: Double,
     @SerializedName(value = "date_created", alternate = ["created_at"]) val date_created: String,
-    val warehouse_name: String
+    val warehouse_name: String,
+    @SerializedName(value = "partial_name", alternate = ["batch_name"])
+    val partial_name: String? = null
 )
 
 // Create/update batch response

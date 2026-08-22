@@ -192,8 +192,15 @@
 
 
     <string name="add_new_box">Agregar nueva caja</string>
-    <string name="add_box_to_party">Agregar caja</string>
-    <string name="party_detail_hint">Selecciona una caja abierta y agrégala a este lote.</string>
+    <string name="add_box_to_party">Gestionar cajas</string>
+    <string name="party_detail_hint">Las cajas marcadas están en este lote. Pulse el botón para cambiar el contenido.</string>
+    <string name="manage_party_boxes">Cajas del lote</string>
+    <string name="search_box_by_track">Buscar por código de seguimiento</string>
+    <string name="boxes_selected_zero">Cajas seleccionadas: 0</string>
+    <string name="boxes_selected">Cajas seleccionadas: %1$d</string>
+    <string name="box_in_another_party">En otro lote: %1$s</string>
+    <string name="party_boxes_updated">Contenido del lote guardado</string>
+    <string name="party_boxes_update_partial_error">Operaciones fallidas: %1$d. La lista se actualizó.</string>
     <string name="new_box_number">Se creará un número: ...</string>
     <string name="length">Longitud (cm)</string>
     <string name="width">Ancho (cm)</string>

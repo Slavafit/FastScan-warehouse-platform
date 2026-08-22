@@ -38,6 +38,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Changed / Изменено
 
+- Управление коробками партии переведено на список с галочками и поиском: отмеченные коробки входят в текущую партию, свободные доступны для выбора, а коробки других партий защищены от случайного переноса.
 - В карточках коробок партии добавлена явная кнопка удаления с подтверждением; коробка отвязывается от партии, но остаётся в системе.
 - Перед печатью этикетки Android запрашивает актуальную партию коробки; API возвращает текущее название партии вместе с данными коробки.
 - All API failures now use a safe, consistent response with stable error codes, validation details, request IDs, and clear mappings for authentication, authorization, conflicts, invalid identifiers, and database availability; failed write operations are also recorded in the audit log.

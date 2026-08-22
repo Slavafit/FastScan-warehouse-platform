@@ -234,8 +234,15 @@
     <string name="show_all_boxes">👀 Показать все</string>
     <string name="no_boxes">Нет открытых коробок. Создайте новую.</string>
     <string name="add_new_box">Добавить новую коробку</string>
-    <string name="add_box_to_party">Добавить коробку</string>
-    <string name="party_detail_hint">Выберите открытую коробку и добавьте ее в эту партию.</string>
+    <string name="add_box_to_party">Управление коробками</string>
+    <string name="party_detail_hint">Отмеченные коробки находятся в этой партии. Нажмите кнопку, чтобы изменить состав.</string>
+    <string name="manage_party_boxes">Коробки партии</string>
+    <string name="search_box_by_track">Поиск по треку коробки</string>
+    <string name="boxes_selected_zero">Выбрано коробок: 0</string>
+    <string name="boxes_selected">Выбрано коробок: %1$d</string>
+    <string name="box_in_another_party">В другой партии: %1$s</string>
+    <string name="party_boxes_updated">Состав партии сохранён</string>
+    <string name="party_boxes_update_partial_error">Не удалось выполнить операций: %1$d. Список обновлён.</string>
     <string name="new_box_number">Будет создан номер: …</string>
     <string name="length">Длина (см)</string>
     <string name="width">Ширина (см)</string>

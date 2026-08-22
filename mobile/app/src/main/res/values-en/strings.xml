@@ -194,8 +194,15 @@
 
     <!-- fragment of the boxes -->
     <string name="add_new_box">Add new box</string>
-    <string name="add_box_to_party">Add box</string>
-    <string name="party_detail_hint">Select an open box and add it to this batch.</string>
+    <string name="add_box_to_party">Manage boxes</string>
+    <string name="party_detail_hint">Checked boxes are in this batch. Tap the button to change the contents.</string>
+    <string name="manage_party_boxes">Batch boxes</string>
+    <string name="search_box_by_track">Search by box tracking code</string>
+    <string name="boxes_selected_zero">Boxes selected: 0</string>
+    <string name="boxes_selected">Boxes selected: %1$d</string>
+    <string name="box_in_another_party">In another batch: %1$s</string>
+    <string name="party_boxes_updated">Batch contents saved</string>
+    <string name="party_boxes_update_partial_error">Operations failed: %1$d. The list was refreshed.</string>
     <string name="new_box_number">A number will be created: …</string>
     <string name="length">Length (cm)</string>
     <string name="width">Width (см)</string>

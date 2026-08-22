@@ -8,7 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ocr.fastscan.R
 import com.ocr.fastscan.data.model.*
@@ -214,60 +216,131 @@ class PartyDetailFragment : BaseFragment() {
             .setView(dialogBinding.root)
             .create()
 
-        val adapter = OpenBoxesAdapter { box ->
-            addBoxToParty(box)
-            dialog.dismiss()
+        val initiallySelected = currentBoxes.mapTo(mutableSetOf()) { it.guid }
+        val adapter = OpenBoxesAdapter(
+            currentPartialGuid = partialGuid,
+            initiallySelected = initiallySelected
+        ) { selectedCount ->
+            dialogBinding.tvSelectionSummary.text =
+                getString(R.string.boxes_selected, selectedCount)
         }
-        dialogBinding.rvOpenBoxes.layoutManager = LinearLayoutManager(requireContext())
-        dialogBinding.rvOpenBoxes.adapter = adapter
+        var allBoxes: List<BoxInPartial> = emptyList()
+        dialogBinding.rvBoxesList.layoutManager = LinearLayoutManager(requireContext())
+        dialogBinding.rvBoxesList.adapter = adapter
+        dialogBinding.tvSelectionSummary.text =
+            getString(R.string.boxes_selected, initiallySelected.size)
+        dialogBinding.btnCancelSelection.setOnClickListener { dialog.dismiss() }
+        dialogBinding.btnSaveSelection.setOnClickListener {
+            applyBoxSelection(dialog, dialogBinding, allBoxes, adapter.selectedGuids())
+        }
+        dialogBinding.etBoxSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString()?.trim().orEmpty()
+                adapter.submitList(
+                    if (query.isBlank()) allBoxes
+                    else allBoxes.filter { it.tracking_code.contains(query, ignoreCase = true) }
+                )
+            }
+        })
 
         launchOnViewLifecycle {
             try {
                 val response = apiService.getOpenBoxes()
                 if (_binding == null || !isAdded) return@launchOnViewLifecycle
                 if (response.isSuccessful) {
-                    adapter.submitList(response.body() ?: emptyList())
+                    allBoxes = ((response.body() ?: emptyList()) + currentBoxes)
+                        .distinctBy { it.guid }
+                        .sortedWith(
+                            compareByDescending<BoxInPartial> { it.partial == partialGuid }
+                                .thenBy { it.tracking_code }
+                        )
+                    adapter.submitList(allBoxes)
+                    dialogBinding.btnSaveSelection.isEnabled = true
+                } else {
+                    showToast(R.string.error_load_boxes_short)
                 }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 if (isAdded) showToast(R.string.error_load_boxes_short)
+            } finally {
+                dialogBinding.progressBoxes.visibility = View.GONE
             }
         }
         dialog.show()
     }
 
-    private fun addBoxToParty(box: BoxInPartial) {
+    private fun applyBoxSelection(
+        dialog: AlertDialog,
+        dialogBinding: DialogSelectBoxBinding,
+        allBoxes: List<BoxInPartial>,
+        selectedGuids: Set<String>
+    ) {
+        val currentGuids = currentBoxes.mapTo(mutableSetOf()) { it.guid }
+        val boxesToAdd = allBoxes.filter {
+            it.guid in selectedGuids && it.guid !in currentGuids && it.partial.isBlank()
+        }
+        val boxesToRemove = currentBoxes.filter { it.guid !in selectedGuids }
+
+        if (boxesToAdd.isEmpty() && boxesToRemove.isEmpty()) {
+            dialog.dismiss()
+            return
+        }
+
         launchOnViewLifecycle {
-            val activeBinding = _binding ?: return@launchOnViewLifecycle
-            activeBinding.progressBar.visibility = View.VISIBLE
+            dialogBinding.progressBoxes.visibility = View.VISIBLE
+            dialogBinding.btnSaveSelection.isEnabled = false
+            dialogBinding.btnCancelSelection.isEnabled = false
+            var failedOperations = 0
             try {
-                val request = AddBoxRequest(
-                    guid = box.guid,
-                    codeid = box.codeid,
-                    partial = partialGuid,
-                    tracking_code = box.tracking_code,
-                    width = box.width,
-                    height = box.height,
-                    length = box.length,
-                    v_weight = box.v_weight,
-                    gross_weight = box.gross_weight
-                )
-                val response = apiService.addBoxToPartial(request)
-                if (_binding == null || !isAdded) return@launchOnViewLifecycle
-                if (response.isSuccessful && response.body()?.success == true) {
+                boxesToAdd.forEach { box ->
+                    val response = apiService.addBoxToPartial(
+                        AddBoxRequest(
+                            guid = box.guid,
+                            codeid = box.codeid,
+                            partial = partialGuid,
+                            tracking_code = box.tracking_code,
+                            width = box.width,
+                            height = box.height,
+                            length = box.length,
+                            v_weight = box.v_weight,
+                            gross_weight = box.gross_weight
+                        )
+                    )
+                    if (!response.isSuccessful || response.body()?.success != true) {
+                        failedOperations += 1
+                    }
+                }
+                boxesToRemove.forEach { box ->
+                    val response = apiService.removeBoxFromPartial(
+                        RemoveBoxFromPartialRequest(guid = box.guid)
+                    )
+                    if (!response.isSuccessful || response.body()?.success != true) {
+                        failedOperations += 1
+                    }
+                }
+
+                if (failedOperations == 0) {
+                    showToast(R.string.party_boxes_updated)
                     soundManager.playSuccess()
-                    loadBoxDetails()
                 } else {
-                    showToast(R.string.error_adding_box)
+                    showToast(getString(R.string.party_boxes_update_partial_error, failedOperations))
                     soundManager.playError()
                 }
+                dialog.dismiss()
+                loadBoxDetails()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                Log.e("PartyDetail", "Apply box selection error", e)
+                if (isAdded) showToast(R.string.net_error_short)
                 soundManager.playError()
+                dialogBinding.btnSaveSelection.isEnabled = true
+                dialogBinding.btnCancelSelection.isEnabled = true
             } finally {
-                _binding?.progressBar?.visibility = View.GONE
+                dialogBinding.progressBoxes.visibility = View.GONE
             }
         }
     }

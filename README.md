@@ -62,4 +62,5 @@ npm run dev
 - [Web](web/README.md)
 - [Контракт Android API](docs/api-contract.md)
 - [API личного кабинета](docs/client-portal-api.md)
+- [Telegram: привязка, уведомления и восстановление пароля](docs/telegram.md)
 - [История FastScan Mobile](mobile/app/news.txt)

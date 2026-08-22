@@ -23,6 +23,9 @@ type ClientProfile = {
   address: string | null;
   email_notifications: boolean;
   push_notifications: boolean;
+  notification_channel: "INTERNAL" | "EMAIL" | "TELEGRAM" | "WHATSAPP";
+  telegram_linked: boolean;
+  whatsapp_phone: string | null;
   package_shoes: number;
   bag_package: number;
 };
@@ -287,12 +290,25 @@ export default function FastScanWeb() {
     address: "",
     email_notifications: true,
     push_notifications: true,
+    notification_channel: "INTERNAL",
+    telegram_linked: false,
+    whatsapp_phone: "",
     package_shoes: 0,
     bag_package: 0,
   });
   const [notice, setNotice] = useState("");
+  const [resetToken, setResetToken] = useState(() =>
+    typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("reset_token") || "",
+  );
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetNotice, setResetNotice] = useState("");
+  const [telegramInfo, setTelegramInfo] = useState<{ enabled: boolean; bot_username: string | null; bot_url: string | null }>({ enabled: false, bot_username: null, bot_url: null });
 
   useEffect(() => {
+    apiRequest<typeof telegramInfo>("/api/integrations/telegram/info")
+      .then(setTelegramInfo)
+      .catch(() => undefined);
     const stored = sessionStorage.getItem("fastscan-session");
     if (stored) {
       queueMicrotask(() => setSession(JSON.parse(stored) as Session));
@@ -349,6 +365,35 @@ export default function FastScanWeb() {
     setDemo(false);
   }
 
+  async function submitPasswordReset(event: FormEvent) {
+    event.preventDefault();
+    setResetNotice("");
+    if (newPassword !== confirmPassword) {
+      setResetNotice("Пароли не совпадают");
+      return;
+    }
+    setBusy(true);
+    try {
+      await apiRequest("/api/client/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token: resetToken, password: newPassword }),
+      });
+      window.history.replaceState({}, "", window.location.pathname);
+      setResetToken("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setError("Пароль изменён. Войдите с новым паролем.");
+    } catch (exception) {
+      setResetNotice(exception instanceof Error ? exception.message : "Не удалось изменить пароль");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (resetToken) {
+    return <main className="login-shell"><section className="brand-panel"><div className="brand-mark" role="img" aria-label="FastScan" /><p className="eyebrow">FASTSCAN ACCOUNT</p><h1>Новый пароль</h1><p className="brand-copy">Одноразовая ссылка получена через привязанный Telegram.</p></section><section className="login-panel"><form className="login-card" onSubmit={submitPasswordReset}><p className="eyebrow dark">ВОССТАНОВЛЕНИЕ ДОСТУПА</p><h2>Задайте новый пароль</h2><label><span>Новый пароль</span><input type="password" minLength={8} maxLength={100} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} required autoComplete="new-password" /></label><label><span>Повторите пароль</span><input type="password" minLength={8} maxLength={100} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required autoComplete="new-password" /></label>{resetNotice && <p className="form-error">{resetNotice}</p>}<button className="primary-button" disabled={busy}>{busy ? "Сохранение…" : "Изменить пароль"}</button></form></section></main>;
+  }
+
   if (!session && !demo) {
     return (
       <main className="login-shell">
@@ -384,6 +429,7 @@ export default function FastScanWeb() {
             </label>
             {error && <p className="form-error">{error}</p>}
             <button className="primary-button" disabled={busy}>{busy ? "Проверка…" : "Войти →"}</button>
+            {loginMode === "client" && telegramInfo.enabled && telegramInfo.bot_url && <a className="demo-button" href={telegramInfo.bot_url} target="_blank" rel="noreferrer">Восстановить пароль через Telegram</a>}
             <button className="demo-button" type="button" onClick={openDemo}>Открыть демо-интерфейс</button>
           </form>
         </section>
@@ -455,6 +501,8 @@ export default function FastScanWeb() {
                         address: profile.address,
                         email_notifications: profile.email_notifications,
                         push_notifications: profile.push_notifications,
+                        notification_channel: profile.notification_channel,
+                        whatsapp_phone: profile.whatsapp_phone,
                         package_shoes: profile.package_shoes,
                         bag_package: profile.bag_package,
                       }),
@@ -1228,6 +1276,38 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
   save: () => void;
   notice: string;
 }) {
+  const [telegramLink, setTelegramLink] = useState<{ code: string; expires_at: string; deep_link: string | null } | null>(null);
+  const [channelNotice, setChannelNotice] = useState("");
+
+  async function createTelegramLink() {
+    if (!session || demo) return;
+    try {
+      setTelegramLink(await apiRequest<{ code: string; expires_at: string; deep_link: string | null }>("/api/client/telegram/link-code", { method: "POST" }, session));
+      setChannelNotice("Откройте бота и отправьте код в течение 10 минут.");
+    } catch (exception) {
+      setChannelNotice(exception instanceof Error ? exception.message : "Не удалось создать код");
+    }
+  }
+
+  async function refreshTelegramStatus() {
+    if (!session || demo) return;
+    try {
+      const updated = await apiRequest<ClientProfile>("/api/client/profile", {}, session);
+      setProfile(updated);
+      setChannelNotice(updated.telegram_linked ? "Telegram успешно привязан." : "Привязка пока не подтверждена.");
+    } catch (exception) {
+      setChannelNotice(exception instanceof Error ? exception.message : "Не удалось проверить привязку");
+    }
+  }
+
+  async function unlinkTelegram() {
+    if (!session || demo) return;
+    await apiRequest("/api/client/telegram", { method: "DELETE" }, session);
+    setProfile({ ...profile, telegram_linked: false, notification_channel: "INTERNAL" });
+    setTelegramLink(null);
+    setChannelNotice("Telegram отвязан. Выбран внутренний канал.");
+  }
+
   return <section className="settings-grid"><article className="panel settings-card">
     <p className="eyebrow dark">{client ? "ПРОФИЛЬ" : "НАСТРОЙКИ СКЛАДА"}</p>
     <h3>{client ? "Личные данные" : "Параметры платформы"}</h3>
@@ -1240,8 +1320,17 @@ function Settings({ client, platform, setPlatform, profile, setProfile, session,
         <label><span>Фамилия</span><input value={profile.last_name} onChange={(event) => setProfile({ ...profile, last_name: event.target.value })} /></label>
         <label><span>Телефон</span><input type="tel" value={profile.phone || ""} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} /></label>
         <label><span>Адрес</span><input value={profile.address || ""} onChange={(event) => setProfile({ ...profile, address: event.target.value })} /></label>
+        <label><span>WhatsApp</span><input type="tel" value={profile.whatsapp_phone || ""} onChange={(event) => setProfile({ ...profile, whatsapp_phone: event.target.value })} placeholder="Будущий канал уведомлений" /></label>
       </div>
       <p className="field-note">Код клиента назначается системой и доступен только для просмотра.</p>
+      <label><span>Предпочтительный канал уведомлений</span><select value={profile.notification_channel} onChange={(event) => setProfile({ ...profile, notification_channel: event.target.value as ClientProfile["notification_channel"] })}><option value="INTERNAL">Личный кабинет</option><option value="EMAIL">Email</option><option value="TELEGRAM" disabled={!profile.telegram_linked}>Telegram{profile.telegram_linked ? "" : " — сначала привяжите"}</option><option value="WHATSAPP" disabled>WhatsApp — скоро</option></select></label>
+      <p className="field-note">Уведомления в личном кабинете сохраняются независимо от выбранного дополнительного канала.</p>
+      <div className="inline-form">
+        {!profile.telegram_linked ? <button type="button" className="action-button" onClick={createTelegramLink}>Привязать Telegram</button> : <button type="button" className="action-button" onClick={unlinkTelegram}>Отвязать Telegram</button>}
+        {!profile.telegram_linked && <button type="button" className="action-button" onClick={refreshTelegramStatus}>Проверить привязку</button>}
+      </div>
+      {telegramLink && <div className="code-preview"><small>Код привязки Telegram</small><strong>{telegramLink.code}</strong>{telegramLink.deep_link && <a href={telegramLink.deep_link} target="_blank" rel="noreferrer">Открыть бота</a>}</div>}
+      {channelNotice && <p className="save-notice">{channelNotice}</p>}
       <label className="check"><input type="checkbox" checked={profile.email_notifications} onChange={(event) => setProfile({ ...profile, email_notifications: event.target.checked })} /> Email-оповещения</label>
       <label className="check"><input type="checkbox" checked={profile.push_notifications} onChange={(event) => setProfile({ ...profile, push_notifications: event.target.checked })} /> Push-оповещения</label>
       <p className="field-note">Постоянные инструкции для всех будущих заказов:</p>

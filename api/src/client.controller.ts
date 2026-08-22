@@ -3,6 +3,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -18,12 +19,16 @@ import { AuthUser, Roles } from './auth.js';
 import { Prisma, Role } from './generated/prisma/client.js';
 import { PrismaService } from './prisma.service.js';
 import { calculateWeightBreakdown } from './weight.util.js';
+import { TelegramService } from './telegram.service.js';
 
 @ApiBearerAuth()
 @Roles(Role.CLIENT)
 @Controller('api/client')
 export class ClientController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly telegram: TelegramService,
+  ) {}
 
   @Get('profile')
   async profile(@Req() request: { user: AuthUser }) {
@@ -33,6 +38,17 @@ export class ClientController {
   @Put('profile')
   async update(@Req() request: { user: AuthUser }, @Body() dto: ProfileDto) {
     const account = await this.account(request.user.sub);
+    if (
+      dto.notification_channel === 'TELEGRAM' &&
+      account.telegramUserId === null
+    )
+      throw new BadRequestException(
+        'Link Telegram before selecting it as notification channel',
+      );
+    if (dto.notification_channel === 'WHATSAPP')
+      throw new BadRequestException(
+        'WhatsApp notifications are not available yet',
+      );
     const updated = await this.prisma.clientAccount.update({
       where: { id: account.id },
       data: {
@@ -40,6 +56,8 @@ export class ClientController {
         address: this.optionalText(dto.address),
         emailNotifications: dto.email_notifications,
         pushNotifications: dto.push_notifications,
+        preferredNotificationChannel: dto.notification_channel,
+        whatsappPhone: this.optionalText(dto.whatsapp_phone),
         receiver: {
           update: {
             firstName: dto.first_name.trim(),
@@ -56,6 +74,19 @@ export class ClientController {
       include: { receiver: true },
     });
     return this.profileResponse(updated);
+  }
+
+  @Post('telegram/link-code')
+  async telegramLinkCode(@Req() request: { user: AuthUser }) {
+    const account = await this.account(request.user.sub);
+    return this.telegram.createLinkCode(account.id);
+  }
+
+  @Delete('telegram')
+  async unlinkTelegram(@Req() request: { user: AuthUser }) {
+    const account = await this.account(request.user.sub);
+    await this.telegram.unlink(account.id);
+    return { success: true };
   }
 
   @Get('orders')
@@ -314,6 +345,9 @@ export class ClientController {
       bag_package: account.receiver.bagPackage,
       email_notifications: account.emailNotifications,
       push_notifications: account.pushNotifications,
+      notification_channel: account.preferredNotificationChannel,
+      telegram_linked: account.telegramUserId !== null,
+      whatsapp_phone: account.whatsappPhone,
       created_at: account.createdAt.toISOString(),
     };
   }

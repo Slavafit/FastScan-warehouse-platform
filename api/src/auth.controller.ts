@@ -6,11 +6,17 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { compare, hash } from 'bcryptjs';
-import { ClientRegistrationDto, LoginDto, RefreshDto } from './dto.js';
+import {
+  ClientRegistrationDto,
+  LoginDto,
+  PasswordResetConfirmDto,
+  RefreshDto,
+} from './dto.js';
 import { NotificationType, Role } from './generated/prisma/client.js';
 import { Public, TokenService } from './auth.js';
 import { PrismaService } from './prisma.service.js';
 import { NotificationService } from './notification.service.js';
+import { TelegramService } from './telegram.service.js';
 
 @Public()
 @Controller()
@@ -19,6 +25,7 @@ export class AuthController {
     private readonly prisma: PrismaService,
     private readonly tokens: TokenService,
     private readonly notifications: NotificationService,
+    private readonly telegram: TelegramService,
   ) {}
 
   @Post('api/admin/auth/login')
@@ -92,6 +99,15 @@ export class AuthController {
     return this.refresh(dto, true);
   }
 
+  @Post('api/client/auth/reset-password')
+  async resetPassword(@Body() dto: PasswordResetConfirmDto) {
+    await this.telegram.confirmPasswordReset(dto.token, dto.password);
+    return {
+      success: true,
+      message: 'Password has been changed. Sign in again.',
+    };
+  }
+
   private async login(dto: LoginDto, client: boolean) {
     const user = await this.prisma.user.findUnique({
       where: { login: dto.login.trim().toLowerCase() },
@@ -118,7 +134,12 @@ export class AuthController {
     const correctRole = client
       ? user?.role === Role.CLIENT
       : user?.role !== Role.CLIENT;
-    if (!user || !user.enabled || !correctRole)
+    if (
+      !user ||
+      !user.enabled ||
+      !correctRole ||
+      user.tokenVersion !== payload.tokenVersion
+    )
       throw new UnauthorizedException();
     return this.tokens.pair(user);
   }

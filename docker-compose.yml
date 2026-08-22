@@ -29,6 +29,10 @@ services:
       JWT_SECRET: ${JWT_SECRET:-development-only-secret-change-before-production}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-development-only-refresh-secret-change-before-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
     ports:
       - "8080:8080"
     healthcheck:

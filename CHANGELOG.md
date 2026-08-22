@@ -8,6 +8,9 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Added / Добавлено
 
+- Безопасное восстановление пароля клиента через привязанный Telegram: одноразовая ссылка действует 15 минут, пароль вводится только в Web, а прежние access/refresh-токены отзываются.
+- В профиле клиента добавлены привязка Telegram, выбор предпочтительного канала уведомлений и номер WhatsApp; WhatsApp подготовлен в модели данных и явно отмечен как будущая интеграция.
+- Внутренние уведомления теперь сохраняются всегда, а при выборе Telegram дополнительно отправляются привязанному пользователю без влияния на складскую операцию при ошибке внешнего сервиса.
 - Добавлен расчёт фактического, объёмного и расчётного веса для заказов и коробок; расчётный вес равен большему из фактического и объёмного, а делитель объёмного веса задаётся администратором (по умолчанию 6000).
 - Манифест сохраняет снимок всех трёх весов по заказам и итоговые значения, а клиентский кабинет показывает вес, используемый для будущего расчёта доставки.
 - Added a complete API E2E warehouse-flow test covering client and mobile order creation, tracking and client lookup, box packing, batch assignment, and batch completion.
@@ -62,6 +65,7 @@ All notable changes to FastScan Warehouse Platform are documented in this file. 
 
 ### Planned / Запланировано
 
+- Подключение WhatsApp-адаптера к уже добавленным настройкам канала и номера клиента.
 - Подключение тестовой сборки Android к собственному API.
 - Email и push-адаптеры поверх внутреннего центра уведомлений.
 - Production deployment, backups, monitoring, and migration from the previous API.

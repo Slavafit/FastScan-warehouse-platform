@@ -12,12 +12,14 @@ import { AuthGuard } from '@nestjs/passport';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Role } from './generated/prisma/client.js';
+import { PrismaService } from './prisma.service.js';
 
 export type AuthUser = {
   sub: string;
   login: string;
   role: Role;
   type: 'access' | 'refresh';
+  tokenVersion: number;
 };
 
 export const IS_PUBLIC_KEY = 'isPublic';
@@ -27,7 +29,10 @@ export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -35,8 +40,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  validate(payload: AuthUser) {
+  async validate(payload: AuthUser) {
     if (payload.type !== 'access') throw new UnauthorizedException();
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+    });
+    if (!user || !user.enabled || user.tokenVersion !== payload.tokenVersion)
+      throw new UnauthorizedException();
     return payload;
   }
 }
@@ -81,17 +91,34 @@ export class TokenService {
     private readonly config: ConfigService,
   ) {}
 
-  async pair(user: { id: string; login: string; role: Role }) {
+  async pair(user: {
+    id: string;
+    login: string;
+    role: Role;
+    tokenVersion?: number;
+  }) {
     const accessMinutes = this.config.get<number>('JWT_ACCESS_MINUTES', 30);
     const refreshDays = this.config.get<number>('JWT_REFRESH_DAYS', 30);
     return {
       success: true,
       accessToken: await this.jwt.signAsync(
-        { sub: user.id, login: user.login, role: user.role, type: 'access' },
+        {
+          sub: user.id,
+          login: user.login,
+          role: user.role,
+          type: 'access',
+          tokenVersion: user.tokenVersion ?? 0,
+        },
         { expiresIn: `${accessMinutes}m` as never },
       ),
       refreshToken: await this.jwt.signAsync(
-        { sub: user.id, login: user.login, role: user.role, type: 'refresh' },
+        {
+          sub: user.id,
+          login: user.login,
+          role: user.role,
+          type: 'refresh',
+          tokenVersion: user.tokenVersion ?? 0,
+        },
         { expiresIn: `${refreshDays}d` as never },
       ),
       role: user.role,

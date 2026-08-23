@@ -12,7 +12,6 @@ Warehouse receiving, scanning, and packing platform. The monorepo combines the p
 FastScan-warehouse-platform/
 ├── mobile/   # Android scanner application
 ├── api/      # Node.js + NestJS + Prisma REST API
-├── bot/      # Telegram bot for client access and warehouse workflows
 ├── web/      # React + TypeScript web application
 └── docs/     # API contracts and architecture notes
 ```
@@ -27,7 +26,6 @@ FastScan-warehouse-platform/
 - Автоматический случайный шестизначный номер клиента; префикс задаёт администратор.
 - Swagger/OpenAPI documentation and Docker Compose local environment.
 - Лицензирование остаётся отдельной существующей системой только для Mobile.
-- Исходный код `@LmsMalagaBot` перенесён в `bot/`; его обработчики последовательно переключаются на FastScan API.
 
 ## Быстрый запуск / Quick start
 
@@ -38,11 +36,11 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-Перед первым запуском задайте в `.env` значения `BOOTSTRAP_ADMIN_LOGIN` и `BOOTSTRAP_ADMIN_PASSWORD` (не короче 8 символов). Учётная запись создаётся только при отсутствии администратора; последующие перезапуски не изменяют её логин или пароль. Сотрудники создаются администратором в Web, а клиенты регистрируются через Telegram.
+Перед первым запуском задайте в `.env` значения `BOOTSTRAP_ADMIN_LOGIN` и `BOOTSTRAP_ADMIN_PASSWORD` (не короче 8 символов). Учётная запись создаётся только при отсутствии администратора; последующие перезапуски не изменяют её логин или пароль. Сотрудники создаются администратором, а клиенты используют собственный Web-кабинет.
 
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui`
-- OpenAPI JSON: `http://localhost:8080/openapi.json`
+- OpenAPI JSON: `http://localhost:8080/swagger-ui-json`
 - Detailed health: `http://localhost:8080/health`
 - Liveness probe: `http://localhost:8080/health/live`
 - Readiness probe: `http://localhost:8080/health/ready`
@@ -66,5 +64,4 @@ npm run dev
 - [Web](web/README.md)
 - [Контракт Android API](docs/api-contract.md)
 - [API личного кабинета](docs/client-portal-api.md)
-- [Telegram: привязка, уведомления и восстановление пароля](docs/telegram.md)
 - [История FastScan Mobile](mobile/app/news.txt)

@@ -1,9 +1,20 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { hash } from 'bcryptjs';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module.js';
+import { Role } from './../src/generated/prisma/client.js';
 import { PrismaService } from './../src/prisma.service.js';
+
+const E2E_PASSWORD = 'change-me';
+const E2E_ADMIN_LOGIN = 'e2e-admin';
+const E2E_WORKER_LOGIN = 'e2e-worker';
+const E2E_CLIENT_LOGIN = 'e2e-client@test.local';
+const E2E_CLIENT_CODE = 'E2ETEST';
+
+process.env.BOOTSTRAP_ADMIN_LOGIN = E2E_ADMIN_LOGIN;
+process.env.BOOTSTRAP_ADMIN_PASSWORD = E2E_PASSWORD;
 
 interface HealthResponse {
   status: string;
@@ -34,6 +45,55 @@ describe('FastScan API (e2e)', () => {
     app = moduleFixture.createNestApplication();
     prisma = moduleFixture.get(PrismaService);
     await app.init();
+
+    const passwordHash = await hash(E2E_PASSWORD, 12);
+    await Promise.all([
+      prisma.user.upsert({
+        where: { login: E2E_ADMIN_LOGIN },
+        update: { passwordHash, role: Role.ADMIN, enabled: true },
+        create: {
+          login: E2E_ADMIN_LOGIN,
+          passwordHash,
+          role: Role.ADMIN,
+        },
+      }),
+      prisma.user.upsert({
+        where: { login: E2E_WORKER_LOGIN },
+        update: { passwordHash, role: Role.WORKER, enabled: true },
+        create: {
+          login: E2E_WORKER_LOGIN,
+          passwordHash,
+          role: Role.WORKER,
+        },
+      }),
+    ]);
+    const receiver = await prisma.receiver.upsert({
+      where: { clientCode: E2E_CLIENT_CODE },
+      update: { firstName: 'E2E', lastName: 'Client' },
+      create: {
+        clientCode: E2E_CLIENT_CODE,
+        firstName: 'E2E',
+        lastName: 'Client',
+      },
+    });
+    const client = await prisma.user.upsert({
+      where: { login: E2E_CLIENT_LOGIN },
+      update: { passwordHash, role: Role.CLIENT, enabled: true },
+      create: {
+        login: E2E_CLIENT_LOGIN,
+        passwordHash,
+        role: Role.CLIENT,
+      },
+    });
+    await prisma.clientAccount.upsert({
+      where: { email: E2E_CLIENT_LOGIN },
+      update: { userId: client.id, receiverId: receiver.id },
+      create: {
+        email: E2E_CLIENT_LOGIN,
+        userId: client.id,
+        receiverId: receiver.id,
+      },
+    });
   });
 
   it('reports service health', () => {
@@ -69,7 +129,7 @@ describe('FastScan API (e2e)', () => {
   it('logs in and accesses a protected database route', async () => {
     const login = await request(app.getHttpServer())
       .post('/api/admin/auth/login')
-      .send({ login: 'admin', password: 'change-me' })
+      .send({ login: E2E_ADMIN_LOGIN, password: E2E_PASSWORD })
       .expect(201);
 
     const auth = login.body as LoginResponse;
@@ -138,7 +198,7 @@ describe('FastScan API (e2e)', () => {
     await request(app.getHttpServer())
       .post('/api/client/auth/register')
       .send({
-        client_code: 'KGTEST',
+        client_code: E2E_CLIENT_CODE,
         email: 'another-client@example.com',
         password: 'change-me',
       })
@@ -152,10 +212,10 @@ describe('FastScan API (e2e)', () => {
       });
   });
 
-  it('seeds admin, worker and client test accounts', async () => {
+  it('uses explicit admin, worker and client E2E fixtures', async () => {
     await request(app.getHttpServer())
       .post('/api/admin/auth/login')
-      .send({ login: 'admin', password: 'change-me' })
+      .send({ login: E2E_ADMIN_LOGIN, password: E2E_PASSWORD })
       .expect(201)
       .expect(({ body }) => {
         expect((body as LoginResponse).role).toBe('ADMIN');
@@ -163,7 +223,7 @@ describe('FastScan API (e2e)', () => {
 
     await request(app.getHttpServer())
       .post('/api/admin/auth/login')
-      .send({ login: 'worker', password: 'change-me' })
+      .send({ login: E2E_WORKER_LOGIN, password: E2E_PASSWORD })
       .expect(201)
       .expect(({ body }) => {
         expect((body as LoginResponse).role).toBe('WORKER');
@@ -171,7 +231,7 @@ describe('FastScan API (e2e)', () => {
 
     await request(app.getHttpServer())
       .post('/api/client/auth/login')
-      .send({ login: 'client@test.com', password: 'change-me' })
+      .send({ login: E2E_CLIENT_LOGIN, password: E2E_PASSWORD })
       .expect(201)
       .expect(({ body }) => {
         expect((body as LoginResponse).role).toBe('CLIENT');
@@ -181,7 +241,7 @@ describe('FastScan API (e2e)', () => {
   it('uses WORKER for staff permissions and rejects a MANAGER role', async () => {
     const adminLogin = await request(app.getHttpServer())
       .post('/api/admin/auth/login')
-      .send({ login: 'admin', password: 'change-me' })
+      .send({ login: E2E_ADMIN_LOGIN, password: E2E_PASSWORD })
       .expect(201);
     const admin = adminLogin.body as LoginResponse;
     const workerLogin = `e2e-worker-${Date.now()}`;
@@ -249,13 +309,13 @@ describe('FastScan API (e2e)', () => {
 
     const clientLogin = await request(app.getHttpServer())
       .post('/api/client/auth/login')
-      .send({ login: 'client@test.com', password: 'change-me' })
+      .send({ login: E2E_CLIENT_LOGIN, password: E2E_PASSWORD })
       .expect(201);
     const client = clientLogin.body as LoginResponse;
 
     const workerLogin = await request(app.getHttpServer())
       .post('/api/mobile/auth/login')
-      .send({ login: 'worker', password: 'change-me' })
+      .send({ login: E2E_WORKER_LOGIN, password: E2E_PASSWORD })
       .expect(201);
     const worker = workerLogin.body as LoginResponse;
 
@@ -471,6 +531,17 @@ describe('FastScan API (e2e)', () => {
   });
 
   afterAll(async () => {
+    if (!prisma || !app) return;
+    await prisma.user.deleteMany({
+      where: {
+        login: {
+          in: [E2E_ADMIN_LOGIN, E2E_WORKER_LOGIN, E2E_CLIENT_LOGIN],
+        },
+      },
+    });
+    await prisma.receiver.deleteMany({
+      where: { clientCode: E2E_CLIENT_CODE },
+    });
     await app.close();
   });
 });

@@ -64,7 +64,7 @@ This document records the legacy contract consumed by Android. The NestJS API pr
 Authorization: Bearer <accessToken>
 ```
 
-OpenAPI JSON: `/openapi.json`; Swagger UI: `/swagger-ui`.
+OpenAPI JSON: `/swagger-ui-json`; Swagger UI: `/swagger-ui`.
 
 The compatibility response shapes are covered by `api/src/mobile-contract.spec.ts`.
 

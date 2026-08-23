@@ -22,13 +22,6 @@ enum NotificationType {
   ORDER_UNPACKED
 }
 
-enum NotificationChannel {
-  INTERNAL
-  EMAIL
-  TELEGRAM
-  WHATSAPP
-}
-
 enum DictionaryType {
   WAREHOUSE
   COUNTRY
@@ -43,12 +36,10 @@ model User {
   passwordHash String         @map("password_hash") @db.VarChar(100)
   role         Role           @default(WORKER)
   enabled      Boolean        @default(true)
-  tokenVersion Int            @default(0) @map("token_version")
   createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz
   client       ClientAccount?
   operations   OperationLog[]
   manifests    Manifest[]     @relation("ManifestCreatedBy")
-  passwordResetTokens PasswordResetToken[]
 
   @@map("app_user")
 }
@@ -71,62 +62,18 @@ model ClientAccount {
   id                 String               @id @default(uuid()) @db.Uuid
   userId             String               @unique @map("user_id") @db.Uuid
   receiverId         String               @unique @map("receiver_id") @db.Uuid
-  email              String?              @unique @db.VarChar(254)
+  email              String               @unique @db.VarChar(254)
   phone              String?              @db.VarChar(40)
   address            String?              @db.VarChar(500)
   emailNotifications Boolean              @default(true) @map("email_notifications")
   pushNotifications  Boolean              @default(true) @map("push_notifications")
-  preferredNotificationChannel NotificationChannel @default(INTERNAL) @map("preferred_notification_channel")
-  telegramUserId     BigInt?              @unique @map("telegram_user_id")
-  telegramChatId     BigInt?              @map("telegram_chat_id")
-  whatsappPhone      String?              @map("whatsapp_phone") @db.VarChar(40)
   createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt          DateTime             @updatedAt @map("updated_at") @db.Timestamptz
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   receiver           Receiver             @relation(fields: [receiverId], references: [id], onDelete: Cascade)
   notifications      ClientNotification[]
-  telegramLinkToken  TelegramLinkToken?
-  telegramLoginTokens TelegramLoginToken[]
 
   @@map("client_account")
-}
-
-model TelegramLinkToken {
-  id              String        @id @default(uuid()) @db.Uuid
-  clientAccountId String        @unique @map("client_account_id") @db.Uuid
-  codeHash        String        @unique @map("code_hash") @db.VarChar(64)
-  expiresAt       DateTime      @map("expires_at") @db.Timestamptz
-  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  account         ClientAccount @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
-
-  @@index([expiresAt])
-  @@map("telegram_link_token")
-}
-
-model TelegramLoginToken {
-  id              String        @id @default(uuid()) @db.Uuid
-  clientAccountId String        @map("client_account_id") @db.Uuid
-  tokenHash       String        @unique @map("token_hash") @db.VarChar(64)
-  expiresAt       DateTime      @map("expires_at") @db.Timestamptz
-  usedAt          DateTime?     @map("used_at") @db.Timestamptz
-  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz
-  account         ClientAccount @relation(fields: [clientAccountId], references: [id], onDelete: Cascade)
-
-  @@index([clientAccountId, expiresAt])
-  @@map("telegram_login_token")
-}
-
-model PasswordResetToken {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id") @db.Uuid
-  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
-  expiresAt DateTime  @map("expires_at") @db.Timestamptz
-  usedAt    DateTime? @map("used_at") @db.Timestamptz
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, expiresAt])
-  @@map("password_reset_token")
 }
 
 model ClientNotification {

@@ -53,7 +53,7 @@ npm audit --omit=dev
 ```
 
 - Swagger UI: `http://localhost:8080/swagger-ui`
-- OpenAPI JSON: `http://localhost:8080/openapi.json`
+- OpenAPI JSON: `http://localhost:8080/swagger-ui-json`
 - Health check: `http://localhost:8080/health`
 
 Контракты: [Android API](../docs/api-contract.md) и [Client Portal API](../docs/client-portal-api.md).

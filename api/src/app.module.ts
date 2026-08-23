@@ -19,8 +19,6 @@ import { StaffController } from './staff.controller.js';
 import { NotificationService } from './notification.service.js';
 import { PrismaService } from './prisma.service.js';
 import { WarehouseController } from './warehouse.controller.js';
-import { TelegramController } from './telegram.controller.js';
-import { TelegramService } from './telegram.service.js';
 
 @Module({
   imports: [
@@ -42,12 +40,10 @@ import { TelegramService } from './telegram.service.js';
     ClientController,
     StaffController,
     AdminController,
-    TelegramController,
   ],
   providers: [
     PrismaService,
     NotificationService,
-    TelegramService,
     TokenService,
     JwtStrategy,
     { provide: APP_GUARD, useClass: JwtAuthGuard },

@@ -20,9 +20,6 @@ services:
     build:
       context: ./api
     restart: unless-stopped
-    env_file:
-      - path: ./bot/.env
-        required: false
     depends_on:
       postgres:
         condition: service_healthy
@@ -34,10 +31,6 @@ services:
       BOOTSTRAP_ADMIN_LOGIN: ${BOOTSTRAP_ADMIN_LOGIN:-admin}
       BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-change-me}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
-      WEB_APP_URL: ${WEB_APP_URL:-http://localhost:3000}
-      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-LmsMalagaBot}
-      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
-      FASTSCAN_BOT_API_SECRET: ${FASTSCAN_BOT_API_SECRET:-}
     ports:
       - "8080:8080"
     healthcheck:
@@ -46,20 +39,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-
-  bot:
-    build:
-      context: ./bot
-    restart: unless-stopped
-    env_file:
-      - path: ./bot/.env
-        required: true
-    depends_on:
-      api:
-        condition: service_healthy
-    environment:
-      FASTSCAN_API_URL: http://api:8080
-      FASTSCAN_BOT_API_SECRET: ${FASTSCAN_BOT_API_SECRET:-}
 
 volumes:
   fastscan_postgres_data:

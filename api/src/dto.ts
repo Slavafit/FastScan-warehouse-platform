@@ -94,22 +94,6 @@ export class PlatformSettingsDto {
   @IsString() @IsNotEmpty() @MaxLength(120) country!: string;
   @IsInt() @Min(1000) volumetric_divisor = 6000;
 }
-export class PasswordResetConfirmDto {
-  @IsString() @IsNotEmpty() token!: string;
-  @IsString() @MinLength(8) @MaxLength(100) password!: string;
-}
-
-export class TelegramClientAccessDto {
-  @IsString() @IsNotEmpty() telegram_id!: string;
-  @IsString() @IsNotEmpty() chat_id!: string;
-  @IsOptional() @IsString() @MaxLength(64) username?: string;
-  @IsOptional() @IsString() @MaxLength(120) first_name?: string;
-  @IsOptional() @IsString() @MaxLength(120) last_name?: string;
-}
-
-export class TelegramTokenDto {
-  @IsString() @IsNotEmpty() token!: string;
-}
 export class ProfileDto {
   @IsString() @IsNotEmpty() first_name!: string;
   @IsString() @IsNotEmpty() last_name!: string;
@@ -117,9 +101,6 @@ export class ProfileDto {
   @IsOptional() @IsString() @MaxLength(500) address?: string;
   @IsBoolean() email_notifications!: boolean;
   @IsBoolean() push_notifications!: boolean;
-  @IsIn(['INTERNAL', 'EMAIL', 'TELEGRAM', 'WHATSAPP'])
-  notification_channel!: 'INTERNAL' | 'EMAIL' | 'TELEGRAM' | 'WHATSAPP';
-  @IsOptional() @IsString() @MaxLength(40) whatsapp_phone?: string;
   @IsOptional() @IsInt() @IsIn([0, 1]) package_shoes?: number;
   @IsOptional() @IsInt() @IsIn([0, 1]) bag_package?: number;
 }
